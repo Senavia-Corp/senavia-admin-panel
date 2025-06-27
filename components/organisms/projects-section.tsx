@@ -1,0 +1,105 @@
+"use client"
+
+import { MetricCard } from "@/components/atoms/metric-card"
+import { RecentItemsSlider } from "@/components/molecules/recent-items-slider"
+import { ChartSection } from "@/components/molecules/chart-section"
+import { WeeklyCalendar } from "@/components/molecules/weekly-calendar"
+import type { Project, DashboardMetrics, WeeklyActivity } from "@/types/dashboard"
+
+interface ProjectsSectionProps {
+  metrics: DashboardMetrics["projects"]
+  recentProjects: Project[]
+  weeklyActivities: WeeklyActivity[]
+}
+
+export function ProjectsSection({ metrics, recentProjects, weeklyActivities }: ProjectsSectionProps) {
+  const chartData = [
+    { name: "May", value: 8 },
+    { name: "June", value: 12 },
+    { name: "July", value: 6 },
+    { name: "August", value: 15 },
+  ]
+
+  const statusData = [
+    { name: "Analysis", value: metrics.analysis },
+    { name: "Design", value: metrics.design },
+    { name: "Development", value: metrics.development },
+    { name: "Deploy", value: metrics.deploy },
+  ]
+
+  const recentItemsData = recentProjects.map((project) => ({
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    subtitle: project.createdAt.toLocaleDateString(),
+  }))
+
+  return (
+    <div className="space-y-8">
+      {/* Metrics Cards - Two rows layout */}
+      <div className="space-y-4">
+        {/* First row - Total Projects card spanning full width */}
+        <div className="w-full">
+          <MetricCard
+            title="Total Projects"
+            value={metrics.total}
+            percentageChange={metrics.percentageChange}
+            variant="success"
+          />
+        </div>
+
+        {/* Second row - 4 phase cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Analysis Phase"
+            value={metrics.analysis}
+            percentageChange={0}
+            variant="default"
+            className="bg-[#33CCCC] text-white"
+          />
+          <MetricCard
+            title="Design Phase"
+            value={metrics.design}
+            percentageChange={0}
+            variant="default"
+            className="bg-[#33CCCC] text-white"
+          />
+          <MetricCard
+            title="Development Phase"
+            value={metrics.development}
+            percentageChange={0}
+            variant="default"
+            className="bg-[#33CCCC] text-white"
+          />
+          <MetricCard
+            title="Deploy Phase"
+            value={metrics.deploy}
+            percentageChange={0}
+            variant="default"
+            className="bg-[#33CCCC] text-white"
+          />
+        </div>
+      </div>
+
+      {/* Recent Projects - Full width first row */}
+      <div className="w-full">
+        <RecentItemsSlider title="Recent Projects" items={recentItemsData} />
+      </div>
+
+      {/* Weekly Calendar - Full width second row */}
+      <div className="w-full">
+        <WeeklyCalendar activities={weeklyActivities} />
+      </div>
+
+      {/* Charts - Better spacing and sizing */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="w-full">
+          <ChartSection title="Total Projects" data={chartData} type="bar" />
+        </div>
+        <div className="w-full">
+          <ChartSection title="Project Status Distribution" data={statusData} type="pie" />
+        </div>
+      </div>
+    </div>
+  )
+}
