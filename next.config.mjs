@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  assetPrefix: '/admin',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -10,5 +11,4 @@ const nextConfig = {
     unoptimized: true,
   },
 }
-
 export default nextConfig
