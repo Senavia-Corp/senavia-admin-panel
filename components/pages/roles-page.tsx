@@ -95,7 +95,7 @@ export function RolesPage() {
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="px-6 py-6 h-full w-screen max-w-none">
-            <RoleDetailForm roleId={selectedRoleId} onBack={handleBackToList} onSave={handleSaveSuccess} />
+            <RoleDetailForm roleId={selectedRoleId ?? undefined} onBack={handleBackToList} onSave={handleSaveSuccess} />
           </div>
         </main>
       </div>
