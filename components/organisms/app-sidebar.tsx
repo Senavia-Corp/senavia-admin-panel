@@ -34,7 +34,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 const navigationItems = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/admin",
     icon: BarChart3,
   },
   {
