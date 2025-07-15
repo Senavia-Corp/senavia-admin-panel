@@ -130,9 +130,11 @@ export function RolesPage() {
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
-        <div className="p-6 h-full w-full">
+        <div className="px-0 lg:px-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">Role Management</h1>
+            <div className="my-3">
+              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Role Management</h1>
+            </div>
 
             <div className="flex-1 min-h-0">
               <RolesTable

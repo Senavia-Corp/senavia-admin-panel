@@ -15,12 +15,12 @@ export function ActionButton({ type, onClick, disabled }: ActionButtonProps) {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="lg"
       onClick={onClick}
       disabled={disabled}
-      className="h-8 w-8 p-0 hover:bg-gray-100 text-black hover:text-gray-800"
+      className="[&_svg]:size-8 h-8 w-8 p-0 hover:bg-gray-100 text-black hover:text-gray-800"
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-8 w-8" />
     </Button>
   )
 }

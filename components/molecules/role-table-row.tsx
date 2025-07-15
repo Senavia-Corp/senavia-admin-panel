@@ -12,16 +12,16 @@ interface RoleTableRowProps {
 
 export function RoleTableRow({ role, onView, onDelete }: RoleTableRowProps) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">{role.id}</td>
-      <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">{role.name}</td>
-      <td className="w-1/4 px-6 py-4">
+    <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
+      <td className="p-5 text-base text-[#04081E] truncate text-center">{role.id}</td>
+      <td className="p-5 text-base text-[#04081E] truncate text-center">{role.name}</td>
+      <td className="p-5 text-center">
         <RoleStatusBadge isActive={role.isActive} />
       </td>
-      <td className="w-1/4 px-6 py-4">
-        <div className="flex space-x-2">
-          <ActionButton type="view" onClick={() => onView(role)} className="text-gray-700 hover:text-gray-900" />
-          <ActionButton type="delete" onClick={() => onDelete(role)} className="text-gray-700 hover:text-gray-900" />
+      <td className=" p-5 text-center">
+        <div className="flex justify-center space-x-2">
+          <ActionButton type="view" onClick={() => onView(role)} />
+          <ActionButton type="delete" onClick={() => onDelete(role)} />
         </div>
       </td>
     </tr>

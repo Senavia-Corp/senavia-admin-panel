@@ -53,10 +53,10 @@ export function RolesTable({
   const statuses = ["Active", "Inactive"];
 
   return (
-    <div className="flex flex-col h-full space-y-6 w-full">
+    <div className="flex flex-col h-full space-y-1 w-full mb-5">
       {/* Add Role Section */}
-      <Card className="bg-gray-900 text-white flex-shrink-0 w-full">
-        <CardHeader className="flex flex-row items-center justify-between py-6 px-8">
+      <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center">
+        <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
           <div>
             <h2 className="text-2xl font-normal">Add Role</h2>
             <p className="">Description</p>
@@ -71,8 +71,8 @@ export function RolesTable({
       </Card>
 
       {/* All Roles Section - Takes remaining space */}
-      <Card className="bg-gray-900 text-white flex-1 flex flex-col min-h-0 w-full">
-        <CardHeader className="flex-shrink-0 px-8">
+      <Card className="bg-[#04081E] text-white  flex flex-col w-full">
+        <CardHeader className="flex-shrink-0 px-5 py-5">
           <div className="flex items-center justify-between w-full">
             <div>
               <h2 className="text-2xl font-normal">All Roles</h2>
@@ -128,35 +128,35 @@ export function RolesTable({
                 <Input
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 w-80 bg-white border-gray-700 text-black"
+                  className="pl-10 w-80 bg-white border-gray-700 text-black rounded-md"
                 />
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
-          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
+        <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
+          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
             <table className="w-full table-fixed">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
                     Team ID
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
                     Role Name
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
                     Active
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
                     Actions
                   </th>
                 </tr>
               </thead>
             </table>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto mt-[10px]">
               <table className="w-full table-fixed">
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y-[10px]  divide-white">
                   {roles.map((role) => (
                     <RoleTableRow
                       key={role.id}
