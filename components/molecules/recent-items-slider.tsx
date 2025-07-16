@@ -17,9 +17,9 @@ interface RecentItemsSliderProps {
 
 export function RecentItemsSlider({ title, items }: RecentItemsSliderProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  bg-[#F0F0F2] px-4 rounded-lg">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-xl font-semibold text-[#0D1440] mt-4">{title}</h3>
         <div className="flex space-x-2">
           <Button variant="outline" size="sm">
             <ChevronLeft className="h-4 w-4" />
@@ -30,9 +30,9 @@ export function RecentItemsSlider({ title, items }: RecentItemsSliderProps) {
         </div>
       </div>
       {/* Responsive grid that shows more items on larger screens */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 ">
         {items.slice(0, 4).map((item) => (
-          <Card key={item.id} className="bg-gray-400 text-white">
+          <Card key={item.id} className="bg-[#9FAABF] text-white mb-4">
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <StatusBadge status={item.status} />
