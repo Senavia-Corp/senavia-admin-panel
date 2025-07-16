@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PermissionTableRow } from "@/components/molecules/permission-table-row"
 import { Plus, Search, Filter } from "lucide-react"
 import type { Permission, PermissionAction, AssociatedService, PermissionStatus } from "@/types/permission-management"
+import { Popover, PopoverTrigger, PopoverContent} from "@radix-ui/react-popover"
 
 interface PermissionsTableProps {
   permissions: Permission[]
@@ -19,6 +20,7 @@ interface PermissionsTableProps {
   onServiceFilter: (service: string) => void
   onStatusFilter: (status: string) => void
 }
+
 
 export function PermissionsTable({
   permissions,
@@ -34,6 +36,16 @@ export function PermissionsTable({
   const [selectedAction, setSelectedAction] = useState<string>("all")
   const [selectedService, setSelectedService] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [showFilters, setShowFilters] = useState(false)
+
+
+  const toggleFilters = () => {
+    if (showFilters) {
+      setShowFilters(false)
+    } else {
+      setShowFilters(true)
+    }
+  }
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
@@ -69,118 +81,128 @@ export function PermissionsTable({
     "Roles",
     "Permissions",
   ]
-  const statuses: PermissionStatus[] = ["Active", "Not Active"]
+  const statuses: PermissionStatus[] = ["Active", "Inactive"]
 
   return (
-    <div className="flex flex-col h-full space-y-6 w-full">
+    <div className="flex flex-col h-full space-y-1 w-full">
       {/* Add Permission Section */}
-      <Card className="bg-gray-900 text-white flex-shrink-0 w-full">
-        <CardHeader className="flex flex-row items-center justify-between py-6 px-8">
+      <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center">
+        <CardHeader className="flex flex-row items-center justify-between py-5 px-5">
           <div>
-            <h2 className="text-xl font-semibold">Add Permission</h2>
-            <p className="text-gray-400">Description</p>
+            <h2 className="text-2xl font-normal">Add Permission</h2>
+            <p className="">Description</p>
           </div>
           <Button
             onClick={onAddPermission}
-            className="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 p-0"
+            className="[&_svg]:size-7 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
           >
-            <Plus className="h-6 w-6" />
+            <Plus color="#04081E" strokeWidth={3} />
           </Button>
         </CardHeader>
       </Card>
 
       {/* All Permissions Section - Takes remaining space */}
-      <Card className="bg-gray-900 text-white flex-1 flex flex-col min-h-0 w-full">
-        <CardHeader className="flex-shrink-0 px-8">
+      <Card className="bg-[#04081E] text-white flex-1 flex flex-col min-h-0 w-full">
+        <CardHeader className="flex-shrink-0 px-5 py-5">
           <div className="flex items-center justify-between w-full">
             <div>
-              <h2 className="text-xl font-semibold">All Permissions</h2>
-              <p className="text-gray-400">Description</p>
+              <h2 className="text-2xl font-normal">All Permissions</h2>
+              <p className="">Description</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
               <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <Select value={selectedAction} onValueChange={handleActionFilter}>
-                  <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Action" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Actions</SelectItem>
-                    {actions.map((action) => (
-                      <SelectItem key={action} value={action}>
-                        {action}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={selectedService} onValueChange={handleServiceFilter}>
-                  <SelectTrigger className="w-40 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Services</SelectItem>
-                    {services.map((service) => (
-                      <SelectItem key={service} value={service}>
-                        {service}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-                  <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Button variant="ghost" onClick={toggleFilters} className="[&_svg]:size-7">
+                  <Filter className="h-5 w-5" />
+                </Button>
+                {showFilters && (
+                  <>
+                    <Select value={selectedAction} onValueChange={handleActionFilter}>
+                      <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+                        <SelectValue placeholder="Action" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Actions</SelectItem>
+                        {actions.map((action) => (
+                          <SelectItem key={action} value={action}>
+                            {action}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={selectedService} onValueChange={handleServiceFilter}>
+                      <SelectTrigger className="w-40 bg-gray-800 border-gray-700">
+                        <SelectValue placeholder="Service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Services</SelectItem>
+                        {services.map((service) => (
+                          <SelectItem key={service} value={service}>
+                            {service}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+                      <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        {statuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search
+                  color="#04081E"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+                />
                 <Input
-                  placeholder="Search permissions..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 w-80 bg-gray-800 border-gray-700 text-white"
+                  className="pl-10 w-80 bg-white border-gray-700 text-black rounded-md"
                 />
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
-          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
+        <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
+          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
             <table className="w-full table-fixed">
-              <thead className="bg-gray-100">
+              <thead className="bg-[#E5E8F0]">
                 <tr>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
                     Permission ID
                   </th>
-                  <th className="flex-1 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
                     Name
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
                     Action
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
                     Status
                   </th>
-                  <th className="w-48 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/4 p-5 text-center text-[#616774]">
                     Associated To
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
                     Actions
                   </th>
                 </tr>
               </thead>
             </table>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto mt-[10px]">
               <table className="w-full table-fixed">
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y-[10px]  divide-white">
                   {permissions.map((permission) => (
                     <PermissionTableRow
                       key={permission.id}
@@ -196,5 +218,5 @@ export function PermissionsTable({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
