@@ -14,6 +14,7 @@ import {
 import { LeadTableRow } from "@/components/molecules/lead-table-row";
 import { Plus, Search, Filter } from "lucide-react";
 import { Lead, LeadStatus } from "@/types/lead-management";
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -79,24 +80,30 @@ export function LeadsTable({
               <p className="text-gray-400">Description</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <Select
-                  value={selectedStatus}
-                  onValueChange={handleStatusFilter}
-                >
-                  <SelectTrigger className="w-40 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+             <div className="flex items-center space-x-2">
+                <Popover>
+                  <PopoverTrigger>
+                    <Filter className="h-5 w-5" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 m-0 bg-gray-800 border-gray-700">
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={handleStatusFilter}
+                    >
+                      <SelectTrigger className="w-32 bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 text-white">
+                        <SelectItem value="all" className="text-white">All Status</SelectItem>
+                        {statuses.map((status) => (
+                          <SelectItem key={status} value={status} className="text-white">
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
