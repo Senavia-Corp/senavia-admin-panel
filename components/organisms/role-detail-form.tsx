@@ -117,8 +117,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
   }
 
   return (
-    <div className=" flex flex-col">
-      {/* Header */}
+    <div className=" flex flex-col w-screen">
       <div className="flex items-center space-x-4 mb-6">
         <Button
           variant="ghost"
@@ -154,7 +153,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Role Name"
-                  className="w-full h-12  text-[#A2ADC5] text-xs"
+                  className=" h-12  text-[#A2ADC5] text-xs"
                 />
               </div>
               <hr className="border-[#EBEDF2]" />
@@ -172,7 +171,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                     placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                     rows={6}
                     maxLength={200}
-                    className="w-full resize-none text-xs text-[#393939] font-medium"
+                    className=" resize-none text-xs text-[#393939] font-medium"
                   />
                   <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
                     {formData.description.length}/200
@@ -226,7 +225,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                         }
                       }}
                     >
-                      <SelectTrigger className="w-full h-12 text-base">
+                      <SelectTrigger className=" h-12 text-base">
                         <SelectValue placeholder="Add permission..." />
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </SelectTrigger>

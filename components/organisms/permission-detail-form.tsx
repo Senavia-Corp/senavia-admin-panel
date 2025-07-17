@@ -93,7 +93,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
   const services = PermissionManagementService.getAssociatedServices()
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col w-screen h-full overflow-auto">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
@@ -108,18 +108,19 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1">
-        <div className="bg-white rounded-lg p-12 h-full">
-          <div className="max-w-4xl mx-auto space-y-8">
+      <div className="bg-gray-900 rounded-lg p-4 sm:p-6 flex-1">
+        <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12">
+          <div className="max-w-4xl mx-auto space-y-3">
             {/* ID Display */}
             <div>
-              <p className="text-lg text-gray-600 mb-6">ID: {displayId}</p>
+              <p className="text-lg text-gray-600">ID: {displayId}</p> 
             </div>
+            <hr className="border-[#EBEDF2]" />
 
-            {/* Form Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Form */}
+            <div className="flex-col">
               {/* Left Column */}
-              <div className="space-y-8">
+              <div className="space-y-3">
                 {/* Name */}
                 <div>
                   <Label htmlFor="name" className="text-lg font-medium text-gray-900 mb-3 block">
@@ -133,8 +134,48 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                     className="w-full h-12 text-base"
                   />
                 </div>
+                <hr className="border-[#EBEDF2]" />
+                 {/* Description */}
+                 <div>
+                  <Label htmlFor="description" className="text-lg font-medium text-gray-900 mb-3 block">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                      rows={6}
+                      maxLength={200}
+                      className="w-full resize-none text-base"
+                    />
+                    <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
+                      {formData.description.length}/200
+                    </div>
+                  </div>
+                </div>
+                <hr className="border-[#EBEDF2]" />
+                {/* Status */}
+                <div>
+                  <Label className="text-lg font-medium text-gray-900 mb-3 block">Status</Label>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="status"
+                      checked={formData.status}
+                      onCheckedChange={(checked) => handleChange("status", checked as boolean)}
+                      className="w-5 h-5"
+                    />
+                    <Label htmlFor="status" className="text-base font-medium">
+                      Active
+                    </Label>
+                  </div>
+                </div>
+                <hr className="border-[#EBEDF2]" />
 
                 {/* Action */}
+                <hr className="border-[#EBEDF2]" />
+                <hr className="border-[#EBEDF2]" />
                 <div>
                   <Label htmlFor="action" className="text-lg font-medium text-gray-900 mb-3 block">
                     Action
@@ -155,7 +196,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                     </SelectContent>
                   </Select>
                 </div>
-
+                <hr className="border-[#EBEDF2]" />
                 {/* Associated Service */}
                 <div>
                   <Label htmlFor="associatedService" className="text-lg font-medium text-gray-900 mb-3 block">
@@ -180,43 +221,9 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
               </div>
 
               {/* Right Column */}
-              <div className="space-y-8">
-                {/* Description */}
-                <div>
-                  <Label htmlFor="description" className="text-lg font-medium text-gray-900 mb-3 block">
-                    Description
-                  </Label>
-                  <div className="relative">
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
-                      rows={6}
-                      maxLength={200}
-                      className="w-full resize-none text-base"
-                    />
-                    <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                      {formData.description.length}/200
-                    </div>
-                  </div>
-                </div>
-
+               
                 {/* Status */}
-                <div>
-                  <Label className="text-lg font-medium text-gray-900 mb-3 block">Status</Label>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="status"
-                      checked={formData.status}
-                      onCheckedChange={(checked) => handleChange("status", checked as boolean)}
-                      className="w-5 h-5"
-                    />
-                    <Label htmlFor="status" className="text-base font-medium">
-                      Active
-                    </Label>
-                  </div>
-                </div>
+
               </div>
             </div>
 
@@ -233,6 +240,5 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
           </div>
         </div>
       </div>
-    </div>
   )
 }

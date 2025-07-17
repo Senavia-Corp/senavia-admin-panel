@@ -67,12 +67,10 @@ export function RolesPage() {
   // Show detail form for editing existing role or creating new role
   if (showDetailForm) {
     return (
-      <div className="flex-1 flex flex-col h-screen overflow-hidden w-screen">
-        {/* Header */}
-
+      <div className="">
         {/* Main Content */}
-        <main className="flex-1  overflow-auto">
-          <div className="px-6 py-6">
+        <main className="">
+          <div className="px-6 py-6 ">
             <RoleDetailForm roleId={selectedRoleId ?? undefined} onBack={handleBackToList} onSave={handleSaveSuccess} />
           </div>
         </main>
