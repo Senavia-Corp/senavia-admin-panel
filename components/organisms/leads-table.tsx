@@ -1,38 +1,56 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LeadTableRow } from "@/components/molecules/lead-table-row"
-import { Plus, Search, Filter } from "lucide-react"
-import type { LeadRecord, LeadStatus } from "@/types/lead-management"
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LeadTableRow } from "@/components/molecules/lead-table-row";
+import { Plus, Search, Filter } from "lucide-react";
+import { Lead, LeadStatus } from "@/types/lead-management";
 
 interface LeadsTableProps {
-  leads: LeadRecord[]
-  onAddLead: () => void
-  onViewLead: (lead: LeadRecord) => void
-  onDeleteLead: (lead: LeadRecord) => void
-  onSearch: (search: string) => void
-  onStatusFilter: (status: string) => void
+  leads: Lead[];
+  onAddLead: () => void;
+  onViewLead: (lead: Lead) => void;
+  onDeleteLead: (lead: Lead) => void;
+  onSearch: (search: string) => void;
+  onStatusFilter: (status: string) => void;
 }
 
-export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearch, onStatusFilter }: LeadsTableProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedStatus, setSelectedStatus] = useState<string>("all")
+export function LeadsTable({
+  leads,
+  onAddLead,
+  onViewLead,
+  onDeleteLead,
+  onSearch,
+  onStatusFilter,
+}: LeadsTableProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    onSearch(value)
-  }
+    setSearchTerm(value);
+    onSearch(value);
+  };
 
   const handleStatusFilter = (status: string) => {
-    setSelectedStatus(status)
-    onStatusFilter(status)
-  }
+    setSelectedStatus(status);
+    onStatusFilter(status);
+  };
 
-  const statuses: LeadStatus[] = ["Send", "Processing", "Estimating", "Finished"]
+  const statuses: LeadStatus[] = [
+    "Send",
+    "Processing",
+    "Estimating",
+    "Finished",
+  ];
 
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
@@ -43,7 +61,10 @@ export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearc
             <h2 className="text-xl font-semibold">Add Lead</h2>
             <p className="text-gray-400">Description</p>
           </div>
-          <Button onClick={onAddLead} className="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 p-0">
+          <Button
+            onClick={onAddLead}
+            className="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 p-0"
+          >
             <Plus className="h-6 w-6" />
           </Button>
         </CardHeader>
@@ -60,7 +81,10 @@ export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearc
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Filter className="h-5 w-5 text-gray-400" />
-                <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={handleStatusFilter}
+                >
                   <SelectTrigger className="w-40 bg-gray-800 border-gray-700">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -95,10 +119,10 @@ export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearc
                     Lead ID
                   </th>
                   <th className="flex-1 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer Name
+                    Client Name
                   </th>
                   <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created Date
+                    Start Date
                   </th>
                   <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -113,7 +137,12 @@ export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearc
               <table className="w-full table-fixed">
                 <tbody className="bg-white divide-y divide-gray-200">
                   {leads.map((lead) => (
-                    <LeadTableRow key={lead.id} lead={lead} onView={onViewLead} onDelete={onDeleteLead} />
+                    <LeadTableRow
+                      key={lead.id}
+                      lead={lead}
+                      onView={onViewLead}
+                      onDelete={onDeleteLead}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -122,5 +151,5 @@ export function LeadsTable({ leads, onAddLead, onViewLead, onDeleteLead, onSearc
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

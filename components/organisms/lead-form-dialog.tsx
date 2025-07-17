@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { LeadManagementService } from "@/services/lead-management-service";
 import type {
-  LeadRecord,
+  Lead,
   CreateLeadData,
   LeadStatus,
 } from "@/types/lead-management";
@@ -25,7 +25,7 @@ interface LeadFormDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateLeadData) => Promise<void>;
-  lead?: LeadRecord;
+  lead?: Lead;
   mode: "create" | "edit";
 }
 
@@ -37,20 +37,23 @@ export function LeadFormDialog({
   mode,
 }: LeadFormDialogProps) {
   const [formData, setFormData] = useState<CreateLeadData>({
-    customerName: "",
+    clientName: "",
     status: "Send" as LeadStatus,
+    startDate: "",
   });
 
   useEffect(() => {
     if (lead && mode === "edit") {
       setFormData({
-        customerName: lead.customerName,
+        clientName: lead.clientName || "",
         status: lead.status,
+        startDate: lead.startDate,
       });
     } else {
       setFormData({
-        customerName: "",
+        clientName: "",
         status: "Send" as LeadStatus,
+        startDate: "",
       });
     }
   }, [lead, mode]);
@@ -76,9 +79,9 @@ export function LeadFormDialog({
             </label>
             <Input
               id="customerName"
-              value={formData.customerName}
+              value={formData.clientName}
               onChange={(e) =>
-                setFormData({ ...formData, customerName: e.target.value })
+                setFormData({ ...formData, clientName: e.target.value })
               }
               placeholder="Enter customer name"
               required

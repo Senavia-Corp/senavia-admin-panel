@@ -9,13 +9,15 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Bell } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
-import type { LeadRecord, CreateLeadData } from "@/types/lead-management";
+import type { Lead, CreateLeadData } from "@/types/lead-management";
 import { toast } from "@/components/ui/use-toast";
 
 export function LeadsPage() {
-  const [leads, setLeads] = useState<LeadRecord[]>([]);
-  const [leadToDelete, setLeadToDelete] = useState<LeadRecord | null>(null);
-  const [leadToEdit, setLeadToEdit] = useState<LeadRecord | null>(null);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
+  const [leadToEdit, setLeadToEdit] = useState<Lead | undefined>(
+    undefined
+  );
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,7 +44,7 @@ export function LeadsPage() {
     }
   };
 
-  const handleDeleteLead = async (lead: LeadRecord) => {
+  const handleDeleteLead = async (lead: Lead) => {
     try {
       await LeadManagementService.deleteLead(lead.id);
       setLeadToDelete(null);
@@ -61,14 +63,14 @@ export function LeadsPage() {
     }
   };
 
-  const handleViewLead = (lead: LeadRecord) => {
+  const handleViewLead = (lead: Lead) => {
     setLeadToEdit(lead);
     setFormMode("edit");
     setIsFormOpen(true);
   };
 
   const handleCreateLead = () => {
-    setLeadToEdit(null);
+    setLeadToEdit(undefined);
     setFormMode("create");
     setIsFormOpen(true);
   };
@@ -83,7 +85,7 @@ export function LeadsPage() {
         });
       } else if (formMode === "edit" && leadToEdit) {
         await LeadManagementService.updateLead(leadToEdit.id, {
-          customerName: data.customerName,
+          clientName: data.clientName,
           status: data.status,
         });
         toast({
@@ -160,7 +162,7 @@ export function LeadsPage() {
         onClose={() => setLeadToDelete(null)}
         onConfirm={() => leadToDelete && handleDeleteLead(leadToDelete)}
         title="Delete Lead"
-        description={`Are you sure you want to delete the lead for "${leadToDelete?.customerName}"? This action cannot be undone.`}
+        description={`Are you sure you want to delete the lead for "${leadToDelete?.clientName}"? This action cannot be undone.`}
       />
 
       <LeadFormDialog
