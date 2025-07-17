@@ -112,30 +112,30 @@ export function LeadsTable({
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
           <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
-            <table className="w-full table-fixed">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <table className="w-full table-fixed border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="w-32 py-3 text-left text-sm font-medium text-gray-600">
                     Lead ID
                   </th>
-                  <th className="flex-1 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/3 py-3 text-left text-sm font-medium text-gray-600">
                     Client Name
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-32 py-3 text-left text-sm font-medium text-gray-600">
                     Start Date
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-32 py-3 text-left text-sm font-medium text-gray-600">
                     Status
                   </th>
-                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-32 py-3 text-left text-sm font-medium text-gray-600">
                     Actions
                   </th>
                 </tr>
               </thead>
             </table>
             <div className="flex-1 overflow-auto">
-              <table className="w-full table-fixed">
-                <tbody className="bg-white divide-y divide-gray-200">
+              <table className="w-full table-fixed border-collapse">
+                <tbody>
                   {leads.map((lead) => (
                     <LeadTableRow
                       key={lead.id}

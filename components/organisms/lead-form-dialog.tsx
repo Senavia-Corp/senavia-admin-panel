@@ -75,15 +75,15 @@ export function LeadFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="customerName" className="text-sm font-medium">
-              Customer Name
+              Client Name
             </label>
             <Input
-              id="customerName"
+              id="clientName"
               value={formData.clientName}
               onChange={(e) =>
                 setFormData({ ...formData, clientName: e.target.value })
               }
-              placeholder="Enter customer name"
+              placeholder="Enter client name"
               required
             />
           </div>
