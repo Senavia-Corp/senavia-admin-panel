@@ -115,19 +115,19 @@ export function LeadsTable({
             <table className="w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-[12%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Lead ID
                   </th>
-                  <th className="w-[30%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Client Name
                   </th>
-                  <th className="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Start Date
                   </th>
-                  <th className="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="w-[18%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
