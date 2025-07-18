@@ -79,9 +79,9 @@ export function RolesPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col">
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 overflow-auto">
+      <main className="flex-1  overflow-auto">
         <div className="px-0 lg:px-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">

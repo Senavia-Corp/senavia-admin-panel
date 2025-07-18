@@ -17,9 +17,9 @@ export default function RootLayout({
       
       <body className={`${inter.className}`}>
         <SidebarProvider>
-          <div className="flex min-h-screen bg-gray-50">
+          <div className="flex min-h-screen bg-gray-50 w-full">
             <AppSidebar />
-            <SidebarInset className="flex flex-col flex-1">
+            <SidebarInset className="flex-1 min-w-0 min-h-0 flex flex-col">
               {/* Header dentro del área de contenido */}
               <Header />
               {/* Contenido principal */}

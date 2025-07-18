@@ -93,7 +93,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
   const services = PermissionManagementService.getAssociatedServices()
 
   return (
-    <div className="flex flex-col w-screen h-full overflow-auto">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
@@ -104,23 +104,23 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Permission Details</h1>
+        <h1 className="text-4xl font-medium text-[#04081E]">Permission Details</h1>
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-4 sm:p-6 flex-1">
+      <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12">
-          <div className="max-w-4xl mx-auto space-y-3">
+          <div className="max-w-4xl mx-auto space-y-3 text-[#393939] text-base/4">
             {/* ID Display */}
             <div>
-              <p className="text-base">ID: {displayId}</p> 
+              <p className="">ID: {displayId}</p> 
             </div>
             <hr className="border-[#EBEDF2]" />
             {/* Form */}
             <div className="flex-col space-y-3">
                 {/* Name */}
                 <div>
-                  <Label htmlFor="name" className="text-base font-normal mb-3 block">
+                  <Label htmlFor="name" className=" font-normal mb-3 block">
                     Name
                   </Label>
                   <Input
@@ -128,13 +128,13 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                     value={formData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                     placeholder="Permission Name"
-                    className="w-full h-7 text-base text-[#A2ADC5]"
+                    className="w-full h-7  text-[#A2ADC5]"
                   />
                 </div>
                 <hr className="border-[#EBEDF2]" />
                  {/* Description */}
                  <div>
-                  <Label htmlFor="description" className="text-base font-normal mb-3 block">
+                  <Label htmlFor="description" className=" font-normal mb-3 block">
                     Description
                   </Label>
                   <div className="relative">
@@ -145,7 +145,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                       placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                       rows={6}
                       maxLength={200}
-                      className="w-full h-28 resize-none text-base"
+                      className="w-full h-28 resize-none "
                     />
                     <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
                       {formData.description.length}/200
@@ -155,7 +155,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                 <hr className="border-[#EBEDF2]" />
                 {/* Status */}
                 <div>
-                  <Label className="text-base font-normal text-[#393939] mb-3 block">Status</Label>
+                  <Label className=" font-normal text-[#393939] mb-3 block">Status</Label>
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="status"
@@ -163,7 +163,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                       onCheckedChange={(checked) => handleChange("status", checked as boolean)}
                       className="w-5 h-5"
                     />
-                    <Label htmlFor="status" className="text-base font-medium text-[#393939]">
+                    <Label htmlFor="status" className=" font-medium text-[#393939]">
                       Active
                     </Label>
                   </div>
@@ -174,14 +174,14 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                 <hr className="border-[#EBEDF2]" />
                 <hr className="border-[#EBEDF2]" />
                 <div>
-                  <Label htmlFor="action" className="text-base font-normal mb-3 block">
+                  <Label htmlFor="action" className=" font-normal mb-3 block">
                     Action
                   </Label>
                   <Select
                     value={formData.action}
                     onValueChange={(value: PermissionAction) => handleChange("action", value)}
                   >
-                    <SelectTrigger className="w-full h-12 text-base">
+                    <SelectTrigger className="w-full h-7 ">
                       <SelectValue placeholder="Dropdown here" />
                     </SelectTrigger>
                     <SelectContent>
@@ -196,14 +196,14 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                 <hr className="border-[#EBEDF2]" />
                 {/* Associated Service */}
                 <div>
-                  <Label htmlFor="associatedService" className="text-base font-normal mb-3 block">
+                  <Label htmlFor="associatedService" className=" font-normal mb-3 block">
                     Associated Service
                   </Label>
                   <Select
                     value={formData.associatedService}
                     onValueChange={(value: AssociatedService) => handleChange("associatedService", value)}
                   >
-                    <SelectTrigger className="w-full h-12 text-base">
+                    <SelectTrigger className="w-full h-7">
                       <SelectValue placeholder="Dropdown here" />
                     </SelectTrigger>
                     <SelectContent>
@@ -222,7 +222,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
               <Button
                 onClick={handleSave}
                 disabled={isLoading || !formData.name.trim()}
-                className="w-full max-w-md mx-auto flex items-center justify-center bg-green-500 hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
+                className="w-full max-w-md mx-auto flex items-center justify-center bg-[#99CC33] hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
               >
                 {isLoading ? "Saving..." : isEditMode ? "Update Permission" : "Add Permission"}
               </Button>

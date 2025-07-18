@@ -71,10 +71,10 @@ export function PermissionsPage() {
   // Show detail form for editing existing permission
   if (selectedPermissionId) {
     return (
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="">
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden">
-          <div className="px-6 py-6 h-full w-screen max-w-none">
+        <main className="">
+          <div className="px-6 py-6 ">
             <PermissionDetailForm
               permissionId={selectedPermissionId}
               onBack={handleBackToList}
@@ -89,10 +89,10 @@ export function PermissionsPage() {
   // Show detail form for creating new permission
   if (showCreateForm) {
     return (
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">  
+      <div className="">  
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden">
-          <div className="px-6 py-6 h-full w-screen max-w-none">
+        <main className="">
+          <div className="px-6 py-6">
             <PermissionDetailForm onBack={handleBackToList} onSave={handleSaveSuccess} />
           </div>
         </main>
@@ -103,7 +103,7 @@ export function PermissionsPage() {
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 overflow-auto">
+      <main className="flex-1 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Permission Management</h1>

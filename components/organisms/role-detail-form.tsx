@@ -117,7 +117,8 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
   }
 
   return (
-    <div className=" flex flex-col w-screen">
+    <div className=" flex flex-col">
+      {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
           variant="ghost"
@@ -127,14 +128,12 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
         >
           <ArrowLeft className="h-5 w-5" strokeWidth={3} />
         </Button>
-        <h1 className="text-4xl font-semibold text-gray-900">Role Details</h1>
+        <h1 className="text-4xl font-medium text-[#04081E]">Role Details</h1>
       </div>
-
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-4 sm:p-6 flex-1 ">
+      <div className="bg-black rounded-lg p-4 sm:p-6 flex-1 ">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 h-full ">
-          <div className="space-y-6
-          ">
+          <div className="space-y-6 max-w-4xl mx-auto text-[#393939] text-base/4">
             {/* ID Display */}
             <div>
               <p className="text-base text-[#393939] mb-6">ID: {displayId}</p>
@@ -153,7 +152,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Role Name"
-                  className=" h-12  text-[#A2ADC5] text-xs"
+                  className=" h-7  text-[#A2ADC5] text-xs"
                 />
               </div>
               <hr className="border-[#EBEDF2]" />
@@ -201,48 +200,40 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
               <hr className="border-[#EBEDF2]" />
               <div>
                 <Label className="text-base font-medium text-[#393939] mb-3 block">Permission</Label>
-                <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 min-h-[48px] p-2 border border-gray-300 rounded-lg">
                   {/* Selected Permissions */}
-                  <div className="flex flex-wrap gap-2 min-h-[40px] p-3 border border-gray-300 rounded-lg">
-                    {getSelectedPermissions().map((permission) => (
-                      <PermissionBadge
-                        key={permission.id}
-                        permission={permission}
-                        onRemove={() => handleRemovePermission(permission.id)}
-                      />
-                    ))}
-                    {getSelectedPermissions().length === 0 && (
-                      <span className="text-gray-500">No permissions selected</span>
-                    )}
-                  </div>
+                  {getSelectedPermissions().map((permission) => (
+                    <PermissionBadge
+                      key={permission.id}
+                      permission={permission}
+                      onRemove={() => handleRemovePermission(permission.id)}
+                    />
+                  ))}
 
-                  {/* Add Permission Dropdown */}
-                  <div className="relative">
-                    <Select
-                      onValueChange={(value) => {
-                        if (value !== "no-permissions") {
-                          handleAddPermission(value)
-                        }
-                      }}
-                    >
-                      <SelectTrigger className=" h-12 text-base">
-                        <SelectValue placeholder="Add permission..." />
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAvailablePermissionsForDropdown().map((permission) => (
-                          <SelectItem key={permission.id} value={permission.id}>
-                            {permission.name}
-                          </SelectItem>
-                        ))}
-                        {getAvailablePermissionsForDropdown().length === 0 && (
-                          <SelectItem value="no-permissions" disabled>
-                            All permissions are already selected
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Add Permission Dropdown - Integrated */}
+                  <Select
+                    onValueChange={(value) => {
+                      if (value !== "no-permissions") {
+                        handleAddPermission(value)
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="flex-1 min-w-[200px] h-auto p-1 bg-transparent border-none shadow-none focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Add permission..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailablePermissionsForDropdown().map((permission) => (
+                        <SelectItem key={permission.id} value={permission.id}>
+                          {permission.name}
+                        </SelectItem>
+                      ))}
+                      {getAvailablePermissionsForDropdown().length === 0 && (
+                        <SelectItem value="no-permissions" disabled>
+                          All permissions are already selected
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
