@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { LeadsTable } from "@/components/organisms/leads-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { LeadFormDialog } from "@/components/organisms/lead-form-dialog";
+// import { LeadFormDialog } from "@/components/organisms/lead-form-dialog";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -165,13 +165,13 @@ export function LeadsPage() {
         description={`Are you sure you want to delete the lead for "${leadToDelete?.clientName}"? This action cannot be undone.`}
       />
 
-      <LeadFormDialog
+      {/* <LeadFormDialog
         open={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
         lead={leadToEdit}
         mode={formMode}
-      />
+      /> */}
     </div>
   );
 }

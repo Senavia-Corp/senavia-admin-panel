@@ -13,7 +13,9 @@ interface LeadTableRowProps {
 export function LeadTableRow({ lead, onView, onDelete }: LeadTableRowProps) {
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">{lead.id}</td>
+      <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">
+        {lead.id}
+      </td>
       <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">
         {lead.clientName}
       </td>
@@ -25,8 +27,8 @@ export function LeadTableRow({ lead, onView, onDelete }: LeadTableRowProps) {
       </td>
       <td className="w-1/4 px-6 py-4">
         <div className="flex space-x-2">
-          <ActionButton type="view" onClick={() => onView(lead)}className="text-gray-700 hover:text-gray-900" />
-          <ActionButton type="delete" onClick={() => onDelete(lead)}className="text-gray-700 hover:text-gray-900" />
+          <ActionButton type="view" onClick={() => onView(lead)} />
+          <ActionButton type="delete" onClick={() => onDelete(lead)} />
         </div>
       </td>
     </tr>

@@ -14,7 +14,12 @@ import {
 import { LeadTableRow } from "@/components/molecules/lead-table-row";
 import { Plus, Search, Filter } from "lucide-react";
 import { Lead, LeadStatus } from "@/types/lead-management";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@radix-ui/react-popover";
+import { LeadEditor } from "./lead-editor";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -35,6 +40,8 @@ export function LeadsTable({
 }: LeadsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [showEditor, setShowEditor] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -46,12 +53,46 @@ export function LeadsTable({
     onStatusFilter(status);
   };
 
+  const handleAddClick = () => {
+    setSelectedLead(null);
+    setShowEditor(true);
+    onAddLead();
+  };
+
+  const handleViewLead = (lead: Lead) => {
+    setSelectedLead(lead);
+    setShowEditor(true);
+    onViewLead(lead);
+  };
+
+  const handleEditorClose = () => {
+    setShowEditor(false);
+    setSelectedLead(null);
+  };
+
+  const handleEditorSave = () => {
+    setShowEditor(false);
+    setSelectedLead(null);
+    // Refresh the leads list
+    onSearch(searchTerm);
+  };
+
   const statuses: LeadStatus[] = [
     "Send",
     "Processing",
     "Estimating",
     "Finished",
   ];
+
+  if (showEditor) {
+    return (
+      <LeadEditor
+        leadId={selectedLead?.id}
+        onBack={handleEditorClose}
+        onSave={handleEditorSave}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
@@ -60,10 +101,10 @@ export function LeadsTable({
         <CardHeader className="flex flex-row items-center justify-between py-6 px-8">
           <div>
             <h2 className="text-xl font-semibold">Add Lead</h2>
-            <p className="text-gray-400">Description</p>
+            <p className="text-gray-400">Create a new lead</p>
           </div>
           <Button
-            onClick={onAddLead}
+            onClick={handleAddClick}
             className="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 p-0"
           >
             <Plus className="h-6 w-6" />
@@ -77,10 +118,10 @@ export function LeadsTable({
           <div className="flex items-center justify-between w-full">
             <div>
               <h2 className="text-xl font-semibold">All Leads</h2>
-              <p className="text-gray-400">Description</p>
+              <p className="text-gray-400">Manage your leads</p>
             </div>
             <div className="flex items-center space-x-4">
-             <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <Popover>
                   <PopoverTrigger>
                     <Filter className="h-5 w-5" />
@@ -94,9 +135,15 @@ export function LeadsTable({
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 text-white">
-                        <SelectItem value="all" className="text-white">All Status</SelectItem>
+                        <SelectItem value="all" className="text-white">
+                          All Status
+                        </SelectItem>
                         {statuses.map((status) => (
-                          <SelectItem key={status} value={status} className="text-white">
+                          <SelectItem
+                            key={status}
+                            value={status}
+                            className="text-white"
+                          >
                             {status}
                           </SelectItem>
                         ))}
@@ -122,7 +169,7 @@ export function LeadsTable({
             <table className="w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Lead ID
                   </th>
                   <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -147,7 +194,7 @@ export function LeadsTable({
                     <LeadTableRow
                       key={lead.id}
                       lead={lead}
-                      onView={onViewLead}
+                      onView={handleViewLead}
                       onDelete={onDeleteLead}
                     />
                   ))}

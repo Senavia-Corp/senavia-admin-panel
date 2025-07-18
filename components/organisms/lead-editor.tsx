@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
@@ -85,10 +85,8 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     setIsLoading(true);
     try {
       if (leadId) {
-        // Update existing lead
         await LeadManagementService.updateLead(leadId, formData);
       } else {
-        // Create new lead
         await LeadManagementService.createLead(formData);
       }
       onSave();
@@ -111,30 +109,22 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "2-digit",
-    });
-  };
-
   return (
-    <div className="h-full w-screen max-w-none px-6">
-      {/* Header with Action Buttons */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
+    <div className="h-full w-full max-w-[1200px] mx-auto px-6">
+      {/* Header */}
+      <div className="flex items-center justify-between py-6">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onBack}
-            className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
+            className="rounded-full bg-gray-900 text-white hover:bg-gray-800"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Lead Editor</h1>
+          <h1 className="text-2xl font-bold">Lead Editor</h1>
         </div>
-        <div className="space-x-2">
+        <div className="flex gap-2">
           <Button
             onClick={handleSave}
             disabled={isLoading}
@@ -154,214 +144,135 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full">
-        {/* Left Column - Lead Information */}
-        <div className="flex-1 bg-white rounded-lg p-8 mr-6 max-w-none">
-          {/* Creation Date */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Creation Date:</span>
-              <span className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
-                {lead && lead.createdAt
-                  ? formatDate(new Date(lead.createdAt))
-                  : formatDate(new Date())}
-              </span>
-            </div>
-          </div>
-
-          {/* Client Information */}
-          <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Client Name
-              </Label>
-              <Input
-                value={formData.clientName}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    clientName: e.target.value,
-                  }))
-                }
-                placeholder="Enter client name..."
-                className="mb-4"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Client Email
-              </Label>
-              <Input
-                value={formData.clientEmail}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    clientEmail: e.target.value,
-                  }))
-                }
-                placeholder="Enter client email..."
-                className="mb-4"
-                type="email"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Client Phone
-              </Label>
-              <Input
-                value={formData.clientPhone}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    clientPhone: e.target.value,
-                  }))
-                }
-                placeholder="Enter client phone..."
-                className="mb-4"
-                type="tel"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Client Address
-              </Label>
-              <Textarea
-                value={formData.clientAddress}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    clientAddress: e.target.value,
-                  }))
-                }
-                placeholder="Enter client address..."
-                rows={3}
-                className="mb-4"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Description
-              </Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder="Enter lead description..."
-                rows={6}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Lead Details */}
-        <div className="w-96 space-y-6 flex-shrink-0">
-          {/* Status */}
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    status: value as LeadStatus,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {themes.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-
-          {/* Assignments */}
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Assignments</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <div className="grid grid-cols-3 gap-6">
+        {/* Left Column - Main Information */}
+        <div className="col-span-2 space-y-6">
+          <Card className="p-6 bg-white">
+            <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Workteam
-                </Label>
-                <Input
-                  value={formData.workteamId}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      workteamId: e.target.value,
-                    }))
-                  }
-                  placeholder="Select workteam..."
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Service
-                </Label>
+                <Label>Service ID</Label>
                 <Input
                   value={formData.serviceId}
                   onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      serviceId: e.target.value,
-                    }))
+                    setFormData({ ...formData, serviceId: e.target.value })
                   }
-                  placeholder="Select service..."
+                  placeholder="Enter service ID"
                 />
               </div>
-
               <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Assigned User
-                </Label>
+                <Label>User ID</Label>
                 <Input
                   value={formData.userId}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, userId: e.target.value }))
+                    setFormData({ ...formData, userId: e.target.value })
                   }
-                  placeholder="Select user..."
+                  placeholder="Enter user ID"
                 />
               </div>
-            </CardContent>
+              <div>
+                <Label>Workteam ID</Label>
+                <Input
+                  value={formData.workteamId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, workteamId: e.target.value })
+                  }
+                  placeholder="Enter workteam ID"
+                />
+              </div>
+              <div>
+                <Label>Client Name</Label>
+                <Input
+                  value={formData.clientName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, clientName: e.target.value })
+                  }
+                  placeholder="Enter client name"
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Enter description"
+                  className="min-h-[100px]"
+                />
+              </div>
+            </div>
           </Card>
+        </div>
 
-          {/* Estimated Start Date */}
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Estimated Start Date</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Input
-                type="date"
-                value={formData.estimatedStartDate}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    estimatedStartDate: e.target.value,
-                  }))
-                }
-              />
-            </CardContent>
+        {/* Right Column - Additional Information */}
+        <div className="space-y-6">
+          <Card className="p-6 bg-white">
+            <div className="space-y-4">
+              <div>
+                <Label>Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, status: value as LeadStatus })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {themes.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Estimated Start Date</Label>
+                <Input
+                  type="date"
+                  value={formData.estimatedStartDate}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      estimatedStartDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Client Email</Label>
+                <Input
+                  type="email"
+                  value={formData.clientEmail}
+                  onChange={(e) =>
+                    setFormData({ ...formData, clientEmail: e.target.value })
+                  }
+                  placeholder="Enter client email"
+                />
+              </div>
+              <div>
+                <Label>Client Phone</Label>
+                <Input
+                  value={formData.clientPhone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, clientPhone: e.target.value })
+                  }
+                  placeholder="Enter client phone"
+                />
+              </div>
+              <div>
+                <Label>Client Address</Label>
+                <Textarea
+                  value={formData.clientAddress}
+                  onChange={(e) =>
+                    setFormData({ ...formData, clientAddress: e.target.value })
+                  }
+                  placeholder="Enter client address"
+                />
+              </div>
+            </div>
           </Card>
         </div>
       </div>
