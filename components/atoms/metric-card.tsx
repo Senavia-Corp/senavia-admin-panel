@@ -12,7 +12,7 @@ interface MetricCardProps {
 export function MetricCard({ title, value, percentageChange, variant = "default", className }: MetricCardProps) {
   const variantStyles = {
     default: "bg-gray-100",
-    success: "bg-green-500 text-white",
+    success: "bg-[#A9D941] text-blacck",
     warning: "bg-yellow-500 text-white",
     info: "bg-blue-500 text-white",
   }
