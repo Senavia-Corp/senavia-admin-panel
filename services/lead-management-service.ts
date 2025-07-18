@@ -7,6 +7,14 @@ const mockLeads: Lead[] = [
     clientName: "Acme Corporation",
     startDate: "MM/DD/AA ",
     status: "Processing",
+    workteamId: "0001",
+    serviceId: "0001",
+    userId: "0001",
+    clientEmail: "acme@example.com",
+    clientPhone: "1234567890",
+    clientAddress: "123 Main St, Anytown, USA",
+    estimatedStartDate: "MM/DD/AA",
+    description: "This is a test description",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -15,6 +23,12 @@ const mockLeads: Lead[] = [
     clientName: "Tech Solutions Inc",
     startDate: "MM/DD/AA ",
     status: "Estimating",
+    workteamId: "0001",
+    serviceId: "0001",
+    userId: "0001",
+    clientEmail: "tech@example.com",
+    clientPhone: "1234567890",
+    clientAddress: "123 Main St, Anytown, USA",
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
   },
@@ -23,6 +37,12 @@ const mockLeads: Lead[] = [
     clientName: "StartupXYZ",
     startDate: "MM/DD/AA ",
     status: "Finished",
+    workteamId: "0001",
+    serviceId: "0001",
+    userId: "0001",
+    clientEmail: "startup@example.com",
+    clientPhone: "1234567890",
+    clientAddress: "123 Main St, Anytown, USA",
     createdAt: new Date("2024-01-12"),
     updatedAt: new Date("2024-01-19"),
   },
@@ -31,6 +51,12 @@ const mockLeads: Lead[] = [
     clientName: "Local Business",
     startDate: "MM/DD/AA ",
     status: "Send",
+    workteamId: "0001",
+    serviceId: "0001",
+    userId: "0001",
+    clientEmail: "local@example.com",
+    clientPhone: "1234567890",
+    clientAddress: "123 Main St, Anytown, USA",
     createdAt: new Date("2024-01-08"),
     updatedAt: new Date("2024-01-16"),
   },
@@ -39,6 +65,12 @@ const mockLeads: Lead[] = [
     clientName: "Global Enterprise",
     startDate: "MM/DD/AA ",
     status: "Processing",
+    workteamId: "0001",
+    serviceId: "0001",
+    userId: "0001",
+    clientEmail: "global@example.com",
+    clientPhone: "1234567890",
+    clientAddress: "123 Main St, Anytown, USA",
     createdAt: new Date("2024-01-14"),
     updatedAt: new Date("2024-01-21"),
   },
@@ -76,6 +108,14 @@ export class LeadManagementService {
     const newLead: Lead = {
       id: (mockLeads.length + 1).toString().padStart(4, "0"),
       clientName: leadData.clientName,
+      clientEmail: leadData.clientEmail,
+      clientPhone: leadData.clientPhone,
+      clientAddress: leadData.clientAddress,
+      estimatedStartDate: leadData.estimatedStartDate,
+      description: leadData.description,
+      workteamId: leadData.workteamId,
+      serviceId: leadData.serviceId,
+      userId: leadData.userId,
       startDate: leadData.startDate,
       status: leadData.status,
       createdAt: new Date(),
@@ -86,17 +126,11 @@ export class LeadManagementService {
     return newLead;
   }
 
-  static async updateLead(
-    id: string,
-    updates: Partial<Lead>
-  ): Promise<Lead | null> {
+  static async updateLead(id: string,updates: Partial<Lead>): Promise<Lead | null> {
     const leadIndex = mockLeads.findIndex((lead) => lead.id === id);
     if (leadIndex === -1) return null;
 
-    mockLeads[leadIndex] = {
-      ...mockLeads[leadIndex],
-      ...updates,
-      updatedAt: new Date(),
+    mockLeads[leadIndex] = {...mockLeads[leadIndex],...updates,updatedAt: new Date(),
     };
     return mockLeads[leadIndex];
   }

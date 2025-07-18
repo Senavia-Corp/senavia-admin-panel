@@ -15,11 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LeadManagementService } from "@/services/lead-management-service";
-import type {
-  Lead,
-  CreateLeadData,
-  LeadStatus,
-} from "@/types/lead-management";
+import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
 
 interface LeadFormDialogProps {
   open: boolean;
@@ -39,7 +35,14 @@ export function LeadFormDialog({
   const [formData, setFormData] = useState<CreateLeadData>({
     clientName: "",
     status: "Send" as LeadStatus,
-    startDate: "",
+    workteamId: "",
+    serviceId: "",
+    userId: "",
+    clientEmail: "",
+    clientPhone: "",
+    clientAddress: "",
+    estimatedStartDate: "",
+    description: "",
   });
 
   useEffect(() => {
@@ -47,13 +50,27 @@ export function LeadFormDialog({
       setFormData({
         clientName: lead.clientName || "",
         status: lead.status,
-        startDate: lead.startDate,
+        workteamId: lead.workteamId,
+        serviceId: lead.serviceId,
+        userId: lead.userId,
+        clientEmail: lead.clientEmail,
+        clientPhone: lead.clientPhone,
+        clientAddress: lead.clientAddress,
+        estimatedStartDate: lead.estimatedStartDate,
+        description: lead.description,
       });
     } else {
       setFormData({
         clientName: "",
         status: "Send" as LeadStatus,
-        startDate: "",
+        workteamId: "",
+        serviceId: "",
+        userId: "",
+        clientEmail: "",
+        clientPhone: "",
+        clientAddress: "",
+        estimatedStartDate: "",
+        description: "",
       });
     }
   }, [lead, mode]);
@@ -75,6 +92,48 @@ export function LeadFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="customerName" className="text-sm font-medium">
+              ServiceId
+            </label>
+            <Input
+              id="serviceId"
+              value={formData.serviceId}
+              onChange={(e) =>
+                setFormData({ ...formData, serviceId: e.target.value })
+              }
+              placeholder="Enter id the lead"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              UserId
+            </label>
+            <Input
+              id="userId"
+              value={formData.userId}
+              onChange={(e) =>
+                setFormData({ ...formData, userId: e.target.value })
+              }
+              placeholder="Enter id the user"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              WorkteamId
+            </label>
+            <Input
+              id="workteamId"
+              value={formData.workteamId}
+              onChange={(e) =>
+                setFormData({ ...formData, workteamId: e.target.value })
+              }
+              placeholder="Enter id the WorkTeamId"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
               Client Name
             </label>
             <Input
@@ -84,6 +143,76 @@ export function LeadFormDialog({
                 setFormData({ ...formData, clientName: e.target.value })
               }
               placeholder="Enter client name"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              Estimate Start Date
+            </label>
+            <Input
+              id="estimatestartDate"
+              value={formData.estimatedStartDate}
+              onChange={(e) =>
+                setFormData({ ...formData, estimatedStartDate: e.target.value })
+              }
+              placeholder="MM/DD/AA"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              Client Email
+            </label>
+            <Input
+              id="clientEmail"
+              value={formData.clientEmail}
+              onChange={(e) =>
+                setFormData({ ...formData, clientEmail: e.target.value })
+              }
+              placeholder="Enter client email"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              Client Phone
+            </label>
+            <Input
+              id="clientPhone"
+              value={formData.clientPhone}
+              onChange={(e) =>
+                setFormData({ ...formData, clientPhone: e.target.value })
+              }
+              placeholder="Enter Client Phone"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              Client Address
+            </label>
+            <Input
+              id="clientAddress"
+              value={formData.clientAddress}
+              onChange={(e) =>
+                setFormData({ ...formData, clientAddress: e.target.value })
+              }
+              placeholder="Enter client address"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="customerName" className="text-sm font-medium">
+              Description
+            </label>
+            <Input
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Enter description"
               required
             />
           </div>
