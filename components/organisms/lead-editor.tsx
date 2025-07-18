@@ -12,10 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
-import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
 
 interface LeadEditorProps {
@@ -39,7 +37,6 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     clientAddress: "",
     estimatedStartDate: "",
   });
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -97,193 +94,182 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (leadId) {
-      try {
-        await LeadManagementService.deleteLead(leadId);
-        setShowDeleteDialog(false);
-        onBack();
-      } catch (error) {
-        console.error("Error deleting lead:", error);
-      }
-    }
-  };
-
   return (
-    <div className="h-full w-full max-w-[1200px] mx-auto px-6">
+    <div className="h-full w-screen max-w-none px-6">
       {/* Header */}
-      <div className="flex items-center justify-between py-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="rounded-full bg-gray-900 text-white hover:bg-gray-800"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Lead Editor</h1>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          >
-            {isLoading ? "Saving..." : leadId ? "Update Lead" : "Create Lead"}
-          </Button>
-          {leadId && (
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="destructive"
-            >
-              Delete Lead
-            </Button>
-          )}
-        </div>
+      <div className="flex items-center space-x-4 mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left Column - Main Information */}
-        <div className="col-span-2 space-y-6">
-          <Card className="p-6 bg-white">
-            <div className="space-y-4">
+      <div className="bg-gray-900 rounded-lg p-6">
+        <div className="bg-white rounded-lg p-8">
+          <div className="space-y-6">
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Lead ID
+              </Label>
+              <Input
+                value={leadId || "0000"}
+                disabled
+                placeholder="0000"
+                className="mt-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label>Service ID</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Service ID
+                </Label>
                 <Input
                   value={formData.serviceId}
                   onChange={(e) =>
                     setFormData({ ...formData, serviceId: e.target.value })
                   }
-                  placeholder="Enter service ID"
+                  placeholder="0000"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>User ID</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  User ID
+                </Label>
                 <Input
                   value={formData.userId}
                   onChange={(e) =>
                     setFormData({ ...formData, userId: e.target.value })
                   }
-                  placeholder="Enter user ID"
+                  placeholder="0000"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>Workteam ID</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Workteam ID
+                </Label>
                 <Input
                   value={formData.workteamId}
                   onChange={(e) =>
                     setFormData({ ...formData, workteamId: e.target.value })
                   }
-                  placeholder="Enter workteam ID"
+                  placeholder="0000"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>Client Name</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Client Name
+                </Label>
                 <Input
                   value={formData.clientName}
                   onChange={(e) =>
                     setFormData({ ...formData, clientName: e.target.value })
                   }
-                  placeholder="Enter client name"
+                  placeholder="Client Name"
+                  className="mt-1"
                 />
               </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Enter description"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </div>
-          </Card>
-        </div>
 
-        {/* Right Column - Additional Information */}
-        <div className="space-y-6">
-          <Card className="p-6 bg-white">
-            <div className="space-y-4">
               <div>
-                <Label>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value as LeadStatus })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Estimated Start Date</Label>
-                <Input
-                  type="date"
-                  value={formData.estimatedStartDate}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      estimatedStartDate: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Client Email</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Client E-mail
+                </Label>
                 <Input
                   type="email"
                   value={formData.clientEmail}
                   onChange={(e) =>
                     setFormData({ ...formData, clientEmail: e.target.value })
                   }
-                  placeholder="Enter client email"
+                  placeholder="e-mail@client.com"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>Client Phone</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Client Phone
+                </Label>
                 <Input
                   value={formData.clientPhone}
                   onChange={(e) =>
                     setFormData({ ...formData, clientPhone: e.target.value })
                   }
-                  placeholder="Enter client phone"
+                  placeholder="000-000-0000"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>Client Address</Label>
-                <Textarea
+                <Label className="text-sm font-medium text-gray-700">
+                  Client Address
+                </Label>
+                <Input
                   value={formData.clientAddress}
                   onChange={(e) =>
                     setFormData({ ...formData, clientAddress: e.target.value })
                   }
-                  placeholder="Enter client address"
+                  placeholder="Client Address"
+                  className="mt-1"
                 />
               </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Estimated Time
+                </Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    type="date"
+                    value={formData.estimatedStartDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        estimatedStartDate: e.target.value,
+                      })
+                    }
+                    placeholder="dd/mm/aaaa"
+                  />
+                  <span className="px-2">-</span>
+                  <Input type="date" placeholder="dd/mm/aaaa" />
+                </div>
+              </div>
             </div>
-          </Card>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Description
+              </Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Enter description"
+                className="mt-1 min-h-[100px]"
+              />
+            </div>
+
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
+            >
+              {isLoading ? "Saving..." : leadId ? "Update User" : "Add User"}
+            </Button>
+          </div>
         </div>
       </div>
-
-      <DeleteConfirmDialog
-        open={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleDelete}
-        title="Delete Lead"
-        description={`Are you sure you want to delete this lead for "${formData.clientName}"? This action cannot be undone.`}
-      />
     </div>
   );
 }
