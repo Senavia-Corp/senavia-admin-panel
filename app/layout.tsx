@@ -14,7 +14,7 @@ export default function RootLayout({
         <SidebarProvider>
           <div className="flex min-h-screen bg-gray-50 w-full min-h-0">
             <AppSidebar />
-            <SidebarInset className="flex-1 w-full min-h-0 flex flex-col">
+            <SidebarInset className="flex-1 min-w-0 min-h-0 flex flex-col">
               {children}
             </SidebarInset>
           </div>

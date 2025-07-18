@@ -6,7 +6,7 @@ import type {
   TimeFilter,
   CalendarEvent,
   WeeklyActivity,
-} from "@/types/dashboard"
+} from "@/types/dashboard";
 
 // Mock data for demonstration
 const mockLeads: Lead[] = [
@@ -26,7 +26,39 @@ const mockLeads: Lead[] = [
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
   },
-]
+  {
+    id: "3",
+    name: "E-commerce Platform",
+    clientName: "Tech Solutions",
+    status: "Estimating",
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-18"),
+  },
+  {
+    id: "4",
+    name: "E-commerce Platform",
+    clientName: "Tech Solutions",
+    status: "Estimating",
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-18"),
+  },
+  {
+    id: "5",
+    name: "E-commerce Platform",
+    clientName: "Tech Solutions",
+    status: "Estimating",
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-18"),
+  },
+  {
+    id: "6",
+    name: "E-commerce Platform",
+    clientName: "Tech Solutions",
+    status: "Estimating",
+    createdAt: new Date("2024-01-10"),
+    updatedAt: new Date("2024-01-18"),
+  },
+];
 
 const mockBills: Bill[] = [
   {
@@ -47,7 +79,43 @@ const mockBills: Bill[] = [
     dueDate: new Date("2024-02-20"),
     createdAt: new Date("2024-01-10"),
   },
-]
+  {
+    id: "3",
+    name: "SEO Campaign",
+    serviceType: "Digital Marketing",
+    status: "InReview",
+    amount: 2500,
+    dueDate: new Date("2024-02-20"),
+    createdAt: new Date("2024-01-10"),
+  },
+  {
+    id: "4",
+    name: "SEO Campaign",
+    serviceType: "Digital Marketing",
+    status: "InReview",
+    amount: 2500,
+    dueDate: new Date("2024-02-20"),
+    createdAt: new Date("2024-01-10"),
+  },
+  {
+    id: "5",
+    name: "SEO Campaign",
+    serviceType: "Digital Marketing",
+    status: "InReview",
+    amount: 2500,
+    dueDate: new Date("2024-02-20"),
+    createdAt: new Date("2024-01-10"),
+  },
+  {
+    id: "6",
+    name: "SEO Campaign",
+    serviceType: "Digital Marketing",
+    status: "InReview",
+    amount: 2500,
+    dueDate: new Date("2024-02-20"),
+    createdAt: new Date("2024-01-10"),
+  },
+];
 
 const mockProjects: Project[] = [
   {
@@ -64,7 +132,7 @@ const mockProjects: Project[] = [
     createdAt: new Date("2024-01-15"),
     dueDate: new Date("2024-04-01"),
   },
-]
+];
 
 export class DashboardService {
   static async getMetrics(timeFilter: TimeFilter): Promise<DashboardMetrics> {
@@ -90,19 +158,19 @@ export class DashboardService {
         deploy: 2,
         percentageChange: 15.2,
       },
-    }
+    };
   }
 
   static async getRecentLeads(limit = 6): Promise<Lead[]> {
-    return mockLeads.slice(0, limit)
+    return mockLeads.slice(0, limit);
   }
 
   static async getRecentBills(limit = 6): Promise<Bill[]> {
-    return mockBills.slice(0, limit)
+    return mockBills.slice(0, limit);
   }
 
   static async getRecentProjects(limit = 6): Promise<Project[]> {
-    return mockProjects.slice(0, limit)
+    return mockProjects.slice(0, limit);
   }
 
   static async getCalendarEvents(): Promise<CalendarEvent[]> {
@@ -121,7 +189,7 @@ export class DashboardService {
         time: "10am",
         type: "review",
       },
-    ]
+    ];
   }
 
   static async getWeeklyActivities(): Promise<WeeklyActivity[]> {
@@ -132,6 +200,6 @@ export class DashboardService {
         date: new Date("2024-01-24"),
         duration: 4,
       },
-    ]
+    ];
   }
 }
