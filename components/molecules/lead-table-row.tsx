@@ -18,7 +18,7 @@ export function LeadTableRow({ lead, onView, onDelete }: LeadTableRowProps) {
         {lead.clientName}
       </td>
       <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">
-        {lead.startDate}
+        {lead.estimatedStartDate}
       </td>
       <td className="w-1/4 px-6 py-4">
         <StatusBadge status={lead.status} />
