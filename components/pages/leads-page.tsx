@@ -3,23 +3,17 @@
 import { useState, useEffect } from "react";
 import { LeadsTable } from "@/components/organisms/leads-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-// import { LeadFormDialog } from "@/components/organisms/lead-form-dialog";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Bell } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
-import type { Lead, CreateLeadData } from "@/types/lead-management";
+import type { Lead } from "@/types/lead-management";
 import { toast } from "@/components/ui/use-toast";
 
 export function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
-  const [leadToEdit, setLeadToEdit] = useState<Lead | undefined>(
-    undefined
-  );
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -58,48 +52,6 @@ export function LeadsPage() {
       toast({
         title: "Error",
         description: "Failed to delete lead. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleViewLead = (lead: Lead) => {
-    setLeadToEdit(lead);
-    setFormMode("edit");
-    setIsFormOpen(true);
-  };
-
-  const handleCreateLead = () => {
-    setLeadToEdit(undefined);
-    setFormMode("create");
-    setIsFormOpen(true);
-  };
-
-  const handleFormSubmit = async (data: CreateLeadData) => {
-    try {
-      if (formMode === "create") {
-        await LeadManagementService.createLead(data);
-        toast({
-          title: "Success",
-          description: "Lead created successfully",
-        });
-      } else if (formMode === "edit" && leadToEdit) {
-        await LeadManagementService.updateLead(leadToEdit.id, {
-          clientName: data.clientName,
-          status: data.status,
-        });
-        toast({
-          title: "Success",
-          description: "Lead updated successfully",
-        });
-      }
-      loadLeads();
-      setIsFormOpen(false);
-    } catch (error) {
-      console.error("Error saving lead:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save lead. Please try again.",
         variant: "destructive",
       });
     }
@@ -146,8 +98,8 @@ export function LeadsPage() {
             <div className="flex-1 min-h-0">
               <LeadsTable
                 leads={leads}
-                onAddLead={handleCreateLead}
-                onViewLead={handleViewLead}
+                onAddLead={() => loadLeads()}
+                onViewLead={() => loadLeads()}
                 onDeleteLead={setLeadToDelete}
                 onSearch={setSearchTerm}
                 onStatusFilter={setStatusFilter}
@@ -164,14 +116,6 @@ export function LeadsPage() {
         title="Delete Lead"
         description={`Are you sure you want to delete the lead for "${leadToDelete?.clientName}"? This action cannot be undone.`}
       />
-
-      {/* <LeadFormDialog
-        open={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSubmit={handleFormSubmit}
-        lead={leadToEdit}
-        mode={formMode}
-      /> */}
     </div>
   );
 }

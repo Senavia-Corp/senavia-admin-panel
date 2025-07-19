@@ -75,6 +75,7 @@ export function LeadsTable({
     setSelectedLead(null);
     // Refresh the leads list
     onSearch(searchTerm);
+    onStatusFilter(selectedStatus);
   };
 
   const statuses: LeadStatus[] = [

@@ -126,13 +126,24 @@ export class LeadManagementService {
     return newLead;
   }
 
-  static async updateLead(id: string,updates: Partial<Lead>): Promise<Lead | null> {
+  static async updateLead(
+    id: string,
+    updates: Partial<Lead>
+  ): Promise<Lead | null> {
     const leadIndex = mockLeads.findIndex((lead) => lead.id === id);
     if (leadIndex === -1) return null;
 
-    mockLeads[leadIndex] = {...mockLeads[leadIndex],...updates,updatedAt: new Date(),
+    // Create a new lead object with the updates
+    const updatedLead: Lead = {
+      ...mockLeads[leadIndex],
+      ...updates,
+      updatedAt: new Date(),
     };
-    return mockLeads[leadIndex];
+
+    // Replace the old lead with the updated one
+    mockLeads[leadIndex] = updatedLead;
+
+    return updatedLead;
   }
 
   static async deleteLead(id: string): Promise<boolean> {

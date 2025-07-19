@@ -82,7 +82,21 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     setIsLoading(true);
     try {
       if (leadId) {
-        await LeadManagementService.updateLead(leadId, formData);
+        // Convert formData to match the Lead type for update
+        const updateData = {
+          clientName: formData.clientName,
+          status: formData.status,
+          workteamId: formData.workteamId,
+          serviceId: formData.serviceId,
+          userId: formData.userId,
+          description: formData.description,
+          clientEmail: formData.clientEmail,
+          clientPhone: formData.clientPhone,
+          clientAddress: formData.clientAddress,
+          estimatedStartDate: formData.estimatedStartDate,
+          startDate: formData.estimatedStartDate, // Using estimatedStartDate as startDate
+        };
+        await LeadManagementService.updateLead(leadId, updateData);
       } else {
         await LeadManagementService.createLead(formData);
       }
@@ -226,6 +240,29 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
+                  Status
+                </Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, status: value as LeadStatus })
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {themes.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
                   Estimated Time
                 </Label>
                 <div className="flex items-center gap-2 mt-1">
@@ -265,7 +302,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
               disabled={isLoading}
               className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
             >
-              {isLoading ? "Saving..." : leadId ? "Update User" : "Add User"}
+              {isLoading ? "Saving..." : leadId ? "Update Lead" : "Create Lead"}
             </Button>
           </div>
         </div>
