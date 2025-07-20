@@ -101,7 +101,7 @@ export function PermissionsPage() {
   }
   // Show permissions table
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className="md:flex-1 flex flex-col md:h-screen md:overflow-hidden">
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <div className="p-6 h-full w-full">

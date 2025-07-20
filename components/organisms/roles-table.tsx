@@ -109,35 +109,33 @@ export function RolesTable({
                 <Input
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 w-80 bg-white border-gray-700 text-black rounded-md"
+                  className="pl-10 xl:w-80 bg-white border-gray-700 text-black rounded-md"
                 />
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
-          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
-            <table className="w-full table-fixed">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
-                    Team ID
-                  </th>
-                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
-                    Role Name
-                  </th>
-                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
-                    Active
-                  </th>
-                  <th className="font-semibold text-2xl w-1/4 p-5 text-center text-[#616774]">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-            </table>
-            <div className="flex-1 overflow-auto mt-[10px]">
-              <table className="w-full table-fixed">
-                <tbody className="bg-white divide-y-[10px]  divide-white">
+          <div className="bg-white rounded-lg overflow-auto flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
+
+              <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
+                <thead className="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Team ID
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Role Name
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Active
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
                   {roles.map((role) => (
                     <RoleTableRow
                       key={role.id}
@@ -148,7 +146,7 @@ export function RolesTable({
                   ))}
                 </tbody>
               </table>
-            </div>
+
           </div>
         </CardContent>
       </Card>
