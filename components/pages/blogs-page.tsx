@@ -11,7 +11,7 @@ import { Bell } from "lucide-react"
 import { BlogManagementService } from "@/services/blog-management-service"
 import type { Blog, BlogTheme } from "@/types/blog-management"
 import { BlogEditor } from "@/components/organisms/blog-editor"
-
+ 
 export function BlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [themes, setThemes] = useState<BlogTheme[]>([])
@@ -97,7 +97,7 @@ export function BlogsPage() {
         <main className="flex-1 overflow-hidden">
           <div className="p-6 h-full">
             <BlogEditor
-              blogId={editingBlogId}
+            /*  blogId={editingBlogId}*/
               onBack={() => setShowEditor(false)}
               onSave={() => {
                 setShowEditor(false)

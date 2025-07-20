@@ -9,6 +9,11 @@ const mockThemes: BlogTheme[] = [
   { id: "5", name: "Development", color: "#EF4444" },
 ]
 
+const topics=[
+  {name:"WEBDESIGN"},
+  {name:"DIGITALMARKETING"}
+]
+
 const mockBlogs: Blog[] = [
   {
     id: "0001",
