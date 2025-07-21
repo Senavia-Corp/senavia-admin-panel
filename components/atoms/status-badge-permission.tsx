@@ -7,8 +7,8 @@ interface StatusBadgePermissionProps {
 export function StatusBadgePermission({ status }: StatusBadgePermissionProps) {
   return (
     <Badge
-      className={`font-medium px-3 py-1 rounded-full text-white ${
-        status === "Active" ? "bg-green-500" : "bg-gray-500"
+      className={`font-bold justify-center text-base w-auto lg:w-36 py-1 rounded-full text-white ${
+        status === "Active" ? "bg-[#99CC33]" : "bg-gray-500"
       }`}
     >
       {status}

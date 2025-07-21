@@ -12,21 +12,20 @@ interface PermissionTableRowProps {
 
 export function PermissionTableRow({ permission, onView, onDelete }: PermissionTableRowProps) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-32 px-6 py-4 text-sm text-gray-900 truncate">{permission.id}</td>
-      <td className="flex-1 px-6 py-4 text-sm text-gray-900 truncate">{permission.name}</td>
-      <td className="w-32 px-6 py-4 text-sm text-gray-900">{permission.action}</td>
-      <td className="w-32 px-6 py-4">
+    <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">{permission.id}</td>
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">{permission.name}</td>
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] text-center">{permission.action}</td>
+      <td className="w-1/6 p-5 text-center">
         <StatusBadgePermission status={permission.status} />
       </td>
-      <td className="w-48 px-6 py-4 text-sm text-gray-900 truncate">{permission.associatedService}</td>
-      <td className="w-32 px-6 py-4">
-        <div className="flex space-x-2">
-          <ActionButton type="view" onClick={() => onView(permission)} className="text-gray-700 hover:text-gray-900" />
+      <td className="w-1/4 p-5 text-base font-light text-[#04081E] truncate text-center">{permission.associatedService}</td>
+      <td className="w-1/6 p-5 text-center">
+        <div className="flex justify-center space-x-2">
+          <ActionButton type="view" onClick={() => onView(permission)} />
           <ActionButton
             type="delete"
             onClick={() => onDelete(permission)}
-            className="text-gray-700 hover:text-gray-900"
           />
         </div>
       </td>
