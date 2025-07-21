@@ -10,7 +10,7 @@ export function StatusBadge({ status, variant = "secondary" }: StatusBadgeProps)
     switch (status.toLowerCase()) {
       case "processing":
       case "development":
-        return "bg-blue-500 text-white"
+        return "bg-[#32D9C8] text-white"
       case "estimating":
       case "design":
         return "bg-yellow-500 text-white"

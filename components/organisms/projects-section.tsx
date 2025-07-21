@@ -55,28 +55,28 @@ export function ProjectsSection({ metrics, recentProjects, weeklyActivities }: P
             value={metrics.analysis}
             percentageChange={0}
             variant="default"
-            className="bg-[#33CCCC] text-white"
+            className="bg-[#A9D943] text-black"
           />
           <MetricCard
             title="Design Phase"
             value={metrics.design}
             percentageChange={0}
             variant="default"
-            className="bg-[#33CCCC] text-white"
+            className="bg-[#A9D943] text-black"
           />
           <MetricCard
             title="Development Phase"
             value={metrics.development}
             percentageChange={0}
             variant="default"
-            className="bg-[#33CCCC] text-white"
+            className="bg-[#A9D943] text-black"
           />
           <MetricCard
             title="Deploy Phase"
             value={metrics.deploy}
             percentageChange={0}
             variant="default"
-            className="bg-[#33CCCC] text-white"
+            className="bg-[#A9D943] text-black"
           />
         </div>
       </div>
