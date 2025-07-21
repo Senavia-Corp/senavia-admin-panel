@@ -33,10 +33,6 @@ export const BlogViewModel = ({
         endpoints.blog.getPosts,
         "get"
       );
-
-      console.log("✅ Response:", response);
-      console.log("📦 Status:", status);
-      console.log("❌ Error logs:", errorLogs);
     };
 
     getBlogs();
@@ -57,15 +53,17 @@ export const BlogViewModel = ({
       if (offset) params.append("offset", offset.toString());
       if (simpleBlog && simpleBlogsPerPage)
         params.append("simpleBlogsPerPage", simpleBlogsPerPage.toString());
-      const url = `${endpoints.blog.getPosts}${params.toString() ? `?${params.toString()}` : ""}`;
-      console.log("hola mundo");
+      //const url = `${endpoints.blog.getPosts}${params.toString() ? `?${params.toString()}` : ""}`;
+      const  url = "http://localhost:3000/api/blog"
+
+      
       if (simpleBlog) {
-        console.log("simpleblog existe");
+        
         const { response, status, errorLogs } = await fetchData<SimpleBlogApiResponse>(url, "get");
         if (status === 200 && response && response.success) {
-          console.log("✅ Exito");
+        
           setPosts(response.data);
-           console.log("✅ Posts recibidos:", response.data);
+        
           setPageInfo(response.page);
         } else {
           const errorMessage =
@@ -77,7 +75,7 @@ export const BlogViewModel = ({
           setPageInfo(null);
         }
       } else {
-        console.log("✅ no existe simpleblog");
+        
         const { response, status, errorLogs } = await fetchData<ApiResponse<Blog>>(url, "get");
         if (status === 200 && response && response.success) {
           setPosts(response.data);
