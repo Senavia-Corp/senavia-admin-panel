@@ -177,24 +177,24 @@ export function PermissionsTable({
         <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
           <div className="bg-white rounded-lg flex-1 overflow-auto flex flex-col w-full min-h-0 p-0 lg:p-5">
             <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
-              <thead className="bg-[#E5E8F0] sticky top-0 z-10">
+              <thead className="bg-[#E1E4ED] sticky top-0 z-10 text-base lg:text-2xl">
                 <tr>
-                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/6 p-5 text-center text-[#616774]">
                     Permission ID
                   </th>
-                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/6 p-5 text-center text-[#616774]">
                     Name
                   </th>
-                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/6 p-5 text-center text-[#616774]">
                     Action
                   </th>
-                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/6 p-5 text-center text-[#616774]">
                     Status
                   </th>
-                  <th className="font-semibold text-base lg:text-xl w-1/4 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/4 p-5 text-center text-[#616774]">
                     Associated To
                   </th>
-                  <th className="font-semibold text-base lg:text-xl w-1/6 p-5 text-center text-[#616774]">
+                  <th className="font-semibold  w-1/6 p-5 text-center text-[#616774]">
                     Actions
                   </th>
                 </tr>

@@ -10,6 +10,7 @@ import { Bell } from "lucide-react"
 import { RoleManagementService } from "@/services/role-management-service"
 import type { Role } from "@/types/role-management"
 import { RoleDetailForm } from "@/components/organisms/role-detail-form"
+import { GeneralTable } from "@/components/organisms/tables/general-table"
 
 export function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([])
@@ -89,18 +90,11 @@ export function RolesPage() {
             </div>
 
             <div className="flex-1 min-h-0">
-              <RolesTable
-                roles={roles}
-                onAddRole={handleCreateRole}
-                onViewRole={handleViewRole}
-                onDeleteRole={setRoleToDelete}
-                onSearch={setSearchTerm}
-                onStatusFilter={setStatusFilter}
-              />
+              {GeneralTable("Add Role","Description","All Roles","Description",["Team ID","Role Name","Active","Actions"])}
             </div>
           </div>
         </div>
-      </main>
+      </main> 
 
       <DeleteConfirmDialog
         open={!!roleToDelete}
