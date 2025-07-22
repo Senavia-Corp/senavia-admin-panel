@@ -1,12 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { RolesTable } from "@/components/organisms/roles-table"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import { Button } from "@/components/ui/button"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Bell } from "lucide-react"
 import { RoleManagementService } from "@/services/role-management-service"
 import type { Role } from "@/types/role-management"
 import { RoleDetailForm } from "@/components/organisms/role-detail-form"
@@ -65,6 +60,16 @@ export function RolesPage() {
     loadRoles()
   }
 
+  
+
+  const handlers = {
+    onCreate: handleCreateRole,
+    onView: handleViewRole,
+    onDelete: (role: Role) => setRoleToDelete(role),
+    onSearch: setSearchTerm,
+    onFilter: setStatusFilter,
+  }
+
   // Show detail form for editing existing role or creating new role
   if (showDetailForm) {
     return (
@@ -90,7 +95,16 @@ export function RolesPage() {
             </div>
 
             <div className="flex-1 min-h-0">
-              {GeneralTable("Add Role","Description","All Roles","Description",["Team ID","Role Name","Active","Actions"])}
+              {GeneralTable(
+                "roles-page",
+                "Add Role",
+                "Description",
+                "All Roles",
+                "Description",
+                ["Team ID", "Role Name", "Active", "Actions"],
+                roles,
+                handlers
+              )}
             </div>
           </div>
         </div>

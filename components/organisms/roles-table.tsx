@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RoleTableRow } from "@/components/molecules/role-table-row";
+import { RoleTableRow } from "@/components/organisms/tables/row/role-table-row";
 import { Plus, Search, Filter } from "lucide-react";
 import type { Role } from "@/types/role-management";
 
