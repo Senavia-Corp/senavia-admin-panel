@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { UsersTable } from "@/components/organisms/users-table";
-import { NewUserDetailTabs } from "@/components/organisms/new-user-detail-tabs";
+import { DetailTabs } from "../molecules/detail-tabs";
 
 import { CreateUserDialog } from "@/components/organisms/create-user-dialog";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
@@ -61,77 +61,21 @@ export function UsersPage() {
 
   if (selectedUser) {
     return (
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <div className="flex items-center space-x-2">
-                <img
-                  src="/images/senavia-logo.png"
-                  alt="Senavia Logo"
-                  className="w-8 h-8 object-contain"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm">U</span>
-                </div>
-                <span className="text-sm font-medium">Username</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content - Full Screen */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 h-full w-full ">
-            <NewUserDetailTabs onBack={() => setSelectedUser(null)}>
-              <DashboardPage />
-            </NewUserDetailTabs>
-          </div>
-        </main>
+      <div className="min-h-screen w-full bg-white">
+        <div className="p-6">
+          <DetailTabs
+            title="User Information"
+            onBack={() => setSelectedUser(null)}
+          >
+            <DashboardPage />
+          </DetailTabs>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center space-x-2">
-              <img
-                src="/images/senavia-logo.png"
-                alt="Senavia Logo"
-                className="w-8 h-8 object-contain"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm">U</span>
-              </div>
-              <span className="text-sm font-medium">Username</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">

@@ -5,15 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-interface NewUserDetailTabsProps {
+interface DetailTabsProps {
   onBack: () => void;
   children: React.ReactNode;
+  title: string;
 }
 
-export function NewUserDetailTabs({
-  onBack,
-  children,
-}: NewUserDetailTabsProps) {
+export function DetailTabs({ onBack, children, title }: DetailTabsProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -26,7 +24,7 @@ export function NewUserDetailTabs({
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">User Information</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
       </div>
       {/* Content Area */}
       <div className="flex-1 flex flex-col">{children}</div>
