@@ -135,9 +135,8 @@ export function DashboardPage() {
 
       {/* Main Content */}
       <main
-        className={`flex-1 overflow-auto transition-all duration-200 ${
-          isCalendarOpen ? "mr-80" : "mr-0"
-        }`}
+        className={`flex-1 overflow-auto
+           transition-all duration-200 ${isCalendarOpen ? "mr-80" : "mr-0"}`}
       >
         <div className="p-6 space-y-6 max-w-full">
           {/* Controls */}
