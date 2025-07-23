@@ -18,7 +18,9 @@ import type { Blog, BlogTheme } from "@/types/blog-management";
 import { useFetch } from "@/lib/services/endpoints";
 import { endpoints } from "@/lib/services/endpoints";
 import BlogViewModel from "../pages/blog/BlogViewModel";
- import { useEffect } from "react"; // Asegúrate que esté importado
+import { useEffect } from "react"; // Asegúrate que esté importado
+
+import { BlogTableApi } from "./blogs-table-api";
 
 interface BlogsTableProps {
   blogs: Blog[];
@@ -52,39 +54,35 @@ export function BlogsTable({
     onThemeFilter(themeId);
   };
 
-
   //  --------------------------------------------------------
   const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
   const [offset, setOffset] = useState(0);
+  
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const { posts, loading, pageInfo } = BlogViewModel({
     simpleBlog: true,
     offset,
     simpleBlogsPerPage,
   });
- 
 
-useEffect(() => {
-  if (posts && posts.length > 0) {
-    if (offset === 0) {
-      setAllPosts(posts);
-      console.log("Contenido desde 0 de allPosts:", allPosts);
-    } else {
-       console.log("Contenido exitoso allPosts:", allPosts);
-      setAllPosts((prev) => {
-        const existingIds = new Set(prev.map((p) => p.id));
-        const newPosts = posts.filter((p) => !existingIds.has(p.id));
-        return [...prev, ...newPosts];
-      });
+  useEffect(() => {
+    if (posts && posts.length > 0) {
+      if (offset === 0) {
+        setAllPosts(posts);
+        
+      } else {
+        
+        setAllPosts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const newPosts = posts.filter((p) => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      }
     }
-  }
-    console.log("No estoy entrando Contenido de Posts:", posts);
-}, [posts, offset]);
+    
+  }, [posts, offset]);
 
-useEffect(() => {
-  console.log("Contenido de allPosts:", allPosts);
-}, [allPosts]);
-
+  
 
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
@@ -167,7 +165,7 @@ useEffect(() => {
             <div className="flex-1 overflow-auto">
               <table className="w-full table-fixed">
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {allPosts.map((blog) => (
+                  {blogs.map((blog) => (
                     <BlogTableRow
                       key={blog.id}
                       blog={blog}
@@ -175,7 +173,45 @@ useEffect(() => {
                       onDelete={onDeleteBlog}
                     />
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </CardContent>
+         <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
+          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
+            <table className="w-full table-fixed">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="w-24 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Post ID
+                  </th>
+                  <th className="flex-1 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="w-40 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Topic
+                  </th>
+                  <th className="w-32 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+            </table>
+            <div className="flex-1 overflow-auto">
+              <table className="w-full table-fixed">
+                <tbody className="bg-white divide-y divide-gray-200">
                   
+                  {allPosts.map((blog) => (
+                    <BlogTableApi
+                      blog={blog}
+                      
+                      
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>

@@ -1,123 +1,155 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RoleTableRow } from "@/components/molecules/role-table-row"
-import { Plus, Search, Filter } from "lucide-react"
-import type { Role } from "@/types/role-management"
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { RoleTableRow } from "@/components/molecules/role-table-row";
+import { Plus, Search, Filter } from "lucide-react";
+import type { Role } from "@/types/role-management";
 
 interface RolesTableProps {
-  roles: Role[]
-  onAddRole: () => void
-  onViewRole: (role: Role) => void
-  onDeleteRole: (role: Role) => void
-  onSearch: (search: string) => void
-  onStatusFilter: (status: string) => void
+  roles: Role[];
+  onAddRole: () => void;
+  onViewRole: (role: Role) => void;
+  onDeleteRole: (role: Role) => void;
+  onSearch: (search: string) => void;
+  onStatusFilter: (status: string) => void;
 }
 
-export function RolesTable({ roles, onAddRole, onViewRole, onDeleteRole, onSearch, onStatusFilter }: RolesTableProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedStatus, setSelectedStatus] = useState<string>("all")
+export function RolesTable({
+  roles,
+  onAddRole,
+  onViewRole,
+  onDeleteRole,
+  onSearch,
+  onStatusFilter,
+}: RolesTableProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    onSearch(value)
-  }
+    setSearchTerm(value);
+    onSearch(value);
+  };
 
   const handleStatusFilter = (status: string) => {
-    setSelectedStatus(status)
-    onStatusFilter(status)
-  }
+    setSelectedStatus(status);
+    onStatusFilter(status);
+  };
 
-  const statuses = ["Active", "Inactive"]
+  const statuses = ["Active", "Inactive"];
 
   return (
-    <div className="flex flex-col h-full space-y-6 w-full">
+    <div className="flex flex-col h-full space-y-1 w-full mb-5">
       {/* Add Role Section */}
-      <Card className="bg-gray-900 text-white flex-shrink-0 w-full">
-        <CardHeader className="flex flex-row items-center justify-between py-6 px-8">
+      <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center">
+        <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
           <div>
-            <h2 className="text-xl font-semibold">Add Role</h2>
-            <p className="text-gray-400">Description</p>
+            <h2 className="text-2xl font-normal">Add Role</h2>
+            <p className="">Description</p>
           </div>
-          <Button onClick={onAddRole} className="bg-green-500 hover:bg-green-600 text-white rounded-full w-12 h-12 p-0">
-            <Plus className="h-6 w-6" />
+          <Button
+            onClick={onAddRole}
+            className="[&_svg]:size-7 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+          >
+            <Plus color="#04081E" strokeWidth={3} />
           </Button>
         </CardHeader>
       </Card>
 
       {/* All Roles Section - Takes remaining space */}
-      <Card className="bg-gray-900 text-white flex-1 flex flex-col min-h-0 w-full">
-        <CardHeader className="flex-shrink-0 px-8">
+      <Card className="bg-[#04081E] text-white  flex flex-col w-full">
+        <CardHeader className="flex-shrink-0 px-5 py-5">
           <div className="flex items-center justify-between w-full">
             <div>
-              <h2 className="text-xl font-semibold">All Roles</h2>
-              <p className="text-gray-400">Description</p>
+              <h2 className="text-2xl font-normal">All Roles</h2>
+              <p className="">Description</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
-                <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-                  <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger>
+                    <Filter className="h-5 w-5" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 m-0 bg-gray-800 border-gray-700">
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={handleStatusFilter}
+                    >
+                      <SelectTrigger className="w-32 bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 text-white">
+                        <SelectItem value="all" className="text-white">All Status</SelectItem>
+                        {statuses.map((status) => (
+                          <SelectItem key={status} value={status} className="text-white">
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search color="#04081E" className="absolute left-2 top-1/2 transform z -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search roles..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 w-80 bg-gray-800 border-gray-700 text-white"
+                  className="pl-10 xl:w-80 bg-white border-gray-700 text-black rounded-md"
                 />
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
-          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
-            <table className="w-full table-fixed">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Team ID
-                  </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role Name
-                  </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Active
-                  </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-            </table>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full table-fixed">
-                <tbody className="bg-white divide-y divide-gray-200">
+        <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
+          <div className="bg-white rounded-lg overflow-auto flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
+
+              <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
+                <thead className="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Team ID
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Role Name
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Active
+                    </th>
+                    <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
                   {roles.map((role) => (
-                    <RoleTableRow key={role.id} role={role} onView={onViewRole} onDelete={onDeleteRole} />
+                    <RoleTableRow
+                      key={role.id}
+                      role={role}
+                      onView={onViewRole}
+                      onDelete={onDeleteRole}
+                    />
                   ))}
                 </tbody>
               </table>
-            </div>
+
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

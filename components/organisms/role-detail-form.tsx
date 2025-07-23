@@ -105,7 +105,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
     handleChange(
       "permissions",
       formData.permissions.filter((id) => id !== permissionId),
-    )
+  )
   }
 
   const getSelectedPermissions = () => {
@@ -117,34 +117,34 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className=" flex flex-col">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
+          className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0 [&_svg]:size-6"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" strokeWidth={3} />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Role Details</h1>
+        <h1 className="text-4xl font-medium text-[#04081E]">Role Details</h1>
       </div>
-
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1">
-        <div className="bg-white rounded-lg p-12 h-full">
-          <div className="max-w-4xl mx-auto space-y-8">
+      <div className="bg-black rounded-lg p-4 sm:p-6 flex-1 ">
+        <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 h-full ">
+          <div className="space-y-6 max-w-4xl mx-auto text-[#393939] text-base/4">
             {/* ID Display */}
             <div>
-              <p className="text-lg text-gray-600 mb-6">ID: {displayId}</p>
+              <p className="text-base text-[#393939] mb-6">ID: {displayId}</p>
             </div>
+            <hr className="border-[#EBEDF2]" />
 
             {/* Form Fields */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Name */}
               <div>
-                <Label htmlFor="name" className="text-lg font-medium text-gray-900 mb-3 block">
+                <Label htmlFor="name" className="text-base font-medium text-[#393939] mb-3 block">
                   Name
                 </Label>
                 <Input
@@ -152,13 +152,14 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Role Name"
-                  className="w-full h-12 text-base"
+                  className=" h-7  text-[#A2ADC5] text-xs"
                 />
               </div>
+              <hr className="border-[#EBEDF2]" />
 
               {/* Description */}
               <div>
-                <Label htmlFor="description" className="text-lg font-medium text-gray-900 mb-3 block">
+                <Label htmlFor="description" className="text-base font-medium text-[#393939] mb-3 block">
                   Description
                 </Label>
                 <div className="relative">
@@ -169,17 +170,18 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                     placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                     rows={6}
                     maxLength={200}
-                    className="w-full resize-none text-base"
+                    className=" resize-none text-xs text-[#393939] font-medium"
                   />
                   <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
                     {formData.description.length}/200
                   </div>
                 </div>
               </div>
+              <hr className="border-[#EBEDF2]" />
 
               {/* Active Status */}
               <div>
-                <Label className="text-lg font-medium text-gray-900 mb-3 block">Active</Label>
+                <Label className="text-base font-medium text-[#393939] mb-3 block">Active</Label>
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id="active"
@@ -192,52 +194,46 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
                   </Label>
                 </div>
               </div>
+              <hr className="border-[#EBEDF2]" />
 
               {/* Permissions */}
+              <hr className="border-[#EBEDF2]" />
               <div>
-                <Label className="text-lg font-medium text-gray-900 mb-3 block">Permission</Label>
-                <div className="space-y-4">
+                <Label className="text-base font-medium text-[#393939] mb-3 block">Permission</Label>
+                <div className="flex flex-wrap items-center gap-2 min-h-[48px] p-2 border border-gray-300 rounded-lg">
                   {/* Selected Permissions */}
-                  <div className="flex flex-wrap gap-2 min-h-[40px] p-3 border border-gray-300 rounded-lg">
-                    {getSelectedPermissions().map((permission) => (
-                      <PermissionBadge
-                        key={permission.id}
-                        permission={permission}
-                        onRemove={() => handleRemovePermission(permission.id)}
-                      />
-                    ))}
-                    {getSelectedPermissions().length === 0 && (
-                      <span className="text-gray-500">No permissions selected</span>
-                    )}
-                  </div>
+                  {getSelectedPermissions().map((permission) => (
+                    <PermissionBadge
+                      key={permission.id}
+                      permission={permission}
+                      onRemove={() => handleRemovePermission(permission.id)}
+                    />
+                  ))}
 
-                  {/* Add Permission Dropdown */}
-                  <div className="relative">
-                    <Select
-                      onValueChange={(value) => {
-                        if (value !== "no-permissions") {
-                          handleAddPermission(value)
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-full h-12 text-base">
-                        <SelectValue placeholder="Add permission..." />
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAvailablePermissionsForDropdown().map((permission) => (
-                          <SelectItem key={permission.id} value={permission.id}>
-                            {permission.name}
-                          </SelectItem>
-                        ))}
-                        {getAvailablePermissionsForDropdown().length === 0 && (
-                          <SelectItem value="no-permissions" disabled>
-                            All permissions are already selected
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Add Permission Dropdown - Integrated */}
+                  <Select
+                    onValueChange={(value) => {
+                      if (value !== "no-permissions") {
+                        handleAddPermission(value)
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="flex-1 min-w-[200px] h-auto p-1 bg-transparent border-none shadow-none focus:ring-0 focus:ring-offset-0">
+                      <SelectValue placeholder="Add permission..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailablePermissionsForDropdown().map((permission) => (
+                        <SelectItem key={permission.id} value={permission.id}>
+                          {permission.name}
+                        </SelectItem>
+                      ))}
+                      {getAvailablePermissionsForDropdown().length === 0 && (
+                        <SelectItem value="no-permissions" disabled>
+                          All permissions are already selected
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -247,7 +243,7 @@ export function RoleDetailForm({ roleId, onBack, onSave }: RoleDetailFormProps) 
               <Button
                 onClick={handleSave}
                 disabled={isLoading || !formData.name.trim()}
-                className="w-full max-w-md mx-auto flex items-center justify-center bg-green-500 hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
+                className="w-full max-w-md mx-auto flex items-center justify-center bg-[#99CC33] hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
               >
                 {isLoading ? "Saving..." : isEditMode ? "Update Role" : "Add Role"}
               </Button>
