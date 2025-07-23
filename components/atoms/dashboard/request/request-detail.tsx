@@ -12,17 +12,20 @@ interface RequestDetailProps {
 
 function SkeletonDetail() {
   return (
-    <div className="relative p-[6px] rounded-lg bg-[#181B29] animate-pulse">
-      <div className="flex flex-col justify-between gap-y-2 p-4 rounded-md bg-[#100e34] h-[200px]">
+    <div className="relative p-[6px] rounded-lg bg-[#F3F4F6] animate-pulse">
+      <div className="flex flex-col justify-between gap-y-2 p-4 rounded-md bg-white h-[200px]">
         <div className="space-y-2">
-          <div className="h-7 w-2/3 bg-gray-400/30 rounded mb-1" /> {/* Título */}
-          <div className="h-5 w-1/3 bg-gray-400/20 rounded mb-1" /> {/* Servicio */}
-          <div className="h-5 w-1/4 bg-gray-400/20 rounded mb-1" /> {/* Plan */}
-          <div className="h-4 w-full bg-gray-400/10 rounded mt-2" /> {/* Descripción */}
-          <div className="h-4 w-3/4 bg-gray-400/10 rounded" />
+          <div className="h-7 w-2/3 bg-gray-300 rounded mb-1" /> {/* Título */}
+          <div className="h-5 w-1/3 bg-gray-200 rounded mb-1" />{" "}
+          {/* Servicio */}
+          <div className="h-5 w-1/4 bg-gray-200 rounded mb-1" /> {/* Plan */}
+          <div className="h-4 w-full bg-gray-100 rounded mt-2" />{" "}
+          {/* Descripción */}
+          <div className="h-4 w-3/4 bg-gray-100 rounded" />
         </div>
         <div className="mt-2 flex justify-start">
-          <div className="h-6 w-20 bg-gray-400/30 rounded-full" /> {/* Lead status */}
+          <div className="h-6 w-20 bg-gray-300 rounded-full" />{" "}
+          {/* Lead status */}
         </div>
       </div>
     </div>
@@ -49,20 +52,32 @@ export function RequestDetail({
       )}
     >
       {/* Inner Content Container */}
-      <div className={cn("flex flex-col justify-between p-4 rounded-md", "bg-[#100e34]")}>
+      <div
+        className={cn(
+          "flex flex-col justify-between p-4 rounded-md",
+          "bg-user-container"
+        )}
+      >
         {/* Top section with text details */}
         <div className="space-y-1">
-          <h2 className="text-[30px] font-semibold text-white" style={{ fontWeight: 600 }}>
+          <h2
+            className="text-[30px] font-semibold text-secondary-dark"
+            style={{ fontWeight: 600 }}
+          >
             {requestName}
           </h2>
-          <p className="text-[20px] text-gray-200">{associatedService}</p>
-          <p className="text-[20px] text-gray-200">{companyPlan}</p>
-          <p className="text-[16px] text-gray-300 mt-1">{description}</p>
+          <p className="text-[20px] font-semibold text-secondary-dark">
+            {associatedService}
+          </p>
+          <p className="text-[20px] font-semibold text-secondary-dark">
+            {companyPlan}
+          </p>
+          <p className="text-[16px] text-secondary-dark mt-1">{description}</p>
         </div>
 
         {/* Bottom section with lead status */}
         <div className="mt-2">
-          <span className="px-4 py-1 bg-[#04081e] text-gray-100 text-sm rounded-full inline-block shadow-sm">
+          <span className="px-4 py-1 bg-secondary-container text-gray-100 text-sm rounded-full inline-block shadow-sm">
             {leadStatus}
           </span>
         </div>

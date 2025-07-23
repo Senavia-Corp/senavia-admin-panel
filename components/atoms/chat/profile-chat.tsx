@@ -24,7 +24,10 @@ interface ProfileChatProps {
     entityType?: "project" | "request"
   ) => void;
   // Parent will call this when entityId/entityType changes, to load history
-  onRequestHistoryLoad: (entityId: string, entityType: "project" | "request") => void;
+  onRequestHistoryLoad: (
+    entityId: string,
+    entityType: "project" | "request"
+  ) => void;
   isLoadingHistory: boolean; // Prop to indicate if parent is loading history
 }
 
@@ -42,18 +45,20 @@ export function ProfileChat({
   const [isBotTypingIndicator, setIsBotTypingIndicator] = useState(false);
 
   // Internal state to track entity changes for immediate loading feedback
-  const [internalLastLoadedEntityId, setInternalLastLoadedEntityId] = useState<string | undefined>(
-    undefined
-  );
-  const [internalLastLoadedEntityType, setInternalLastLoadedEntityType] = useState<
-    "project" | "request" | undefined
+  const [internalLastLoadedEntityId, setInternalLastLoadedEntityId] = useState<
+    string | undefined
   >(undefined);
+  const [internalLastLoadedEntityType, setInternalLastLoadedEntityType] =
+    useState<"project" | "request" | undefined>(undefined);
   const [isWaitingForParentLoad, setIsWaitingForParentLoad] = useState(false);
 
   // Effect to request history load when entityId/Type changes
   useEffect(() => {
     if (entityId && entityType) {
-      if (entityId !== internalLastLoadedEntityId || entityType !== internalLastLoadedEntityType) {
+      if (
+        entityId !== internalLastLoadedEntityId ||
+        entityType !== internalLastLoadedEntityType
+      ) {
         // Entity has changed from what this instance was last told to load/display
         setIsWaitingForParentLoad(true); // Show loading feedback immediately
       }
@@ -84,7 +89,8 @@ export function ProfileChat({
   // Auto-scroll to bottom when messages change or loading state changes
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [messagesToDisplay, isLoadingHistory, isWaitingForParentLoad]);
 
@@ -180,7 +186,11 @@ export function ProfileChat({
           messages.map((message) => (
             <div
               key={message.id}
-              className={`flex mr-2 ${message.role === "user" ? "justify-end items-end" : "justify-start items-start"}`}
+              className={`flex mr-2 ${
+                message.role === "user"
+                  ? "justify-end items-end"
+                  : "justify-start items-start"
+              }`}
             >
               {message.role === "assistant" && (
                 <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-300 to-blue-300 mr-4 flex-shrink-0 flex items-center justify-center text-xs">
@@ -191,14 +201,14 @@ export function ProfileChat({
                 <div
                   className={`px-4 py-2 rounded-md text-[14px] font-medium shadow-sm transition-colors duration-200 self-end ${
                     message.role === "user"
-                      ? "bg-[#13103a] md:bg-[#04081E] text-white self-end"
-                      : "bg-[#739926] text-white self-start"
+                      ? "bg-[#EBEDF2] md:bg-[#EBEDF2] text-[#393939] self-end"
+                      : "bg-[#D3E8A9] text-[#393939] self-start"
                   }`}
                 >
                   {message.content}
                 </div>
                 {message.role === "assistant" && (
-                  <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#739926] transform rotate-45"></div>
+                  <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#D3E8A9] transform rotate-45"></div>
                 )}
               </div>
               {message.role === "user" && (
@@ -219,7 +229,7 @@ export function ProfileChat({
       </div>
 
       <form onSubmit={handleSubmit} className="flex-shrink-0 w-full mt-2">
-        <div className="flex items-center bg-white/10 border border-[#739926] rounded-md overflow-hidden">
+        <div className="flex items-center bg-white/10 border border-[#E4E4E7] rounded-md overflow-hidden">
           <input
             type="text"
             value={input}
@@ -228,10 +238,10 @@ export function ProfileChat({
               showLoadingIndicator
                 ? "Loading..."
                 : entityId
-                  ? "Write your message..."
-                  : "Select an item to chat"
+                ? "Write your message..."
+                : "Select an item to chat"
             }
-            className="flex-1 bg-transparent text-white placeholder:text-gray-300 px-4 py-2 focus:outline-none text-[14px] h-8"
+            className="flex-1 bg-transparent text-[#71717A] placeholder:text-[#71717A] px-4 py-2 focus:outline-none text-[14px] h-8"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -240,7 +250,7 @@ export function ProfileChat({
           />
           <button
             type="submit"
-            className="p-2 rounded-full mr-1 text-black bg-[#99CC33] hover:bg-[#8ECF0A] disabled:opacity-50 transition-colors"
+            className="p-2 rounded-full mr-1 text-black bg-primary-color hover:bg-[#8ECF0A] disabled:opacity-50 transition-colors"
             aria-label="Send message"
             disabled={showLoadingIndicator || !entityId || !input.trim()}
           >

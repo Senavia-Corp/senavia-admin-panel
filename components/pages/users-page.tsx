@@ -61,7 +61,7 @@ export function UsersPage() {
 
   if (selectedUser) {
     return (
-      <div className="min-h-screen w-full bg-white">
+      <div className="min-h-screen w-full bg-white ">
         <div className="p-6">
           <DetailTabs
             title="User Information"

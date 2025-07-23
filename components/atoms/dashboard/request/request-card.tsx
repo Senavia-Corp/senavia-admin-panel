@@ -7,11 +7,16 @@ interface RequestCardProps {
   isSelected?: boolean;
 }
 
-export function RequestCard({ requestName, leadStatus, className, isSelected }: RequestCardProps) {
+export function RequestCard({
+  requestName,
+  leadStatus,
+  className,
+  isSelected,
+}: RequestCardProps) {
   return (
     <div
       className={cn(
-        "relative p-[2px] rounded-md overflow-hidden group",
+        "relative p-[3px] rounded-md overflow-hidden group",
         "bg-gradient-to-r from-[#99CC33] to-[#2EBAC6]",
         className
       )}
@@ -19,12 +24,15 @@ export function RequestCard({ requestName, leadStatus, className, isSelected }: 
       <div
         className={cn(
           "flex items-center justify-between px-6 py-3 rounded-md w-full h-full transition-colors duration-200",
-          !isSelected && "group-hover:bg-[#524f7d] cursor-pointer",
-          isSelected ? "bg-[#10132a]/80" : "bg-[#403e5d]"
+          isSelected ? "bg-[rgba(255,255,255,0.8)]" : "bg-user-container",
+          !isSelected &&
+            "group-hover:bg-gradient-to-r from-[rgba(153,204,51,0.2)] to-[rgba(46,186,198,0.2)] cursor-pointer"
         )}
       >
-        <span className="text-white font-semibold text-[18px]">{requestName}</span>
-        <span className="px-4 py-1 bg-[#0B0E1C] text-white text-sm rounded-full font-medium shadow-sm">
+        <span className="text-secondary-text font-semibold text-[18px]">
+          {requestName}
+        </span>
+        <span className="px-4 py-1 bg-secondary-text text-white text-sm rounded-full font-medium shadow-sm">
           {leadStatus}
         </span>
       </div>
