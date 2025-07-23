@@ -36,6 +36,8 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     clientPhone: "",
     clientAddress: "",
     estimatedStartDate: "",
+    endDate: "",
+    startDate: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,6 +64,8 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
           clientPhone: leadData.clientPhone || "",
           clientAddress: leadData.clientAddress || "",
           estimatedStartDate: leadData.estimatedStartDate || "",
+          endDate: leadData.endDate || "",
+          startDate: leadData.startDate || "",
         });
       }
     } catch (error) {
@@ -95,6 +99,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
           clientAddress: formData.clientAddress,
           estimatedStartDate: formData.estimatedStartDate,
           startDate: formData.estimatedStartDate, // Using estimatedStartDate as startDate
+          endDate: formData.endDate,
         };
         await LeadManagementService.updateLead(leadId, updateData);
       } else {

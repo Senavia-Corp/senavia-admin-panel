@@ -8,6 +8,8 @@ export interface Lead {
   clientAddress?: string;
   estimatedStartDate?: string;
   description?: string;
+  startDate: string;
+  endDate: string;
   workteamId: string;
   serviceId?: string;
   userId?: string;
@@ -24,6 +26,8 @@ export interface CreateLeadData {
   estimatedStartDate?: string;
   description?: string;
   workteamId: string;
+  startDate: string;
+  endDate: string;
   serviceId?: string;
   userId?: string;
   status: LeadStatus;

@@ -15,6 +15,13 @@ export const endpoints = {
     updatePost: (id: number) => `${API}/blog?id=${id}`,
     deletePost: (id: number) => `${API}/blog?id=${id}`,
   },
+  lead: {
+    getPosts: `${API}/lead`,
+    getPost: (id: number) => `${API}/lead?id=${id}`,
+    createPost: `${API}/lead`,
+    updatePost: (id: number) => `${API}/lead?id=${id}`,
+    deletePost: (id: number) => `${API}/lead?id=${id}`,
+  },
 };
 
 // Header configurations
