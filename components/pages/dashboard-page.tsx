@@ -6,7 +6,6 @@ import { LeadsSection } from "@/components/organisms/leads-section";
 import { BillsSection } from "@/components/organisms/bills-section";
 import { ProjectsSection } from "@/components/organisms/projects-section";
 import { CalendarSidebar } from "@/components/organisms/calendar-sidebar";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -14,9 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
 import { DashboardService } from "@/services/dashboard-service";
 import type {
   DashboardMetrics,
@@ -104,11 +100,12 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden">
       {/* Main Content */}
       <main
-        className={`flex-1 overflow-auto
-           transition-all duration-200 ${isCalendarOpen ? "mr-80" : "mr-0"}`}
+        className={`flex-1 transition-all duration-200 ${
+          isCalendarOpen ? "mr-80" : "mr-0"
+        }`}
       >
         <div className="p-6 space-y-6 max-w-full">
           {/* Controls */}
