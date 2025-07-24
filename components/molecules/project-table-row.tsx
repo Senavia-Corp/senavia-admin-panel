@@ -21,13 +21,7 @@ export function ProjectTableRow({
 }: ProjectTableRowProps) {
   const router = useRouter();
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "2-digit",
-    });
-  };
+
 
   const handleViewTasks = () => {
     router.push(`/projects/${project.id}/board`);
@@ -42,10 +36,10 @@ export function ProjectTableRow({
         {project.name}
       </td>
       <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">
-        {formatDate(project.startDate)}
+        {project.startDate}
       </td>
       <td className="w-1/4 px-6 py-4 text-sm text-gray-900 truncate">
-        <StatusBadge status={project.phase} />
+        <StatusBadge status={project.currentPhase} />
       </td>
 
       <td className="w-1/4 px-6 py-4">

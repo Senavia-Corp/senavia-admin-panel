@@ -19,6 +19,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@radix-ui/react-popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ProjectEditor } from "./project-editor";
 
 interface ProjectsTableProps {
   projects: ProjectRecord[];
@@ -57,10 +64,30 @@ export function ProjectsTable({
     setSelectedPhase(phase);
     onPhaseFilter(phase);
   };
+
   const handleAddClick = () => {
     setSelectedProject(null);
     setShowEditor(true);
-    onAddProject();
+  };
+
+  const handleEditProject = (project: ProjectRecord) => {
+    setSelectedProject(project);
+    setShowEditor(true);
+  };
+
+  const handleEditorBack = () => {
+    setShowEditor(false);
+    setSelectedProject(null);
+  };
+
+  const handleEditorSave = () => {
+    setShowEditor(false);
+    setSelectedProject(null);
+    if (selectedProject) {
+      onViewProject(selectedProject);
+    } else {
+      onAddProject();
+    }
   };
 
   const phases: ProjectPhase[] = [
@@ -70,6 +97,16 @@ export function ProjectsTable({
     "Deployment",
   ];
 
+  if (showEditor) {
+    return (
+      <ProjectEditor
+        projectId={selectedProject?.id}
+        onBack={handleEditorBack}
+        onSave={handleEditorSave}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
       {/* Add Project Section */}
@@ -77,7 +114,7 @@ export function ProjectsTable({
         <CardHeader className="flex flex-row items-center justify-between py-6 px-8">
           <div>
             <h2 className="text-xl font-semibold">Add Project</h2>
-            <p className="text-gray-400">Description</p>
+            <p className="text-gray-400">Create a new project</p>
           </div>
           <Button
             onClick={handleAddClick}
@@ -145,7 +182,6 @@ export function ProjectsTable({
             <table className="w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  {/* <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"> */}
                   <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Project ID
                   </th>
@@ -174,7 +210,7 @@ export function ProjectsTable({
                     <ProjectTableRow
                       key={project.id}
                       project={project}
-                      onView={onViewProject}
+                      onView={() => handleEditProject(project)}
                       onDelete={onDeleteProject}
                       onViewTasks={onViewTasks}
                     />
