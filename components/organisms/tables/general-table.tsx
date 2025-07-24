@@ -19,6 +19,7 @@ import {
 import { RoleTableRow } from "@/components/organisms/tables/row/role-table-row";
 import { PermissionTableRow } from "@/components/organisms/tables/row/permission-table-row";
 import { Plus, Search, Filter } from "lucide-react";
+import { BillingTableRow } from "@/components/molecules/billing-table-row";
 
 type GeneralTableHandlers = {
   onCreate: () => void;
@@ -41,6 +42,8 @@ export function GeneralTable(
   const { onCreate, onView, onDelete, onSearch, onFilter } = handlers;
 
   return (
+
+    
     <div className="flex flex-col h-full space-y-1 w-full mb-5">
       {/* Add Role Section */}
       <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center">
@@ -104,6 +107,8 @@ export function GeneralTable(
                       return <RoleTableRow key={item.id} role={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
                     case 'permissions-page':
                       return <PermissionTableRow key={item.id} permission={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+                    case 'billing-page':
+                      return <BillingTableRow key={item.id} billing={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
                     default:
                       return null;
                   }

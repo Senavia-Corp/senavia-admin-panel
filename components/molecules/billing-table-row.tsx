@@ -19,17 +19,18 @@ export function BillingTableRow({ billing, onView, onDelete }: BillingTableRowPr
   }
 
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-32 px-6 py-4 text-sm text-gray-900 truncate">{billing.id}</td>
-      <td className="w-40 px-6 py-4 text-sm text-gray-900">{billing.estimatedTime} months</td>
-      <td className="flex-1 px-6 py-4">
+    <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">{billing.id}</td>
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">{billing.estimatedTime} months</td>
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
         <StatusBadge status={billing.status} />
       </td>
-      <td className="w-32 px-6 py-4 text-sm text-gray-900">{formatCurrency(billing.totalValue)}</td>
-      <td className="w-32 px-6 py-4">
-        <div className="flex space-x-2">
-          <ActionButton type="view" onClick={() => onView(billing)} className="text-gray-700 hover:text-gray-900" />
-          <ActionButton type="delete" onClick={() => onDelete(billing)} className="text-gray-700 hover:text-gray-900" />
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">{formatCurrency(billing.totalValue)}</td>
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
+        <div className="flex space-x-2 justify-center
+        ">
+          <ActionButton type="view" onClick={() => onView(billing)} />
+          <ActionButton type="delete" onClick={() => onDelete(billing)} />
         </div>
       </td>
     </tr>

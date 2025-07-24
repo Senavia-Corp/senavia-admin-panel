@@ -85,7 +85,7 @@ export function RolesPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-screen pb-5">
       {/* Main Content */}
       <main className="flex-1  overflow-auto">
         <div className="px-6 h-full w-full">
@@ -93,7 +93,6 @@ export function RolesPage() {
             <div className="my-3">
               <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Role Management</h1>
             </div>
-
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "roles-page",

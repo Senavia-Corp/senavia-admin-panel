@@ -9,12 +9,17 @@ import { Separator } from "@/components/ui/separator"
 import { Bell } from "lucide-react"
 import { BillingManagementService } from "@/services/billing-management-service"
 import type { BillingRecord } from "@/types/billing-management"
+import { GeneralTable } from "@/components/organisms/tables/general-table"
+import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 
 export function BillingPage() {
   const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([])
   const [billingToDelete, setBillingToDelete] = useState<BillingRecord | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
+  const [showCreateBilling, setShowCreateBilling] = useState(false)
+  const [selectedBillingId, setSelectedBillingId] = useState<string | undefined>()
+  const [showBillingDetail, setShowBillingDetail] = useState(false)
 
   useEffect(() => {
     loadBillingRecords()
@@ -41,55 +46,71 @@ export function BillingPage() {
 
   const handleViewBilling = (billing: BillingRecord) => {
     console.log("View billing:", billing)
+    setSelectedBillingId(billing.id)
+    setShowBillingDetail(true)
     // TODO: Implement billing detail view
   }
 
   const handleCreateBilling = () => {
     console.log("Create new billing record")
-    // TODO: Implement billing creation
+    setShowCreateBilling(true)
+  }
+
+  const handleBackToList = () => {
+    setShowBillingDetail(false)
+    setShowCreateBilling(false)
+  }
+
+  const handleSaveSuccess = () => {
+    setShowBillingDetail(false)
+    setShowCreateBilling(false)
+    loadBillingRecords()
+  }
+
+  const handlers = {
+    onCreate: handleCreateBilling,
+    onView: handleViewBilling,
+    onDelete: (billing: BillingRecord) => setBillingToDelete(billing),
+    onSearch: setSearchTerm,
+    onFilter: setStatusFilter,
+  }
+
+  if (showBillingDetail || showCreateBilling) {
+    return (
+      <div className="">
+        <main className="">
+          <div className="px-6 py-6 h-full">
+            <BillingDetailForm
+              billingId={selectedBillingId}
+              onBack={handleBackToList}
+              onSave={handleSaveSuccess}
+            />
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center space-x-2">
-              <img src="/images/senavia-logo.png" alt="Senavia Logo" className="w-8 h-8 object-contain" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm">U</span>
-              </div>
-              <span className="text-sm font-medium">Username</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">Billing Management</h1>
-
+            <div className="my-3">
+              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
+            </div>
             <div className="flex-1 min-h-0">
-              <BillingTable
-                billingRecords={billingRecords}
-                onAddBilling={handleCreateBilling}
-                onViewBilling={handleViewBilling}
-                onDeleteBilling={setBillingToDelete}
-                onSearch={setSearchTerm}
-                onStatusFilter={setStatusFilter}
-              />
+              {GeneralTable(
+                "billing-page",
+                "Add Billing",
+                "Description",
+                "All Billing",
+                "Description",
+                ["Billing ID", "Estimated Time", "State", "Total", "Actions"],
+                billingRecords,
+                handlers
+              )}
             </div>
           </div>
         </div>
