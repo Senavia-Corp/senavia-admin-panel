@@ -81,6 +81,7 @@ export function CostPage() {
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
   }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -88,13 +89,29 @@ export function CostPage() {
     }).format(amount)
   }
 
-  if (showBillingDetail || showCreateBilling) {
+  if (showBillingDetail) {
     return (
       <div className="">
         <main className="">
           <div className="px-6 py-6 h-full">
             <BillingDetailForm
               billingId={selectedBillingId}
+              onBack={handleBackToList}
+              onSave={handleSaveSuccess}
+            />
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (showCreateBilling) {
+    return (
+      <div className="">
+        <main className="">
+          <div className="px-6 py-6 h-full">
+            <BillingDetailForm
+              billingId={undefined}
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
@@ -112,9 +129,9 @@ export function CostPage() {
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <div className="my-3 space-y-5">
-              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
-              <p className="font-bold text-[#393939] text-5xl">{formatCurrency(billingRecords[0].totalValue)}</p>
+            <div className="my-3">
+            <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
+            <p className="font-bold text-[#393939] text-5xl">Total: {formatCurrency(billingRecords[0].totalValue)}</p>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
@@ -123,7 +140,7 @@ export function CostPage() {
                 "Description",
                 "All Costs",
                 "Description",
-                ["Billing ID", "Estimated Time", "State", "Total", "Actions"],
+                ["Cost ID", "Name", "Type", "Value", "Actions"],
                 billingRecords,
                 handlers
               )}
