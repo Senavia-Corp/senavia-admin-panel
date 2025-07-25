@@ -9,6 +9,7 @@ import { PermissionTableRow } from "@/components/molecules/permission-table-row"
 import { Plus, Search, Filter } from "lucide-react"
 import type { Permission, PermissionAction, AssociatedService, PermissionStatus } from "@/types/permission-management"
 import { Popover, PopoverTrigger, PopoverContent} from "@radix-ui/react-popover"
+import { FilterPermission } from "@/components/organisms/tables/filter/filter-model"
 
 interface PermissionsTableProps {
   permissions: Permission[]

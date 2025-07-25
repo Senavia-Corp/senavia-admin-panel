@@ -40,6 +40,17 @@ export function PermissionsPage() {
     }
   }
 
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":")
+    if (type === "action") {
+      setActionFilter(value)
+    } else if (type === "service") {
+      setServiceFilter(value)
+    } else if (type === "status") {
+      setStatusFilter(value)
+    }
+  }
+
   const handleDeletePermission = async (permission: Permission) => {
     try {
       await PermissionManagementService.deletePermission(permission.id)
@@ -74,7 +85,7 @@ export function PermissionsPage() {
     onView: handleViewPermission,
     onDelete: (permission: Permission) => setPermissionToDelete(permission),
     onSearch: setSearchTerm,
-    onFilter: setStatusFilter,
+    onFilter: handleFilterChange,
   }
 
   // Show detail form for editing existing permission

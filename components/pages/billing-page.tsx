@@ -67,12 +67,19 @@ export function BillingPage() {
     loadBillingRecords()
   }
 
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":")
+    if (type === "status") {
+      setStatusFilter(value)
+    }
+  }
+
   const handlers = {
     onCreate: handleCreateBilling,
     onView: handleViewBilling,
     onDelete: (billing: BillingRecord) => setBillingToDelete(billing),
     onSearch: setSearchTerm,
-    onFilter: setStatusFilter,
+    onFilter: handleFilterChange,
   }
 
   if (showBillingDetail || showCreateBilling) {
@@ -90,6 +97,8 @@ export function BillingPage() {
       </div>
     )
   }
+
+  
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">

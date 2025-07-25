@@ -29,6 +29,13 @@ export function RolesPage() {
     }
   }
 
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":")
+    if (type === "status") {
+      setStatusFilter(value)
+    }
+  }
+
   const handleDeleteRole = async (role: Role) => {
     try {
       await RoleManagementService.deleteRole(role.id)
@@ -67,7 +74,7 @@ export function RolesPage() {
     onView: handleViewRole,
     onDelete: (role: Role) => setRoleToDelete(role),
     onSearch: setSearchTerm,
-    onFilter: setStatusFilter,
+    onFilter: handleFilterChange,
   }
 
   // Show detail form for editing existing role or creating new role

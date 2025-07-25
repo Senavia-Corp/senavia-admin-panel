@@ -19,15 +19,26 @@ import {
 import { RoleTableRow } from "@/components/organisms/tables/row/role-table-row";
 import { PermissionTableRow } from "@/components/organisms/tables/row/permission-table-row";
 import { Plus, Search, Filter } from "lucide-react";
-import { BillingTableRow } from "@/components/molecules/billing-table-row";
+import { BillingTableRow } from "@/components/organisms/tables/row/billing-table-row";
+import { UserTableRow } from "@/components/organisms/tables/row/user-table-row";
+import { ContractTableRow } from "@/components/organisms/tables/row/contract-table-row";
+import { BlogTableRow } from "@/components/organisms/tables/row/blog-table-row";
+import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
+import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
+import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-row";
+import { FilterBilling, FilterPermission, FilterRole } from "@/components/organisms/tables/filter/filter-model"
 
+{/* HANDLERS */}
 type GeneralTableHandlers = {
   onCreate: () => void;
   onView: (item: any) => void;
   onDelete: (item: any) => void;
   onSearch: (term: string) => void;
   onFilter: (filter: string) => void;
+  onViewTasks?: (item: any) => void;
 }
+
+
 
 export function GeneralTable(
   Page: string,
@@ -39,11 +50,48 @@ export function GeneralTable(
   data: any[],
   handlers: GeneralTableHandlers
 ) {
-  const { onCreate, onView, onDelete, onSearch, onFilter } = handlers;
+  const { onCreate, onView, onDelete, onSearch, onFilter, onViewTasks } = handlers;
 
+  const tableRows = data.map((item) => {
+    switch (Page.toLowerCase()) {
+      case "roles-page":
+        return <RoleTableRow key={item.id} role={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "permissions-page":
+        return <PermissionTableRow key={item.id} permission={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "billing-page":
+        return <BillingTableRow key={item.id} billing={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "users-page":
+        return <UserTableRow key={item.id} user={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "contracts-page":
+        return <ContractTableRow key={item.id} contract={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "blogs-page":
+        return <BlogTableRow key={item.id} blog={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "leads-page":
+        return <LeadTableRow key={item.id} lead={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      case "projects-page":
+        return <ProjectTableRow key={item.id} project={item} onView={() => onView(item)} onDelete={() => onDelete(item)} onViewTasks={() => onViewTasks?.(item)} />;
+      case "tickets-page":
+        return <SupportTableRow key={item.id} ticket={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
+      default:
+        return null;
+    }
+  });
+
+  const filterComponent = (() => {
+    switch (Page.toLowerCase()) {
+      case 'permissions-page':
+        return <FilterPermission onFilter={onFilter} />;
+      case 'roles-page':
+        return <FilterRole onFilter={onFilter} />;
+      case 'billing-page':
+        return <FilterBilling onFilter={onFilter} />;
+      default:
+        return null;
+    }
+  })();
+      
   return (
 
-    
     <div className="flex flex-col h-full space-y-1 w-full mb-5">
       {/* Add Role Section */}
       <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center">
@@ -70,7 +118,7 @@ export function GeneralTable(
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 {/* PoP over WIP */}
-                <Filter className="h-5 w-5" />
+                {filterComponent}
               </div>
               <div className="relative">
                 <Search
@@ -101,18 +149,8 @@ export function GeneralTable(
                 ))}
               </thead>
               <tbody className="bg-white relative z-0">
-                {data.map((item) => {
-                  switch (Page.toLowerCase()) {
-                    case 'roles-page':
-                      return <RoleTableRow key={item.id} role={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
-                    case 'permissions-page':
-                      return <PermissionTableRow key={item.id} permission={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
-                    case 'billing-page':
-                      return <BillingTableRow key={item.id} billing={item} onView={() => onView(item)} onDelete={() => onDelete(item)} />;
-                    default:
-                      return null;
-                  }
-                })}
+                {/* PAGES AND CORRESPONDING ROWS */}
+                {tableRows}
               </tbody>
             </table>
           </div>
