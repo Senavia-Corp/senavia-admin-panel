@@ -195,14 +195,16 @@ export function GeneralTable(
           <div className="bg-white rounded-lg overflow-auto flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
             <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
               <thead className="bg-[#E1E4ED] sticky top-0 z-10">
-                {TableTitle.map((title, index) => (
-                  <th
-                    key={index}
-                    className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
-                  >
-                    {title}
-                  </th>
-                ))}
+                <tr>
+                  {TableTitle.map((title, index) => (
+                    <th
+                      key={index}
+                      className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
+                    >
+                      {title}
+                    </th>
+                  ))}
+                </tr>
               </thead>
               <tbody className="bg-white relative z-0">
                 {/* PAGES AND CORRESPONDING ROWS */}
