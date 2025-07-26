@@ -15,6 +15,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
 import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
+import { toast } from "sonner";
 
 interface LeadEditorProps {
   leadId?: string;
@@ -24,10 +25,10 @@ interface LeadEditorProps {
 
 export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
   const [lead, setLead] = useState<Lead | null>(null);
-  const [themes, setThemes] = useState<LeadStatus[]>([]);
+  const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [formData, setFormData] = useState<CreateLeadData>({
     clientName: "",
-    status: "Send" as LeadStatus,
+    state: "SEND",
     workteamId: "",
     serviceId: "",
     userId: "",
@@ -35,14 +36,14 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     clientEmail: "",
     clientPhone: "",
     clientAddress: "",
-    estimatedStartDate: "",
+    startDate: new Date().toISOString().split("T")[0],
     endDate: "",
-    startDate: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadThemes();
+    loadStatuses();
     if (leadId) {
       loadLead(leadId);
     }
@@ -50,12 +51,13 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
   const loadLead = async (id: string) => {
     try {
+      setError(null);
       const leadData = await LeadManagementService.getLeadById(id);
       if (leadData) {
         setLead(leadData);
         setFormData({
           clientName: leadData.clientName || "",
-          status: leadData.status || "Send",
+          state: leadData.state || "SEND",
           workteamId: leadData.workteamId || "",
           serviceId: leadData.serviceId || "",
           userId: leadData.userId || "",
@@ -63,54 +65,56 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
           clientEmail: leadData.clientEmail || "",
           clientPhone: leadData.clientPhone || "",
           clientAddress: leadData.clientAddress || "",
-          estimatedStartDate: leadData.estimatedStartDate || "",
+          startDate:
+            leadData.startDate || new Date().toISOString().split("T")[0],
           endDate: leadData.endDate || "",
-          startDate: leadData.startDate || "",
         });
       }
     } catch (error) {
-      console.error("Error loading lead:", error);
+      setError(error instanceof Error ? error.message : "Error loading lead");
+      toast.error("Error loading lead");
     }
   };
 
-  const loadThemes = async () => {
+  const loadStatuses = async () => {
     try {
-      const themesData = await LeadManagementService.getLeadStatuses();
-      setThemes(themesData);
+      const statusesData = await LeadManagementService.getLeadStatuses();
+      setStatuses(statusesData);
     } catch (error) {
-      console.error("Error loading themes:", error);
+      console.error("Error loading statuses:", error);
+      toast.error("Error loading statuses");
     }
   };
 
   const handleSave = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       if (leadId) {
-        // Convert formData to match the Lead type for update
-        const updateData = {
-          clientName: formData.clientName,
-          status: formData.status,
-          workteamId: formData.workteamId,
-          serviceId: formData.serviceId,
-          userId: formData.userId,
-          description: formData.description,
-          clientEmail: formData.clientEmail,
-          clientPhone: formData.clientPhone,
-          clientAddress: formData.clientAddress,
-          estimatedStartDate: formData.estimatedStartDate,
-          startDate: formData.estimatedStartDate, // Using estimatedStartDate as startDate
-          endDate: formData.endDate,
-        };
-        await LeadManagementService.updateLead(leadId, updateData);
+        await LeadManagementService.updateLead(leadId, formData);
+        toast.success("Lead updated successfully");
       } else {
         await LeadManagementService.createLead(formData);
+        toast.success("Lead created successfully");
       }
       onSave();
     } catch (error) {
-      console.error("Error saving lead:", error);
+      setError(error instanceof Error ? error.message : "Error saving lead");
+      toast.error(error instanceof Error ? error.message : "Error saving lead");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.clientName &&
+      formData.clientEmail &&
+      formData.clientPhone &&
+      formData.clientAddress &&
+      formData.description &&
+      formData.startDate
+    );
   };
 
   return (
@@ -135,12 +139,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
               <Label className="text-sm font-medium text-gray-700">
                 Lead ID
               </Label>
-              <Input
-                value={leadId || "0000"}
-                disabled
-                placeholder="0000"
-                className="mt-1"
-              />
+              <Input value={leadId || "New Lead"} disabled className="mt-1" />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
@@ -153,7 +152,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, serviceId: e.target.value })
                   }
-                  placeholder="0000"
+                  placeholder="Service ID"
                   className="mt-1"
                 />
               </div>
@@ -167,7 +166,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, userId: e.target.value })
                   }
-                  placeholder="0000"
+                  placeholder="User ID"
                   className="mt-1"
                 />
               </div>
@@ -181,14 +180,14 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, workteamId: e.target.value })
                   }
-                  placeholder="0000"
+                  placeholder="Workteam ID"
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Client Name
+                  Client Name *
                 </Label>
                 <Input
                   value={formData.clientName}
@@ -196,13 +195,14 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                     setFormData({ ...formData, clientName: e.target.value })
                   }
                   placeholder="Client Name"
+                  required
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Client E-mail
+                  Client E-mail *
                 </Label>
                 <Input
                   type="email"
@@ -210,28 +210,30 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, clientEmail: e.target.value })
                   }
-                  placeholder="e-mail@client.com"
+                  placeholder="client@example.com"
+                  required
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Client Phone
+                  Client Phone *
                 </Label>
                 <Input
                   value={formData.clientPhone}
                   onChange={(e) =>
                     setFormData({ ...formData, clientPhone: e.target.value })
                   }
-                  placeholder="000-000-0000"
+                  placeholder="Phone number"
+                  required
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Client Address
+                  Client Address *
                 </Label>
                 <Input
                   value={formData.clientAddress}
@@ -239,25 +241,26 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                     setFormData({ ...formData, clientAddress: e.target.value })
                   }
                   placeholder="Client Address"
+                  required
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Status
+                  Status *
                 </Label>
                 <Select
-                  value={formData.status}
+                  value={formData.state}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, status: value as LeadStatus })
+                    setFormData({ ...formData, state: value as LeadStatus })
                   }
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {themes.map((status) => (
+                    {statuses.map((status) => (
                       <SelectItem key={status} value={status}>
                         {status}
                       </SelectItem>
@@ -268,29 +271,38 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Estimated Time
+                  Dates *
                 </Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Input
                     type="date"
-                    value={formData.estimatedStartDate}
+                    value={formData.startDate}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        estimatedStartDate: e.target.value,
+                        startDate: e.target.value,
                       })
                     }
-                    placeholder="dd/mm/aaaa"
+                    required
                   />
                   <span className="px-2">-</span>
-                  <Input type="date" placeholder="dd/mm/aaaa" />
+                  <Input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
                 </div>
               </div>
             </div>
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Description
+                Description *
               </Label>
               <Textarea
                 value={formData.description}
@@ -298,13 +310,16 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Enter description"
+                required
                 className="mt-1 min-h-[100px]"
               />
             </div>
 
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+
             <Button
               onClick={handleSave}
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid()}
               className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
             >
               {isLoading ? "Saving..." : leadId ? "Update Lead" : "Create Lead"}
