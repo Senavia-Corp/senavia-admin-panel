@@ -15,6 +15,12 @@ export const endpoints = {
     updatePost: (id: number) => `${API}/blog?id=${id}`,
     deletePost: (id: number) => `${API}/blog?id=${id}`,
   },
+  ticket:{
+    getTickets: `${API}/ticket`,
+    createTicket: `${API}/ticket`,
+    updateTicket: (id: number) => `${API}/ticket?id=${id}`,
+    deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
+  }
 };
 
 // Header configurations

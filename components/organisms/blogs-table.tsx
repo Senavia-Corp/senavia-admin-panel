@@ -4,27 +4,19 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { BlogTableRow } from "@/components/molecules/blog-table-row";
 import { Plus, Search, Filter } from "lucide-react";
-import type { Blog, BlogTheme } from "@/types/blog-management";
 
-import { useFetch } from "@/lib/services/endpoints";
-import { endpoints } from "@/lib/services/endpoints";
+import type { Blog, BlogTopic } from "@/types/blog-management";
 import BlogViewModel from "../pages/blog/BlogViewModel";
 import { useEffect } from "react"; // Asegúrate que esté importado
-
 import { BlogTableApi } from "./blogs-table-api";
+
 
 interface BlogsTableProps {
   blogs: Blog[];
-  themes: BlogTheme[];
+  topics: BlogTopic[];
   onAddBlog: () => void;
   onViewBlog: (blog: Blog) => void;
   onDeleteBlog: (blog: Blog) => void;
@@ -32,17 +24,16 @@ interface BlogsTableProps {
   onThemeFilter: (themeId: string) => void;
 }
 
-export function BlogsTable({
-  blogs,
-  themes,
-  onAddBlog,
-  onViewBlog,
-  onDeleteBlog,
-  onSearch,
-  onThemeFilter,
-}: BlogsTableProps) {
+export function BlogsTable({blogs, topics, onAddBlog, onViewBlog, onDeleteBlog, onSearch,onThemeFilter,}: BlogsTableProps) {
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
+  //------------------------------- get Blogs --------------------------------
+  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
+  const [offset, setOffset] = useState(0);
+
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const { posts, loading, pageInfo } = BlogViewModel({ simpleBlog: true, offset,simpleBlogsPerPage});
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -54,24 +45,15 @@ export function BlogsTable({
     onThemeFilter(themeId);
   };
 
-  //  --------------------------------------------------------
-  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
-  const [offset, setOffset] = useState(0);
-  
-  const [allPosts, setAllPosts] = useState<any[]>([]);
-  const { posts, loading, pageInfo } = BlogViewModel({
-    simpleBlog: true,
-    offset,
-    simpleBlogsPerPage,
-  });
 
+  // useEffect para obtener los blogs.
   useEffect(() => {
+    //si existen blogs
     if (posts && posts.length > 0) {
+   //Si empiezo desde 0 -> actualizo los blogs.
       if (offset === 0) {
         setAllPosts(posts);
-        
-      } else {
-        
+      } else {// De lo contrario ->actualizo los blogs siguientes. 
         setAllPosts((prev) => {
           const existingIds = new Set(prev.map((p) => p.id));
           const newPosts = posts.filter((p) => !existingIds.has(p.id));
@@ -79,10 +61,7 @@ export function BlogsTable({
         });
       }
     }
-    
   }, [posts, offset]);
-
-  
 
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
@@ -118,10 +97,10 @@ export function BlogsTable({
                     <SelectValue placeholder="Filter by theme" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Themes</SelectItem>
-                    {themes.map((theme) => (
-                      <SelectItem key={theme.id} value={theme.name}>
-                        {theme.name}
+                    <SelectItem value="all">All Topic</SelectItem>
+                    {topics.map((topic) => (
+                      <SelectItem key={topic.id} value={topic.name}>
+                        {topic.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -162,6 +141,7 @@ export function BlogsTable({
                 </tr>
               </thead>
             </table>
+            {/*------------------ datos prueba ----------------*/}
             <div className="flex-1 overflow-auto">
               <table className="w-full table-fixed">
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -176,9 +156,10 @@ export function BlogsTable({
                 </tbody>
               </table>
             </div>
+            {/*------------------ datos prueba ----------------*/}
           </div>
         </CardContent>
-         <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
+        <CardContent className="flex-1 flex flex-col min-h-0 px-8 pb-8">
           <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0">
             <table className="w-full table-fixed">
               <thead className="bg-gray-100">
@@ -201,20 +182,24 @@ export function BlogsTable({
                 </tr>
               </thead>
             </table>
+            {/*------------------ datos Reales ----------------*/}
             <div className="flex-1 overflow-auto">
               <table className="w-full table-fixed">
                 <tbody className="bg-white divide-y divide-gray-200">
-                  
+              
                   {allPosts.map((blog) => (
-                    <BlogTableApi
-                      blog={blog}
-                      
-                      
+                    <BlogTableApi 
+                    key={blog.id}
+                    blog={blog} 
+                    onView={onViewBlog}
+                    onDelete={onDeleteBlog}
+                 
                     />
                   ))}
                 </tbody>
               </table>
             </div>
+            {/*------------------ datos Reales ----------------*/}
           </div>
         </CardContent>
       </Card>
