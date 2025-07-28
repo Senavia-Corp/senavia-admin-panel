@@ -170,7 +170,7 @@ export function ProjectEditor({
                 onChange={(e) =>
                   setFormData({ ...formData, estimatedValue: e.target.value })
                 }
-                placeholder="000.00"
+                placeholder="estimate_Id"
                 className="mt-1"
               />
             </div>
