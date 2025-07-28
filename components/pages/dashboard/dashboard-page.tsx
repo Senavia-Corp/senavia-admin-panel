@@ -13,7 +13,7 @@ import { useTestPortfolioData } from "@/hooks/useTestPortfolioData";
 
 export default function DashboardPage() {
   // Tabs y chat tabs
-  const REQUEST_TABS = ["Requests", "Projects"];
+  const REQUEST_TABS = ["Profile Info", "Requests", "Projects"];
   const CHAT_TABS = ["Chat", "Estimated value", "Invoices"];
 
   // Hook de datos y lógica
@@ -42,6 +42,8 @@ export default function DashboardPage() {
       data.setLoadingProjects(true);
       setRequestTab(tab);
       data.fetchProjects();
+    } else if (tab === "Profile Info") {
+      setRequestTab(tab);
     }
   };
 
@@ -280,24 +282,30 @@ export default function DashboardPage() {
               onSelect={handleSelectRequest}
               loading={data.loadingRequests}
             />
-          ) : (
+          ) : requestTab === "Projects" ? (
             <ProjectList
               projects={data.projects}
               selectedId={data.selectedProject}
               onSelect={handleSelectProject}
               loading={data.loadingProjects}
             />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full text-gray-400 text-lg font-semibold border-2 border-dashed border-gray-700 rounded-lg">
+              asd
+            </div>
           )}
         </div>
         {/* Main Content */}
-        <div className="col-span-2 flex flex-col gap-4 h-full min-h-0">
-          {/* Top Section */}
-          <div className="bg-user-container rounded-xl shadow p-4 flex flex-col gap-4 ">
-            {renderMainDetails()}
+        {requestTab !== "Profile Info" ? (
+          <div className="col-span-2 flex flex-col gap-4 h-full min-h-0">
+            {/* Top Section */}
+            <div className="bg-user-container rounded-xl shadow p-4 flex flex-col gap-4 ">
+              {renderMainDetails()}
+            </div>
+            {/* Bottom Section */}
+            {renderBottomSection()}
           </div>
-          {/* Bottom Section */}
-          {renderBottomSection()}
-        </div>
+        ) : null}
       </div>
       {/* Mobile Layout */}
       <div className="md:hidden flex flex-col gap-4 w-full h-screen min-h-0 flex-1 lg:mt-0">

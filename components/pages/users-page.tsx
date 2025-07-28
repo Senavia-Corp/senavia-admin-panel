@@ -4,21 +4,20 @@ import { useState, useEffect } from "react";
 import { UsersTable } from "@/components/organisms/users-table";
 import { DetailTabs } from "../molecules/detail-tabs";
 
-import { CreateUserDialog } from "@/components/organisms/create-user-dialog";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
+
 import { UserManagementService } from "@/services/user-management-service";
 import type { User, UserRole } from "@/types/user-management";
 import DashboardPage from "./dashboard/dashboard-page";
+import { CreateUserForm } from "./dashboard/create-user-form";
+import UserSettings from "./user-settings";
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showCreatePage, setShowCreatePage] = useState(false);
+  const [showEditPage, setShowEditPage] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -74,6 +73,36 @@ export function UsersPage() {
     );
   }
 
+  if (showCreatePage) {
+    return (
+      <div className="min-h-screen w-full bg-white ">
+        <div className="p-6">
+          <DetailTabs
+            title="User Details"
+            onBack={() => setShowCreatePage(false)}
+          >
+            <CreateUserForm />
+          </DetailTabs>
+        </div>
+      </div>
+    );
+  }
+
+  if (showEditPage) {
+    return (
+      <div className="min-h-screen w-full bg-white ">
+        <div className="p-6">
+          <DetailTabs
+            title="Edit User Information"
+            onBack={() => setShowEditPage(false)}
+          >
+            <UserSettings />
+          </DetailTabs>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Main Content */}
@@ -89,9 +118,10 @@ export function UsersPage() {
 
             <div className="flex-1 min-h-0">
               <UsersTable
+                onEditUser={() => setShowEditPage(true)}
                 users={users}
                 roles={roles}
-                onAddUser={() => setShowCreateDialog(true)}
+                onAddUser={() => setShowCreatePage(true)}
                 onViewUser={setSelectedUser}
                 onDeleteUser={setUserToDelete}
                 onSearch={setSearchTerm}
@@ -102,12 +132,7 @@ export function UsersPage() {
         </div>
       </main>
 
-      <CreateUserDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={loadUsers}
-        roles={roles}
-      />
+      {/* El modal ya no se usa, solo la página */}
 
       <DeleteConfirmDialog
         open={!!userToDelete}
