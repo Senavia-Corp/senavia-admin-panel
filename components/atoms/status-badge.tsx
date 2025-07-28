@@ -24,5 +24,5 @@ export function StatusBadge({ status, variant = "secondary" }: StatusBadgeProps)
     }
   }
 
-  return <Badge className={`${getStatusColor(status)} rounded-full px-3 py-1 text-xs font-medium`}>{status}</Badge>
+  return <Badge className={`${getStatusColor(status)} font-bold justify-center text-base w-auto lg:w-36 py-1 rounded-full text-white`}>{status}</Badge>
 }

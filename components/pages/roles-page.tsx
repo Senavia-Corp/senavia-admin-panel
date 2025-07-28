@@ -1,15 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { RolesTable } from "@/components/organisms/roles-table"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import { Button } from "@/components/ui/button"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Bell } from "lucide-react"
 import { RoleManagementService } from "@/services/role-management-service"
 import type { Role } from "@/types/role-management"
 import { RoleDetailForm } from "@/components/organisms/role-detail-form"
+import { GeneralTable } from "@/components/organisms/tables/general-table"
 
 export function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([])
@@ -30,6 +26,13 @@ export function RolesPage() {
       setRoles(rolesData)
     } catch (error) {
       console.error("Error loading roles:", error)
+    }
+  }
+
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":")
+    if (type === "status") {
+      setStatusFilter(value)
     }
   }
 
@@ -64,6 +67,16 @@ export function RolesPage() {
     loadRoles()
   }
 
+  
+
+  const handlers = {
+    onCreate: handleCreateRole,
+    onView: handleViewRole,
+    onDelete: (role: Role) => setRoleToDelete(role),
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
+  }
+
   // Show detail form for editing existing role or creating new role
   if (showDetailForm) {
     return (
@@ -79,7 +92,7 @@ export function RolesPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-screen pb-5">
       {/* Main Content */}
       <main className="flex-1  overflow-auto">
         <div className="px-6 h-full w-full">
@@ -87,20 +100,21 @@ export function RolesPage() {
             <div className="my-3">
               <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Role Management</h1>
             </div>
-
             <div className="flex-1 min-h-0">
-              <RolesTable
-                roles={roles}
-                onAddRole={handleCreateRole}
-                onViewRole={handleViewRole}
-                onDeleteRole={setRoleToDelete}
-                onSearch={setSearchTerm}
-                onStatusFilter={setStatusFilter}
-              />
+              {GeneralTable(
+                "roles-page",
+                "Add Role",
+                "Description",
+                "All Roles",
+                "Description",
+                ["Team ID", "Role Name", "Active", "Actions"],
+                roles,
+                handlers
+              )}
             </div>
           </div>
         </div>
-      </main>
+      </main> 
 
       <DeleteConfirmDialog
         open={!!roleToDelete}

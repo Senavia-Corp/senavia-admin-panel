@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Bell } from "lucide-react"
 import { PermissionManagementService } from "@/services/permission-management-service"
 import type { Permission } from "@/types/permission-management"
+import { GeneralTable } from "@/components/organisms/tables/general-table"
 
 export function PermissionsPage() {
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -36,6 +37,17 @@ export function PermissionsPage() {
       setPermissions(permissionsData)
     } catch (error) {
       console.error("Error loading permissions:", error)
+    }
+  }
+
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":")
+    if (type === "action") {
+      setActionFilter(value)
+    } else if (type === "service") {
+      setServiceFilter(value)
+    } else if (type === "status") {
+      setStatusFilter(value)
     }
   }
 
@@ -66,6 +78,14 @@ export function PermissionsPage() {
     setSelectedPermissionId(null)
     setShowCreateForm(false)
     loadPermissions()
+  }
+
+  const handlers = {
+    onCreate: handleCreatePermission,
+    onView: handleViewPermission,
+    onDelete: (permission: Permission) => setPermissionToDelete(permission),
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
   }
 
   // Show detail form for editing existing permission
@@ -101,23 +121,23 @@ export function PermissionsPage() {
   }
   // Show permissions table
   return (
-    <div className="md:flex-1 flex flex-col md:h-screen md:overflow-hidden">
+    <div className="flex flex-col h-screen">
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Permission Management</h1>
-            <div className="flex-1 min-h-0 mt-3">
-              <PermissionsTable
-                permissions={permissions}
-                onAddPermission={handleCreatePermission}
-                onViewPermission={handleViewPermission}
-                onDeletePermission={setPermissionToDelete}
-                onSearch={setSearchTerm}
-                onActionFilter={setActionFilter}
-                onServiceFilter={setServiceFilter}
-                onStatusFilter={setStatusFilter}
-              />
+            <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4 mb-3">Permission Management</h1>
+            <div className="flex-1 min-h-0">
+            {GeneralTable(
+                "permissions-page",
+                "Add Permission",
+                "Description",
+                "All Permissions",
+                "Description",
+                ["Permission ID", "Name", "Action", "Status","Associated To", "Actions"],
+                permissions,
+                handlers
+              )}
             </div>
           </div>
         </div>
