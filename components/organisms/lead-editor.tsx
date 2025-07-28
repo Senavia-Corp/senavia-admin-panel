@@ -183,6 +183,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
       errors.push("Client address is required");
     if (!formData.description.trim()) errors.push("Description is required");
     if (!formData.startDate.trim()) errors.push("Start date is required");
+    if (!formData.endDate?.trim()) errors.push("End date is required");
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -214,184 +215,202 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="bg-white rounded-lg p-8">
           <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Lead ID
-              </Label>
-              <Input value={leadId || "New Lead"} disabled className="mt-1" />
+            {/* Lead ID Section */}
+            <div className="mb-6">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Lead ID
+                </Label>
+                <Input value={leadId || "0000"} disabled className="mt-1" />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Service ID
-                </Label>
-                <Input
-                  value={formData.serviceId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, serviceId: e.target.value })
-                  }
-                  placeholder="Service ID"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  User ID
-                </Label>
-                <Input
-                  value={formData.userId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userId: e.target.value })
-                  }
-                  placeholder="User ID"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Workteam ID
-                </Label>
-                <Input
-                  value={formData.workteamId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, workteamId: e.target.value })
-                  }
-                  placeholder="Workteam ID"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Name *
-                </Label>
-                <Input
-                  value={formData.clientName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientName: e.target.value })
-                  }
-                  placeholder="Client Name"
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client E-mail *
-                </Label>
-                <Input
-                  type="email"
-                  value={formData.clientEmail}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientEmail: e.target.value })
-                  }
-                  placeholder="client@example.com"
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Phone *
-                </Label>
-                <Input
-                  value={formData.clientPhone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientPhone: e.target.value })
-                  }
-                  placeholder="Phone number"
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Address *
-                </Label>
-                <Input
-                  value={formData.clientAddress}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientAddress: e.target.value })
-                  }
-                  placeholder="Client Address"
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Status *
-                </Label>
-                <Select
-                  value={formData.state}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, state: value as LeadStatus })
-                  }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Dates *
-                </Label>
-                <div className="flex items-center gap-2 mt-1">
+            {/* Main Form - Two Columns */}
+            <div className="grid grid-cols-2 gap-8">
+              {/* Left Column - IDs and Client Information */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Service ID
+                  </Label>
                   <Input
-                    type="date"
-                    value={formData.startDate}
+                    value={formData.serviceId}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        startDate: e.target.value,
-                      })
+                      setFormData({ ...formData, serviceId: e.target.value })
                     }
-                    required
+                    placeholder="0000"
+                    className="mt-1"
                   />
-                  <span className="px-2">-</span>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    User ID
+                  </Label>
                   <Input
-                    type="date"
-                    value={formData.endDate}
+                    value={formData.userId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, userId: e.target.value })
+                    }
+                    placeholder="0000"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Workteam ID
+                  </Label>
+                  <Input
+                    value={formData.workteamId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, workteamId: e.target.value })
+                    }
+                    placeholder="0000"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Name
+                  </Label>
+                  <Input
+                    value={formData.clientName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientName: e.target.value })
+                    }
+                    placeholder="Client Name"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client E-mail
+                  </Label>
+                  <Input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientEmail: e.target.value })
+                    }
+                    placeholder="e-mail@client.com"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Phone
+                  </Label>
+                  <Input
+                    value={formData.clientPhone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientPhone: e.target.value })
+                    }
+                    placeholder="000-000-0000"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Address
+                  </Label>
+                  <Input
+                    value={formData.clientAddress}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        endDate: e.target.value,
+                        clientAddress: e.target.value,
                       })
                     }
+                    placeholder="Client Add"
+                    required
+                    className="mt-1"
                   />
                 </div>
               </div>
-            </div>
 
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Description *
-              </Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Enter description"
-                required
-                className="mt-1 min-h-[100px]"
-              />
+              {/* Right Column - Status, Time, Description */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Status
+                  </Label>
+                  <Select
+                    value={formData.state}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, state: value as LeadStatus })
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Dropdown here" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Estimated Time
+                  </Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          startDate: e.target.value,
+                          endDate: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                    <span className="px-2">-</span>
+                    <Input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          endDate: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Description
+                  </Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                    required
+                    className="mt-1 min-h-[100px]"
+                    maxLength={200}
+                  />
+                  <div className="text-xs text-gray-500 text-right mt-1">
+                    {formData.description.length}/200
+                  </div>
+                </div>
+              </div>
             </div>
 
             {error && <div className="text-red-500 text-sm">{error}</div>}
@@ -401,7 +420,11 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
               disabled={isLoading || !isFormValid()}
               className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
             >
-              {isLoading ? "Saving..." : leadId ? "Update Lead" : "Create Lead"}
+              {isLoading
+                ? "Saving..."
+                : leadId
+                ? "Update User"
+                : "Add / Update User"}
             </Button>
           </div>
         </div>
