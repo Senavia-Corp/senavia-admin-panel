@@ -3,6 +3,11 @@
 import { ThemeBadge } from "@/components/atoms/theme-badge";
 import { ActionButton } from "@/components/atoms/action-button";
 
+interface BlogTableRowProps {
+  blog: Blog;
+  onView: (blog: Blog) => void;
+  onDelete: (blog: Blog) => void;
+}
 interface Blog {
   id: string;
   title: string;
@@ -10,17 +15,7 @@ interface Blog {
   topic: string;
 }
 
-interface BlogTableApiProps {
-  blog: Blog;
-}
-
-interface BlogTableRowProps {
-  blog: Blog;
-  onView: (blog: Blog) => void;
-  onDelete: (blog: Blog) => void;
-}
-
-export function BlogTableApi({ blog }: BlogTableApiProps) {
+export function BlogTableApi({ blog,onView,onDelete }: BlogTableRowProps) {
   const formatDate = (date: string | Date) => {
     const realDate = new Date(date);
     if (isNaN(realDate.getTime())) return "Invalid date";

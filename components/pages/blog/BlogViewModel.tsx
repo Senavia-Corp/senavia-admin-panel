@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
-import { useFetch } from "@/lib/services/endpoints";
-import { endpoints } from "@/lib/services/endpoints";
-import {
-  ApiResponse,
-  Blog,
-  SimpleBlog,
-  SimpleBlogApiResponse,
-} from "./blog";
+import { endpoints,useFetch } from "@/lib/services/endpoints";
+//Importo las interfaces
+import {ApiResponse,Blog,SimpleBlog, SimpleBlogApiResponse,} from "./blog";
 
 export interface BlogViewModelParams {
   simpleBlog?: boolean;
@@ -14,11 +9,9 @@ export interface BlogViewModelParams {
   simpleBlogsPerPage?: number;
 }
 
-export const BlogViewModel = ({
-  simpleBlog = false,
-  offset = 0,
-  simpleBlogsPerPage = 10,
-}: BlogViewModelParams = {}) => {
+export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage = 10,
+}: BlogViewModelParams = {}) => 
+  {
   const { fetchData } = useFetch();
   const [posts, setPosts] = useState<Blog[] | SimpleBlog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

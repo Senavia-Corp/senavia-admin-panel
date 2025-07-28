@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Bold, Italic, Underline, Type, Upload } from "lucide-react";
 import { BlogManagementService } from "@/services/blog-management-service";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import type { Blog, BlogContent, BlogTheme } from "@/types/blog-management";
+import type { Blog, ContentJson, BlogTopic } from "@/types/blog-management";
 
 const topics = [
   { id: "1", name: "WEBDESIGN", displayName: "Web Design" },
@@ -24,31 +24,32 @@ const topics = [
 ];
 
 interface BlogEditorProps {
-  blogId?: string;
+  blogId?: number;
   onBack: () => void;
   onSave: () => void;
 }
 
 export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
   const [blog, setBlog] = useState<Blog | null>(null);
-  const [themes, setThemes] = useState<BlogTheme[]>([]);
+  const [themes, setThemes] = useState<BlogTopic[]>([]);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
+    resume: "",
+    topic: "",
+    publicationDate: "",
+    ImageReference: "",
+    ImageSubTitle: "",
+    SubTitle: "",
     content: {
-      subtitle: "",
       content1: "",
-      quote: "",
-      imageSubtitle: "",
       content2: "",
-    } as BlogContent,
-    theme: "",
-    summary: "",
-    secondaryImageReference: "",
-    published: false,
+      quote: "",
+    },
+    userId: "",
   });
 
   const [formData2, setFormData2] = useState({
@@ -63,14 +64,10 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     SubTitle: "",
     content: {
       content1: "",
-      content2:
-        "Contenido después de la imagen. Aquí puedes expandir las ideas principales con más detalle.",
-      quote:
-        "La creatividad es la inteligencia divirtiéndose. - Albert Einstein",
-      subtitle: "Subtítulo opcional para sección adicional",
-      imageSubtitle: "Imagen ilustrativa de las tendencias 2025",
+      content2: "",
+      quote: "",
     },
-    userId: 1,
+    userId: "",
   });
 
   useEffect(() => {
@@ -80,18 +77,23 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     }
   }, [blogId]);
 
-  const loadBlog = async (id: string) => {
+  const loadBlog = async (id: number) => {
     try {
       const blogData = await BlogManagementService.getBlogById(id);
+
+      
       if (blogData) {
         setBlog(blogData);
         setFormData({
           title: blogData.title,
+          resume: blogData.resume,
+          topic: blogData.topic,
+          publicationDate: blogData.publicationDate,                 
+          ImageReference: blogData.ImageReference,
+          ImageSubTitle: blogData.ImageSubTitle,
+          SubTitle: blogData.SubTitle,
           content: blogData.content,
-          theme: blogData.theme,
-          summary: blogData.summary,
-          secondaryImageReference: blogData.secondaryImageReference || "",
-          published: blogData.published,
+          userId:"1",
         });
       }
     } catch (error) {
@@ -108,7 +110,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     }
   };
 
-  //-----------------
+  //------- eliminar antes de gitpush console ----------
   const logFormData2 = () => {
     console.log("Contenido de formData2:");
 
@@ -122,10 +124,11 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       }
     });
   };
-  //-----------------
+  //  -----------------
   const handleSave = async () => {
+    
     const form_data = new FormData();
-
+    
     if (formData2.imageUrl instanceof File) {
       form_data.append("imageUrl", formData2.imageUrl);
     } else {
@@ -135,31 +138,17 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     if (formData2.ContentImageUrl) {
       if (formData2.ContentImageUrl instanceof File) {
         form_data.append("ContentImageUrl", formData2.ContentImageUrl);
-      } else {
-        console.error(
-          "ContentImageUrl no es un archivo válido:",
-          formData2.ContentImageUrl
-        );
-        return;
       }
     }
-    if (formData2.ImageReference) {
-      form_data.append("ImageReference", formData2.ImageReference);
-    }
-    if (formData2.ImageSubTitle) {
-      form_data.append("ImageSubTitle", formData2.ImageSubTitle);
-    }
-    if (formData2.content) {
-      form_data.append("content", JSON.stringify(formData2.content));
-    }
+    //campos opcionales
+    if (formData2.ImageReference) {form_data.append("ImageReference", formData2.ImageReference);}
+    if (formData2.ImageSubTitle) {form_data.append("ImageSubTitle", formData2.ImageSubTitle);}
+    if (formData2.content) {form_data.append("content", JSON.stringify(formData2.content));}
 
     form_data.append("title", formData2.title);
     form_data.append("resume", formData2.resume);
     form_data.append("topic", formData2.topic);
     form_data.append("publicationDate", _date);
-    if (formData2.imageUrl) {
-      form_data.append("imageUrl", formData2.imageUrl);
-    }
     form_data.append("SubTitle", formData2.SubTitle);
     form_data.append("userId", "1");
     form_data.append("content", JSON.stringify(formData2.content));
@@ -168,10 +157,12 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       method: "POST",
       body: form_data,
     });
-    const data = await response.json();
+
+
+
     logFormData2();
     setIsLoading(true);
-    try {
+    /*try {
       if (blogId) {
         await BlogManagementService.updateBlog(blogId, formData);
       } else {
@@ -185,11 +176,76 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       console.error("Error saving blog:", error);
     } finally {
       setIsLoading(false);
+    }*/
+  };
+  const handleUpdate = async () => {
+    const _formData = new FormData();
+
+    if (formData2.title) {
+      _formData.append("title", formData2.title);
     }
+    if (formData2.resume) {
+      _formData.append("resume", formData2.resume);
+    }
+    if (formData2.topic) {
+      _formData.append("topic", formData2.topic);
+    }
+    /*if (formData2.publicationDate) {
+      _formData.append("publicationDate", formData2.publicationDate);
+    }*/
+    if (formData2.imageUrl) {
+      if (formData2.imageUrl instanceof File) {
+        _formData.append("imageUrl", formData2.imageUrl);
+      }
+    }
+    if (formData2.ContentImageUrl) {
+      if (formData2.ContentImageUrl instanceof File) {
+        _formData.append("ContentImageUrl", formData2.ContentImageUrl);
+      }
+    }
+    if (formData2.ImageReference) {
+      _formData.append("ImageReference", formData2.ImageReference);
+    }
+    if (formData2.ImageSubTitle) {
+      _formData.append("ImageSubTitle", formData2.ImageSubTitle);
+    }
+    if (formData2.SubTitle) {
+      _formData.append("SubTitle", formData2.SubTitle);
+    }
+    if (formData2.content.content1) {
+      //Debe agregar al json content1
+      //_formData.append("content", formData2.content.content1);
+    }
+    if(formData2.content.content2){
+      //Debe agregar al json content2
+    }
+    if(formData2.content.quote){
+      //Debe agregar al json quote
+    }
+    if (formData2.userId) {
+      _formData.append("userId", formData2.userId);
+    }
+    const response = await fetch(
+      `http://localhost:3000/api/blog?id=${blogId}`,
+      {
+        method: "PATCH",
+        body: _formData,
+      }
+    );
+    
   };
 
   const handleDelete = async () => {
     if (blogId) {
+      const response = await fetch(
+        `http://localhost:3000/api/blog?id=${blogId}`,
+        {
+          method: "DELETE",
+        }
+      );
+    }
+
+   /* if (blogId) {
       try {
         await BlogManagementService.deleteBlog(blogId);
         setShowDeleteDialog(false);
@@ -197,10 +253,10 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       } catch (error) {
         console.error("Error deleting blog:", error);
       }
-    }
+    }*/
   };
 
-  const handleContentChange = (field: keyof BlogContent, value: string) => {
+  const handleContentChange = (field: keyof ContentJson, value: string) => {
     setFormData((prev) => ({
       ...prev,
       content: {
@@ -231,7 +287,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Post Editor</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {blogId ? "Blog Editor" : "Blog Create"}
+        </h1>
       </div>
 
       {/* Main Content */}
@@ -243,7 +301,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Publication Date:</span>
               <span className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
-                {_date}
+                {blogId ? blog?.publicationDate : _date}
               </span>
             </div>
           </div>
@@ -251,7 +309,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
           {/* Blog Title */}
           <div className="mb-6">
             <Input
-              value={formData2.title}
+              value={blog?blog.title:formData2.title}
               onChange={(e) => {
                 setFormData((prev) => ({ ...prev, title: e.target.value }));
                 setFormData2((prev) => ({ ...prev, title: e.target.value }));
@@ -295,9 +353,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Subtitle
               </Label>
               <Input
-                value={formData2.SubTitle}
+                value={blog?blog.SubTitle:formData2.SubTitle}
                 onChange={(e) => {
-                  handleContentChange("subtitle", e.target.value);
+                  /*handleContentChange("subtitle", e.target.value);*/
                   setFormData2((prev) => ({
                     ...prev,
                     SubTitle: e.target.value,
@@ -313,9 +371,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Content 1
               </Label>
               <Textarea
-                value={formData2.content.content1}
+                value={blog?blog.content.content1:formData2.content.content1}
                 onChange={(e) =>
-                  /*  handleContentChange("content1", e.target.value)*/
+                  /* handleContentChange("content1", e.target.value)*/
                   setFormData2((prev) => ({
                     ...prev,
                     content: {
@@ -335,7 +393,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Quote
               </Label>
               <Textarea
-                value={formData2.content.quote}
+                value={blog?blog.content.quote:formData2.content.quote}
                 onChange={(e) =>
                   /*  handleContentChange("quote", e.target.value)*/
                   setFormData2((prev) => ({
@@ -357,7 +415,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Image SubTitle
               </Label>
               <Input
-                value={formData2.ImageSubTitle}
+                value={blog?blog.ImageSubTitle:formData2.ImageSubTitle}
                 onChange={(e) =>
                   setFormData2((prev) => ({
                     ...prev,
@@ -374,7 +432,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Content 2
               </Label>
               <Textarea
-                value={formData2.content.content2}
+                value={blog?blog.content.content2:formData2.content.content2}
                 onChange={(e) =>
                   /* handleContentChange("content2", e.target.value)*/
                   setFormData2((prev) => ({
@@ -404,15 +462,14 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 value={formData2.resume}
                 onChange={(e) => {
                   setFormData((prev) => ({ ...prev, resume: e.target.value }));
-                  setFormData2((prev) => ({ ...prev, resume: e.target.value }));
-                  console.log("Resumen cambiado: ", e.target.value);
+                  setFormData2((prev) => ({ ...prev, resume: e.target.value }));                  
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={4}
                 maxLength={200}
               />
               <div className="text-right text-sm text-gray-500 mt-2">
-                {formData.summary.length}/200
+                {formData2.resume.length}/200
               </div>
             </CardContent>
           </Card>
@@ -425,8 +482,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
             <CardContent>
               <Select
                 value={formData2.topic}
-                onValueChange={(value) => {
-                  setFormData((prev) => ({ ...prev, theme: value }));
+                onValueChange={(value) => {                  
                   setFormData2((prev) => ({ ...prev, topic: value }));
                 }}
               >
@@ -468,7 +524,8 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                     <Upload className="h-4 w-4 mr-2" />
                     Upload from my Computer
                   </Button>
-                  <input
+                  <Input
+                  className="bg-green-500 hover:bg-green-600 text-white"
                     type="file"
                     onChange={(e) => {
                       // Get the files from the input event
@@ -481,7 +538,8 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                         }));
                       }
                     }}
-                  ></input>
+                  >    
+                  </Input>
                 </div>
               </div>
 
@@ -498,9 +556,8 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                     <Upload className="h-4 w-4 mr-2" />
                     Upload from my Computer
                   </Button>
-                  <input
-                    type="file"
-                    onChange={(e) => {
+              
+                  <Input className="bg-green-500 hover:bg-green-600 text-white" type="file"  onChange={(e) => {
                       // Get the files from the input event
                       const files = e.target.files;
                       // If files are selected, update the state with the first file
@@ -511,7 +568,8 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                         }));
                       }
                     }}
-                  ></input>
+                  ></Input>
+            
                 </div>
                 <Input
                   value={formData2.ImageReference}
@@ -530,17 +588,28 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
-            >
-              {isLoading
-                ? "Saving..."
-                : blogId
-                ? "Update Entry"
-                : "Publish Entry"}
-            </Button>
+            {blogId ? (
+              <Button
+                onClick={handleUpdate}
+                disabled={isLoading}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
+              >
+                Update Entry
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
+              >
+                {isLoading
+                  ? "Saving..."
+                  : blogId
+                  ? "Create Entry"
+                  : "Publish Entry"}
+              </Button>
+            )}
+
             {blogId && (
               <Button
                 onClick={() => setShowDeleteDialog(true)}
@@ -559,7 +628,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Blog Post"
-        description={`Are you sure you want to delete "${formData.title}"? This action cannot be undone.`}
+        description={`Are you sure you want to delete "${formData2.title}"? This action cannot be undone.`}
       />
     </div>
   );

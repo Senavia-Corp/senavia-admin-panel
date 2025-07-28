@@ -1,18 +1,18 @@
-export interface SupportTicket {
-  id: string
-  userName: string
-  type: TicketType
-  status: TicketStatus
-  createdAt: Date
-  updatedAt: Date
+export interface SupportTicket {  
+  id:number
+  title: string
+  type: string
+  status: string
+  description:string
 }
 
-export type TicketType = "Bug" | "Request" | "Review" | "Other"
+export type TicketType = "BUG" | "REQUEST" | "REVIEW" | "OTHER"
 
-export type TicketStatus = "Pending" | "Assigned" | "InProcess" | "UnderReview" | "Solved" | "Closed"
+export type TicketStatus = "PENDING" | "ASSIGNED" | "INPROCESS" | "UNDERREVIEW" | "SOLVED" | "CLOSED"
 
 export interface CreateTicketData {
-  userName: string
+  title: string
   type: TicketType
   status: TicketStatus
+  description:string
 }

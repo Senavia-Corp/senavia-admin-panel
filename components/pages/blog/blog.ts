@@ -8,32 +8,28 @@ interface BlogPost {
 }
 
 export interface BlogContent {
-  quote: string;
   content1: string;
   content2: string;
+  quote: string;
 }
 
-export interface User{
-  name:string;
-  email: string;
-  imageUrl: string;
-}
+
 
 export interface Blog {
   id: number;
   title: string;
   resume: string;
-  content: BlogContent;
   topic: string;
   publicationDate: string;
   imageUrl: string;
-  SubTitle: string;
-  ImageSubTitle: string;
-  ContentImageUrl: string;
-  ImageReference: string;
   createdAt: string;
   updatedAt: string;
-  User: User;
+  ContentImageUrl: string;
+  ImageReference: string;
+  ImageSubTitle: string;
+  SubTitle: string;
+  userId: number;
+  content: BlogContent;
 }
 
 export type { BlogPost };

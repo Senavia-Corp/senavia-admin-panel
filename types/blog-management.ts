@@ -1,39 +1,40 @@
 export interface Blog {
-  id: string
-  title: string
-  content: BlogContent
-  theme: string
-  summary: string
-  mainImage?: string
-  secondaryImage?: string
-  secondaryImageReference?: string
-  createdAt: Date
-  updatedAt: Date
-  published: boolean
-  author: string
+  id: number;
+  title: string;
+  resume: string;
+  topic: string;
+  publicationDate: string;
+  imageUrl: string;
+  createdAt: Date;
+  updatedAt: Date;
+  ContentImageUrl: string;
+  ImageReference: string;
+  
+  ImageSubTitle:string
+  SubTitle:string
+  userId:number
+  content: ContentJson;
 }
 
-export interface BlogContent {
-  subtitle: string
-  content1: string
-  quote: string
-  imageSubtitle: string
-  content2: string
+export interface ContentJson {
+  content1: string;
+  content2: string;
+  quote: string;
 }
 
 export interface CreateBlogData {
-  title: string
-  content: BlogContent
-  theme: string
-  summary: string
-  mainImage?: File
-  secondaryImage?: File
-  secondaryImageReference?: string
-  published: boolean
+  title: string;
+  content: ContentJson;
+  theme: string;
+  summary: string;
+  mainImage?: File;
+  secondaryImage?: File;
+  secondaryImageReference?: string;
+  published: boolean;
 }
 
-export interface BlogTheme {
-  id: string
-  name: string
-  color: string
+export interface BlogTopic {
+  id: string;
+  name: string;
+  color: string;
 }
