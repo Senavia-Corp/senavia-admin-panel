@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RoleTableRow } from "@/components/molecules/role-table-row";
+import { RoleTableRow } from "@/components/organisms/tables/row/role-table-row";
 import { Plus, Search, Filter } from "lucide-react";
 import type { Role } from "@/types/role-management";
 
@@ -119,7 +119,7 @@ export function RolesTable({
           <div className="bg-white rounded-lg overflow-auto flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
 
               <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
-                <thead className="bg-gray-100 sticky top-0 z-10">
+                <thead className="bg-[#E1E4ED] sticky top-0 z-10">
                   <tr>
                     <th className="p-5 text-center text-2xl font-semibold text-[#616774] whitespace-nowrap">
                       Team ID

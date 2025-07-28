@@ -1,16 +1,26 @@
+export type ProjectPhase = "Analysis" | "Design" | "Development" | "Deployment";
+
 export interface ProjectRecord {
-  id: string
-  name: string
-  startDate: Date
-  phase: ProjectPhase
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  currentPhase: ProjectPhase;
+  estimateId: string;
+  workteamId: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type ProjectPhase = "Analysis" | "Design" | "Development" | "Deployment"
-
 export interface CreateProjectData {
-  name: string
-  startDate: Date
-  phase: ProjectPhase
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  currentPhase: ProjectPhase;
+  estimateId?: string;
+  workteamId?: string;
+  status: string;
 }

@@ -20,7 +20,21 @@ export const endpoints = {
     createTicket: `${API}/ticket`,
     updateTicket: (id: number) => `${API}/ticket?id=${id}`,
     deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
-  }
+  },
+  lead: {
+    getPosts: `${API}/lead`,
+    getPost: (id: number) => `${API}/lead?id=${id}`,
+    createPost: `${API}/lead`,
+    updatePost: (id: number) => `${API}/lead?id=${id}`,
+    deletePost: (id: number) => `${API}/lead?id=${id}`,
+  },
+  project: {
+    getPosts: `${API}/project`,
+    getPost: (id: number) => `${API}/project?id=${id}`,
+    createPost: `${API}/project`,
+    updatePost: (id: number) => `${API}/project?id=${id}`,
+    deletePost: (id: number) => `${API}/project?id=${id}`,
+  },
 };
 
 // Header configurations

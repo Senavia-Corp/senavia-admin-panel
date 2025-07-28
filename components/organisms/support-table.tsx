@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SupportTableRow } from "@/components/molecules/support-table-row"
+import { SupportTableRow } from "@/components/molecules/ticket-table-row"
 import { Plus, Search, Filter } from "lucide-react"
 
 import type { SupportTicket, TicketType, TicketStatus } from "@/types/support-management"

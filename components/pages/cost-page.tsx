@@ -12,7 +12,7 @@ import type { BillingRecord } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 
-export function BillingPage() {
+export function CostPage() {
   const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([])
   const [billingToDelete, setBillingToDelete] = useState<BillingRecord | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -82,6 +82,13 @@ export function BillingPage() {
     onFilter: handleFilterChange,
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount)
+  }
+
   if (showBillingDetail) {
     return (
       <div className="">
@@ -123,16 +130,17 @@ export function BillingPage() {
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
-              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
+            <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
+            <p className="font-bold text-[#393939] text-5xl">Total: {formatCurrency(billingRecords[0].totalValue)}</p>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "billing-page",
-                "Add Billing",
+                "Add Cost",
                 "Description",
-                "All Billing",
+                "All Costs",
                 "Description",
-                ["Billing ID", "Estimated Time", "State", "Total", "Actions"],
+                ["Cost ID", "Name", "Type", "Value", "Actions"],
                 billingRecords,
                 handlers
               )}

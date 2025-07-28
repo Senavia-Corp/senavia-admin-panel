@@ -3,6 +3,9 @@ export interface BillingRecord {
   estimatedTime: number // in months
   status: BillingStatus
   totalValue: number
+  description: string
+  associatedLead: string
+  service: string
   createdAt: Date
   updatedAt: Date
 }
@@ -13,4 +16,7 @@ export interface CreateBillingData {
   estimatedTime: number
   status: BillingStatus
   totalValue: number
+  description: string
+  associatedLead: string
+  service: string
 }

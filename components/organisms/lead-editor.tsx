@@ -15,6 +15,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
 import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
+import { toast } from "sonner";
 
 interface LeadEditorProps {
   leadId?: string;
@@ -24,10 +25,10 @@ interface LeadEditorProps {
 
 export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
   const [lead, setLead] = useState<Lead | null>(null);
-  const [themes, setThemes] = useState<LeadStatus[]>([]);
+  const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [formData, setFormData] = useState<CreateLeadData>({
     clientName: "",
-    status: "Send" as LeadStatus,
+    state: "SEND",
     workteamId: "",
     serviceId: "",
     userId: "",
@@ -35,12 +36,14 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     clientEmail: "",
     clientPhone: "",
     clientAddress: "",
-    estimatedStartDate: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadThemes();
+    loadStatuses();
     if (leadId) {
       loadLead(leadId);
     }
@@ -48,64 +51,150 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
   const loadLead = async (id: string) => {
     try {
+      setError(null);
       const leadData = await LeadManagementService.getLeadById(id);
       if (leadData) {
         setLead(leadData);
         setFormData({
           clientName: leadData.clientName || "",
-          status: leadData.status || "Send",
-          workteamId: leadData.workteamId || "",
-          serviceId: leadData.serviceId || "",
-          userId: leadData.userId || "",
+          state: leadData.state || "SEND",
+          workteamId: leadData.workteamId ? leadData.workteamId.toString() : "",
+          serviceId: leadData.serviceId ? leadData.serviceId.toString() : "",
+          userId: leadData.userId ? leadData.userId.toString() : "",
           description: leadData.description || "",
           clientEmail: leadData.clientEmail || "",
           clientPhone: leadData.clientPhone || "",
           clientAddress: leadData.clientAddress || "",
-          estimatedStartDate: leadData.estimatedStartDate || "",
+          startDate:
+            leadData.startDate || new Date().toISOString().split("T")[0],
+          endDate: leadData.endDate || new Date().toISOString().split("T")[0],
         });
       }
     } catch (error) {
-      console.error("Error loading lead:", error);
+      console.error("Load lead error:", error);
+      let errorMessage = "Error loading lead";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP error! status: 404")) {
+          errorMessage = "Lead not found or API endpoint not available.";
+        } else if (error.message.includes("Unexpected token")) {
+          errorMessage =
+            "Invalid response from server. Please check your API configuration.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
-  const loadThemes = async () => {
+  const loadStatuses = async () => {
     try {
-      const themesData = await LeadManagementService.getLeadStatuses();
-      setThemes(themesData);
+      const statusesData = await LeadManagementService.getLeadStatuses();
+      setStatuses(statusesData);
     } catch (error) {
-      console.error("Error loading themes:", error);
+      console.error("Error loading statuses:", error);
+      toast.error("Error loading statuses");
     }
   };
 
   const handleSave = async () => {
     setIsLoading(true);
+    setError(null);
+
+    // Validate form data before sending
+    const validationErrors = validateFormData();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(", "));
+      toast.error(validationErrors.join(", "));
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Clean the data before sending
+      const cleanData = {
+        ...formData,
+        clientName: formData.clientName.trim(),
+        clientEmail: formData.clientEmail.trim(),
+        clientPhone: formData.clientPhone.trim(),
+        clientAddress: formData.clientAddress.trim(),
+        description: formData.description.trim(),
+        startDate: formData.startDate.trim(),
+        endDate: formData.endDate?.trim() || "",
+        serviceId: formData.serviceId?.trim() || undefined,
+        userId: formData.userId?.trim() || undefined,
+        workteamId: formData.workteamId?.trim() || undefined,
+      };
+
       if (leadId) {
-        // Convert formData to match the Lead type for update
-        const updateData = {
-          clientName: formData.clientName,
-          status: formData.status,
-          workteamId: formData.workteamId,
-          serviceId: formData.serviceId,
-          userId: formData.userId,
-          description: formData.description,
-          clientEmail: formData.clientEmail,
-          clientPhone: formData.clientPhone,
-          clientAddress: formData.clientAddress,
-          estimatedStartDate: formData.estimatedStartDate,
-          startDate: formData.estimatedStartDate, // Using estimatedStartDate as startDate
-        };
-        await LeadManagementService.updateLead(leadId, updateData);
+        await LeadManagementService.updateLead(leadId, cleanData);
+        toast.success("Lead updated successfully");
       } else {
-        await LeadManagementService.createLead(formData);
+        await LeadManagementService.createLead(cleanData);
+        toast.success("Lead created successfully");
       }
       onSave();
     } catch (error) {
-      console.error("Error saving lead:", error);
+      console.error("Save error:", error);
+      let errorMessage = "Error saving lead";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP error! status: 404")) {
+          errorMessage =
+            "API endpoint not found. Please check your server configuration.";
+        } else if (error.message.includes("HTTP error! status: 500")) {
+          errorMessage = "Server error. Please try again later.";
+        } else if (error.message.includes("Unexpected token")) {
+          errorMessage =
+            "Invalid response from server. Please check your API configuration.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.clientName.trim() !== "" &&
+      formData.clientEmail.trim() !== "" &&
+      formData.clientPhone.trim() !== "" &&
+      formData.clientAddress.trim() !== "" &&
+      formData.description.trim() !== "" &&
+      formData.startDate.trim() !== ""
+    );
+  };
+
+  const validateFormData = () => {
+    const errors: string[] = [];
+
+    if (!formData.clientName.trim()) errors.push("Client name is required");
+    if (!formData.clientEmail.trim()) errors.push("Client email is required");
+    if (!formData.clientPhone.trim()) errors.push("Client phone is required");
+    if (!formData.clientAddress.trim())
+      errors.push("Client address is required");
+    if (!formData.description.trim()) errors.push("Description is required");
+    if (!formData.startDate.trim()) errors.push("Start date is required");
+    if (!formData.endDate?.trim()) errors.push("End date is required");
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (
+      formData.clientEmail.trim() &&
+      !emailRegex.test(formData.clientEmail.trim())
+    ) {
+      errors.push("Invalid email format");
+    }
+
+    return errors;
   };
 
   return (
@@ -126,183 +215,216 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="bg-white rounded-lg p-8">
           <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Lead ID
-              </Label>
-              <Input
-                value={leadId || "0000"}
-                disabled
-                placeholder="0000"
-                className="mt-1"
-              />
+            {/* Lead ID Section */}
+            <div className="mb-6">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Lead ID
+                </Label>
+                <Input value={leadId || "0000"} disabled className="mt-1" />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Service ID
-                </Label>
-                <Input
-                  value={formData.serviceId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, serviceId: e.target.value })
-                  }
-                  placeholder="0000"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  User ID
-                </Label>
-                <Input
-                  value={formData.userId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userId: e.target.value })
-                  }
-                  placeholder="0000"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Workteam ID
-                </Label>
-                <Input
-                  value={formData.workteamId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, workteamId: e.target.value })
-                  }
-                  placeholder="0000"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Name
-                </Label>
-                <Input
-                  value={formData.clientName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientName: e.target.value })
-                  }
-                  placeholder="Client Name"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client E-mail
-                </Label>
-                <Input
-                  type="email"
-                  value={formData.clientEmail}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientEmail: e.target.value })
-                  }
-                  placeholder="e-mail@client.com"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Phone
-                </Label>
-                <Input
-                  value={formData.clientPhone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientPhone: e.target.value })
-                  }
-                  placeholder="000-000-0000"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Client Address
-                </Label>
-                <Input
-                  value={formData.clientAddress}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientAddress: e.target.value })
-                  }
-                  placeholder="Client Address"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Status
-                </Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value as LeadStatus })
-                  }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Estimated Time
-                </Label>
-                <div className="flex items-center gap-2 mt-1">
+            {/* Main Form - Two Columns */}
+            <div className="grid grid-cols-2 gap-8">
+              {/* Left Column - IDs and Client Information */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Service ID
+                  </Label>
                   <Input
-                    type="date"
-                    value={formData.estimatedStartDate}
+                    value={formData.serviceId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, serviceId: e.target.value })
+                    }
+                    placeholder="0000"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    User ID
+                  </Label>
+                  <Input
+                    value={formData.userId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, userId: e.target.value })
+                    }
+                    placeholder="0000"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Workteam ID
+                  </Label>
+                  <Input
+                    value={formData.workteamId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, workteamId: e.target.value })
+                    }
+                    placeholder="0000"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Name
+                  </Label>
+                  <Input
+                    value={formData.clientName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientName: e.target.value })
+                    }
+                    placeholder="Client Name"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client E-mail
+                  </Label>
+                  <Input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientEmail: e.target.value })
+                    }
+                    placeholder="e-mail@client.com"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Phone
+                  </Label>
+                  <Input
+                    value={formData.clientPhone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientPhone: e.target.value })
+                    }
+                    placeholder="000-000-0000"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Client Address
+                  </Label>
+                  <Input
+                    value={formData.clientAddress}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        estimatedStartDate: e.target.value,
+                        clientAddress: e.target.value,
                       })
                     }
-                    placeholder="dd/mm/aaaa"
+                    placeholder="Client Add"
+                    required
+                    className="mt-1"
                   />
-                  <span className="px-2">-</span>
-                  <Input type="date" placeholder="dd/mm/aaaa" />
+                </div>
+              </div>
+
+              {/* Right Column - Status, Time, Description */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Status
+                  </Label>
+                  <Select
+                    value={formData.state}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, state: value as LeadStatus })
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Dropdown here" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Estimated Time
+                  </Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          startDate: e.target.value,
+                          endDate: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                    <span className="px-2">-</span>
+                    <Input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          endDate: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Description
+                  </Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                    required
+                    className="mt-1 min-h-[100px]"
+                    maxLength={200}
+                  />
+                  <div className="text-xs text-gray-500 text-right mt-1">
+                    {formData.description.length}/200
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Description
-              </Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Enter description"
-                className="mt-1 min-h-[100px]"
-              />
-            </div>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
 
             <Button
               onClick={handleSave}
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid()}
               className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
             >
-              {isLoading ? "Saving..." : leadId ? "Update Lead" : "Create Lead"}
+              {isLoading
+                ? "Saving..."
+                : leadId
+                ? "Update User"
+                : "Add / Update User"}
             </Button>
           </div>
         </div>

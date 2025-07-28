@@ -9,6 +9,9 @@ const mockBillingRecords: BillingRecord[] = [
     totalValue: 15000,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
+    description: "Description 1",
+    associatedLead: "Lead 1",
+    service: "Web Development",
   },
   {
     id: "0002",
@@ -17,6 +20,9 @@ const mockBillingRecords: BillingRecord[] = [
     totalValue: 25000,
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
+    description: "Description 2",
+    associatedLead: "Lead 2",
+    service: "Graphic Design",
   },
   {
     id: "0003",
@@ -25,6 +31,9 @@ const mockBillingRecords: BillingRecord[] = [
     totalValue: 18000,
     createdAt: new Date("2024-01-12"),
     updatedAt: new Date("2024-01-19"),
+    description: "Description 3",
+    associatedLead: "Lead 3",
+    service: "Web Development"
   },
   {
     id: "0004",
@@ -33,6 +42,9 @@ const mockBillingRecords: BillingRecord[] = [
     totalValue: 8000,
     createdAt: new Date("2024-01-08"),
     updatedAt: new Date("2024-01-16"),
+    description: "Description 4",
+    associatedLead: "Lead 4",
+    service: "Web Design"
   },
   {
     id: "0005",
@@ -41,6 +53,9 @@ const mockBillingRecords: BillingRecord[] = [
     totalValue: 22000,
     createdAt: new Date("2024-01-14"),
     updatedAt: new Date("2024-01-21"),
+    description: "Description 5",
+    associatedLead: "Lead 5",
+    service: "Web Development"
   },
 ]
 
@@ -75,6 +90,9 @@ export class BillingManagementService {
       totalValue: recordData.totalValue,
       createdAt: new Date(),
       updatedAt: new Date(),
+      description: recordData.description,
+      associatedLead: recordData.associatedLead,
+      service: recordData.service,
     }
 
     mockBillingRecords.push(newRecord)
