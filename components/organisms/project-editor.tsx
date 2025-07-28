@@ -27,10 +27,13 @@ interface ProjectFormData {
   name: string;
   description: string;
   currentPhase: ProjectPhase;
-  projectType: string;
   status: string;
   startDate: string;
   endDate: string;
+  estimateId: string;
+  workteamId: string;
+  estimatedValue: string;
+  attendant: string;
 }
 
 export function ProjectEditor({
@@ -42,10 +45,13 @@ export function ProjectEditor({
     name: "",
     description: "",
     currentPhase: "Analysis",
-    projectType: "",
     status: "Active",
     startDate: "",
     endDate: "",
+    estimateId: "",
+    workteamId: "",
+    estimatedValue: "",
+    attendant: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,10 +67,13 @@ export function ProjectEditor({
               name: project.name,
               description: project.description,
               currentPhase: project.currentPhase,
-              projectType: project.projectType,
               status: project.status,
               startDate: project.startDate,
               endDate: project.endDate,
+              estimateId: project.estimateId || "",
+              workteamId: project.workteamId || "",
+              estimatedValue: "",
+              attendant: "",
             });
           }
         } catch (error) {
@@ -84,14 +93,26 @@ export function ProjectEditor({
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Create the data object that matches CreateProjectData interface
+      const projectData = {
+        name: formData.name,
+        description: formData.description,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        currentPhase: formData.currentPhase,
+        estimateId: formData.estimateId || undefined,
+        workteamId: formData.workteamId || undefined,
+        status: formData.status,
+      };
+
       if (projectId) {
-        await ProjectManagementService.updateProject(projectId, formData);
+        await ProjectManagementService.updateProject(projectId, projectData);
         toast({
           title: "Success",
           description: "Project updated successfully",
         });
       } else {
-        await ProjectManagementService.createProject(formData);
+        await ProjectManagementService.createProject(projectData);
         toast({
           title: "Success",
           description: "Project created successfully",
@@ -141,6 +162,20 @@ export function ProjectEditor({
             </div>
 
             <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Estimated
+              </Label>
+              <Input
+                value={formData.estimatedValue}
+                onChange={(e) =>
+                  setFormData({ ...formData, estimatedValue: e.target.value })
+                }
+                placeholder="000.00"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
               <Label className="text-sm font-medium text-gray-700">Name</Label>
               <Input
                 value={formData.name}
@@ -161,100 +196,74 @@ export function ProjectEditor({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Enter description"
+                placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 className="mt-1 min-h-[100px]"
+                maxLength={200}
+              />
+              <div className="text-xs text-gray-500 text-right mt-1">
+                {formData.description.length}/200
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Current Phase
+              </Label>
+              <Select
+                value={formData.currentPhase}
+                onValueChange={(value: ProjectPhase) =>
+                  setFormData({ ...formData, currentPhase: value })
+                }
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Dropdown here" />
+                </SelectTrigger>
+                <SelectContent>
+                  {phases.map((phase) => (
+                    <SelectItem key={phase} value={phase}>
+                      {phase}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Attendant
+              </Label>
+              <Input
+                value={formData.attendant}
+                onChange={(e) =>
+                  setFormData({ ...formData, attendant: e.target.value })
+                }
+                placeholder="Attendant"
+                className="mt-1"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Current Phase
-                </Label>
-                <Select
-                  value={formData.currentPhase}
-                  onValueChange={(value: ProjectPhase) =>
-                    setFormData({ ...formData, currentPhase: value })
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                Expected Duration
+              </Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, startDate: e.target.value })
                   }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select phase" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {phases.map((phase) => (
-                      <SelectItem key={phase} value={phase}>
-                        {phase}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Project Type
-                </Label>
-                <Select
-                  value={formData.projectType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, projectType: value })
+                  placeholder="Start Date"
+                />
+                <span className="px-2">-</span>
+                <Input
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endDate: e.target.value })
                   }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Web">Web</SelectItem>
-                    <SelectItem value="Mobile">Mobile</SelectItem>
-                    <SelectItem value="Desktop">Desktop</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Status
-                </Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="On Hold">On Hold</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Project Duration
-                </Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, startDate: e.target.value })
-                    }
-                    placeholder="Start Date"
-                  />
-                  <span className="px-2">-</span>
-                  <Input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, endDate: e.target.value })
-                    }
-                    placeholder="End Date"
-                  />
-                </div>
+                  placeholder="End Date"
+                />
               </div>
             </div>
 
@@ -266,8 +275,8 @@ export function ProjectEditor({
               {isLoading
                 ? "Saving..."
                 : projectId
-                ? "Update Project"
-                : "Create Project"}
+                ? "Update Task"
+                : "Add / Update Task"}
             </Button>
           </div>
         </div>

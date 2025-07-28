@@ -7,7 +7,8 @@ export interface ProjectRecord {
   startDate: string;
   endDate: string;
   currentPhase: ProjectPhase;
-  projectType: string;
+  estimateId: string;
+  workteamId: string;
   status: string;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +20,7 @@ export interface CreateProjectData {
   startDate: string;
   endDate: string;
   currentPhase: ProjectPhase;
-  projectType: string;
+  estimateId?: string;
+  workteamId?: string;
   status: string;
 }
