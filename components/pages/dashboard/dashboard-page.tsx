@@ -13,7 +13,7 @@ import { useTestPortfolioData } from "@/hooks/useTestPortfolioData";
 
 export default function DashboardPage() {
   // Tabs y chat tabs
-  const REQUEST_TABS = ["Requests", "Projects"];
+  const REQUEST_TABS = ["Profile Info", "Requests", "Projects"];
   const CHAT_TABS = ["Chat", "Estimated value", "Invoices"];
 
   // Hook de datos y lógica
@@ -42,6 +42,8 @@ export default function DashboardPage() {
       data.setLoadingProjects(true);
       setRequestTab(tab);
       data.fetchProjects();
+    } else if (tab === "Profile Info") {
+      setRequestTab(tab);
     }
   };
 
@@ -111,7 +113,7 @@ export default function DashboardPage() {
             key={tab}
             className={`px-3 py-1 rounded-full font-bold border-2 transition-colors text-[14px] h-8 ${
               activeTab === tab
-                ? "bg-[#99CC33] text-[#13103A] border-[#99CC33]"
+                ? "bg-[#99CC33] text-white border-[#99CC33]"
                 : "bg-transparent text-[#99CC33] border-[#99CC33]"
             }`}
             onClick={() => onTabChange(tab)}
@@ -182,7 +184,7 @@ export default function DashboardPage() {
 
   function renderBottomSection() {
     return (
-      <div className="bg-[#13103A] rounded-xl shadow p-4 flex-1 flex flex-col gap-2 min-h-0 h-0">
+      <div className="bg-user-container rounded-xl shadow p-4 flex-1 flex flex-col gap-2 min-h-0 h-0">
         {/* Tabs fijos */}
         <TabButtons
           tabs={getChatTabs(requestTab)}
@@ -263,11 +265,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="w-full bg-[#04081E] p-4 flex flex-col gap-4 h-[calc(100vh-72px)] text-gray-200">
+    <div className="w-full bg-secondary-dark rounded-lg p-4 flex flex-col gap-4 h-[calc(100vh-72px)] text-gray-200">
       {/* Desktop/Tablet Layout */}
-      <div className="hidden md:grid grid-cols-3 gap-4 w-full h-full min-h-0">
+      <div className="hidden md:grid grid-cols-3 gap-4 w-full h-full min-h-0 ">
         {/* Sidebar */}
-        <div className="col-span-1 bg-[#13103A] rounded-xl shadow p-4 flex flex-col gap-4 h-full min-h-0">
+        <div className="col-span-1 bg-user-container rounded-xl shadow p-4 flex flex-col gap-4 h-full min-h-0">
           <TabButtons
             tabs={REQUEST_TABS}
             activeTab={requestTab}
@@ -280,24 +282,30 @@ export default function DashboardPage() {
               onSelect={handleSelectRequest}
               loading={data.loadingRequests}
             />
-          ) : (
+          ) : requestTab === "Projects" ? (
             <ProjectList
               projects={data.projects}
               selectedId={data.selectedProject}
               onSelect={handleSelectProject}
               loading={data.loadingProjects}
             />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full text-gray-400 text-lg font-semibold border-2 border-dashed border-gray-700 rounded-lg">
+              asd
+            </div>
           )}
         </div>
         {/* Main Content */}
-        <div className="col-span-2 flex flex-col gap-4 h-full min-h-0">
-          {/* Top Section */}
-          <div className="bg-[#13103A] rounded-xl shadow p-4 flex flex-col gap-4">
-            {renderMainDetails()}
+        {requestTab !== "Profile Info" ? (
+          <div className="col-span-2 flex flex-col gap-4 h-full min-h-0">
+            {/* Top Section */}
+            <div className="bg-user-container rounded-xl shadow p-4 flex flex-col gap-4 ">
+              {renderMainDetails()}
+            </div>
+            {/* Bottom Section */}
+            {renderBottomSection()}
           </div>
-          {/* Bottom Section */}
-          {renderBottomSection()}
-        </div>
+        ) : null}
       </div>
       {/* Mobile Layout */}
       <div className="md:hidden flex flex-col gap-4 w-full h-screen min-h-0 flex-1 lg:mt-0">

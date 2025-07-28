@@ -23,6 +23,7 @@ interface UsersTableProps {
   onDeleteUser: (user: User) => void;
   onSearch: (search: string) => void;
   onRoleFilter: (roleId: string) => void;
+  onEditUser: (user: User) => void;
 }
 
 export function UsersTable({
@@ -33,6 +34,7 @@ export function UsersTable({
   onDeleteUser,
   onSearch,
   onRoleFilter,
+  onEditUser,
 }: UsersTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
@@ -150,6 +152,7 @@ export function UsersTable({
                       onDelete={onDeleteUser}
                       isLast={idx === users.length - 1}
                       isFirst={idx === 0}
+                      onEdit={onEditUser}
                     />
                   ))}
                 </tbody>

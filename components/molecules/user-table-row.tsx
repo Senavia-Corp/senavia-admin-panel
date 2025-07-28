@@ -10,6 +10,7 @@ interface UserTableRowProps {
   onDelete: (user: User) => void;
   isLast?: boolean;
   isFirst?: boolean;
+  onEdit: (user: User) => void;
 }
 
 export function UserTableRow({
@@ -18,6 +19,7 @@ export function UserTableRow({
   onDelete,
   isLast,
   isFirst,
+  onEdit,
 }: UserTableRowProps) {
   const borderClasses = `${isFirst ? " border-t-[10px] border-white" : ""}${
     !isLast ? " border-b-[10px] border-white" : ""
@@ -43,6 +45,7 @@ export function UserTableRow({
         <div className="flex justify-center items-center h-full space-x-2">
           <ActionButton type="view" onClick={() => onView(user)} />
           <ActionButton type="delete" onClick={() => onDelete(user)} />
+          <ActionButton type="edit" onClick={() => onEdit(user)} />
         </div>
       </td>
     </tr>

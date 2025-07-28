@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, Pencil } from "lucide-react";
 
 interface ActionButtonProps {
-  type: "view" | "delete";
+  type: "view" | "delete" | "edit";
   onClick: () => void;
   disabled?: boolean;
   size?: "sm" | "lg";
@@ -16,7 +16,7 @@ export function ActionButton({
   disabled,
   size = "sm",
 }: ActionButtonProps) {
-  const Icon = type === "view" ? Eye : Trash2;
+  const Icon = type === "view" ? Eye : type === "edit" ? Pencil : Trash2;
   const btnSize = size === "lg" ? "h-10 w-10" : "h-8 w-8";
   const iconSize = "!h-5 !w-5";
   return (
