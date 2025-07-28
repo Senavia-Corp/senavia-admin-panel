@@ -123,17 +123,39 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
     
   };
 
-  const handleUpdate = async () => {};
+  const handleUpdate = async () => {
+const rawTicketData={
+  title: ticketData.title,
+  type: ticketData.type,
+  status: ticketData.status,
+  description: ticketData.description,
+}
+const _ticketData = Object.fromEntries(
+    Object.entries(rawTicketData).filter(([_, value]) => 
+      value != null && (typeof value !== "string" || value.trim() !== "")
+    )
+  );
+const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
+  method:"PATCH",
+  body:JSON.stringify(_ticketData),
+  headers:{
+    "Content-Type": "application/json",
+  }
+})
+}
+
+
+  
 
   const handleDelete = async () => {
-  /*  if (blogId) {
+    if (ticketId) {
       const response = await fetch(
-        `http://localhost:3000/api/blog?id=${blogId}`,
+        `http://localhost:3000/api/ticket?id=${ticketId}`,
         {
           method: "DELETE",
         }
       );
-    }*/
+    }
 
     /* if (blogId) {
       try {
@@ -166,7 +188,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
   const _date = String(formatDate(new Date()));
 
   return (
-    <div className="h-full w-screen max-w-none px-6">
+    <div className="h-full w-screen max-w-none px-6 ">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
@@ -183,7 +205,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full">
+      <div className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full " >
         {/* Left Column - Content Editor */}
         <div className="flex-1 bg-white rounded-lg p-8 mr-6 max-w-none">
           <div className="flex items-center justify-between mb-6">
@@ -224,6 +246,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
             </div>
           </div>
           {/* Type TicketPlan */}
+          <div>
           <Card className="bg-white">
             <CardHeader>
               <CardTitle className="text-lg">Type</CardTitle>
@@ -249,8 +272,9 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
             </CardContent>
           </Card>
           {/* Fin Type TicketPlan */}
-
+</div>
           {/* Select Status */}
+          <div>
           <Card className="bg-white">
             <CardHeader>
               <CardTitle className="text-lg">Status</CardTitle>
@@ -275,6 +299,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
               </Select>
             </CardContent>
           </Card>
+          </div>
           {/* Fin  Select Status*/}
         </div>
         {/* Fin Left Column - Metadata */}
@@ -315,7 +340,10 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
               </Button>
             )}
           </div>
+            {/*Fin  Right Column - Metadata */}
         </div>
+        <div className="border"></div>
+
       </div>
 
       <DeleteConfirmDialog

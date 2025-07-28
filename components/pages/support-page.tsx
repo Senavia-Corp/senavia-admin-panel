@@ -77,41 +77,13 @@ export function SupportPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center space-x-2">
-              <img
-                src="/images/senavia-logo.png"
-                alt="Senavia Logo"
-                className="w-8 h-8 object-contain"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm">U</span>
-              </div>
-              <span className="text-sm font-medium">Username</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex-1 flex flex-col h-screen overflow-hidden">      
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
-              Technical Support
+              Tickets
             </h1>
 
             <div className="flex-1 min-h-0">
