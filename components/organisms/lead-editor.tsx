@@ -58,21 +58,35 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
         setFormData({
           clientName: leadData.clientName || "",
           state: leadData.state || "SEND",
-          workteamId: leadData.workteamId || "",
-          serviceId: leadData.serviceId || "",
-          userId: leadData.userId || "",
+          workteamId: leadData.workteamId ? leadData.workteamId.toString() : "",
+          serviceId: leadData.serviceId ? leadData.serviceId.toString() : "",
+          userId: leadData.userId ? leadData.userId.toString() : "",
           description: leadData.description || "",
           clientEmail: leadData.clientEmail || "",
           clientPhone: leadData.clientPhone || "",
           clientAddress: leadData.clientAddress || "",
           startDate:
             leadData.startDate || new Date().toISOString().split("T")[0],
-          endDate: leadData.endDate || "",
+          endDate: leadData.endDate || new Date().toISOString().split("T")[0],
         });
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Error loading lead");
-      toast.error("Error loading lead");
+      console.error("Load lead error:", error);
+      let errorMessage = "Error loading lead";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP error! status: 404")) {
+          errorMessage = "Lead not found or API endpoint not available.";
+        } else if (error.message.includes("Unexpected token")) {
+          errorMessage =
+            "Invalid response from server. Please check your API configuration.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -89,18 +103,60 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
   const handleSave = async () => {
     setIsLoading(true);
     setError(null);
+
+    // Validate form data before sending
+    const validationErrors = validateFormData();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(", "));
+      toast.error(validationErrors.join(", "));
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Clean the data before sending
+      const cleanData = {
+        ...formData,
+        clientName: formData.clientName.trim(),
+        clientEmail: formData.clientEmail.trim(),
+        clientPhone: formData.clientPhone.trim(),
+        clientAddress: formData.clientAddress.trim(),
+        description: formData.description.trim(),
+        startDate: formData.startDate.trim(),
+        endDate: formData.endDate?.trim() || "",
+        serviceId: formData.serviceId?.trim() || undefined,
+        userId: formData.userId?.trim() || undefined,
+        workteamId: formData.workteamId?.trim() || undefined,
+      };
+
       if (leadId) {
-        await LeadManagementService.updateLead(leadId, formData);
+        await LeadManagementService.updateLead(leadId, cleanData);
         toast.success("Lead updated successfully");
       } else {
-        await LeadManagementService.createLead(formData);
+        await LeadManagementService.createLead(cleanData);
         toast.success("Lead created successfully");
       }
       onSave();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Error saving lead");
-      toast.error(error instanceof Error ? error.message : "Error saving lead");
+      console.error("Save error:", error);
+      let errorMessage = "Error saving lead";
+
+      if (error instanceof Error) {
+        if (error.message.includes("HTTP error! status: 404")) {
+          errorMessage =
+            "API endpoint not found. Please check your server configuration.";
+        } else if (error.message.includes("HTTP error! status: 500")) {
+          errorMessage = "Server error. Please try again later.";
+        } else if (error.message.includes("Unexpected token")) {
+          errorMessage =
+            "Invalid response from server. Please check your API configuration.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -108,13 +164,36 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
   const isFormValid = () => {
     return (
-      formData.clientName &&
-      formData.clientEmail &&
-      formData.clientPhone &&
-      formData.clientAddress &&
-      formData.description &&
-      formData.startDate
+      formData.clientName.trim() !== "" &&
+      formData.clientEmail.trim() !== "" &&
+      formData.clientPhone.trim() !== "" &&
+      formData.clientAddress.trim() !== "" &&
+      formData.description.trim() !== "" &&
+      formData.startDate.trim() !== ""
     );
+  };
+
+  const validateFormData = () => {
+    const errors: string[] = [];
+
+    if (!formData.clientName.trim()) errors.push("Client name is required");
+    if (!formData.clientEmail.trim()) errors.push("Client email is required");
+    if (!formData.clientPhone.trim()) errors.push("Client phone is required");
+    if (!formData.clientAddress.trim())
+      errors.push("Client address is required");
+    if (!formData.description.trim()) errors.push("Description is required");
+    if (!formData.startDate.trim()) errors.push("Start date is required");
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (
+      formData.clientEmail.trim() &&
+      !emailRegex.test(formData.clientEmail.trim())
+    ) {
+      errors.push("Invalid email format");
+    }
+
+    return errors;
   };
 
   return (

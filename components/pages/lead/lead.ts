@@ -21,7 +21,7 @@ export enum LeadStatusEnum {
   SEND = "SEND",
   PROCESSING = "PROCESSING",
   ESTIMATING = "ESTIMATING",
-  FINISHED = "FINISHED"
+  FINISHED = "FINISHED",
 }
 
 export interface Lead {

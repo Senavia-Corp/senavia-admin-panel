@@ -1,13 +1,12 @@
 import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
 
-
 export class LeadManagementService {
   static async getLeads(
     search?: string,
     statusFilter?: string
   ): Promise<Lead[]> {
     try {
-      const response = await fetch("/api/lead", {
+      const response = await fetch("http://localhost:3000/api/lead", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -43,12 +42,16 @@ export class LeadManagementService {
 
   static async getLeadById(id: string): Promise<Lead | null> {
     try {
-      const response = await fetch(`/api/lead?id=${id}`, {
+      const response = await fetch(`http://localhost:3000/api/lead?id=${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (!data.success) {
@@ -64,13 +67,17 @@ export class LeadManagementService {
 
   static async createLead(leadData: CreateLeadData): Promise<Lead> {
     try {
-      const response = await fetch("/api/lead", {
+      const response = await fetch("http://localhost:3000/api/lead", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(leadData),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (!data.success) {
@@ -89,13 +96,17 @@ export class LeadManagementService {
     updates: Partial<Lead>
   ): Promise<Lead | null> {
     try {
-      const response = await fetch(`/api/lead?id=${id}`, {
+      const response = await fetch(`http://localhost:3000/api/lead?id=${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updates),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (!data.success) {
@@ -111,12 +122,16 @@ export class LeadManagementService {
 
   static async deleteLead(id: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/lead?id=${id}`, {
+      const response = await fetch(`http://localhost:3000/api/lead?id=${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (!data.success) {
