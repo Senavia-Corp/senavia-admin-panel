@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from "@radix-ui/react-popover";
 import { LeadEditor } from "./lead-editor";
+import { toast } from "sonner";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -42,6 +43,7 @@ export function LeadsTable({
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [showEditor, setShowEditor] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -65,6 +67,20 @@ export function LeadsTable({
     onViewLead(lead);
   };
 
+  const handleDeleteLead = async (lead: Lead) => {
+    try {
+      setIsLoading(true);
+      await onDeleteLead(lead);
+      toast.success("Lead deleted successfully");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Error deleting lead"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEditorClose = () => {
     setShowEditor(false);
     setSelectedLead(null);
@@ -79,10 +95,10 @@ export function LeadsTable({
   };
 
   const statuses: LeadStatus[] = [
-    "Send",
-    "Processing",
-    "Estimating",
-    "Finished",
+    "SEND",
+    "PROCESSING",
+    "ESTIMATING",
+    "FINISHED",
   ];
 
   if (showEditor) {
@@ -170,19 +186,22 @@ export function LeadsTable({
             <table className="w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Lead ID
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Client Name
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Start Date
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="w-1/4 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -196,9 +215,20 @@ export function LeadsTable({
                       key={lead.id}
                       lead={lead}
                       onView={handleViewLead}
-                      onDelete={onDeleteLead}
+                      onDelete={handleDeleteLead}
+                      isLoading={isLoading}
                     />
                   ))}
+                  {leads.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-4 text-center text-gray-500"
+                      >
+                        No leads found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

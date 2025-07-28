@@ -13,15 +13,15 @@ interface ProjectPhasesSidebarProps {
 
 export function ProjectPhasesSidebar({ selectedPhase, onPhaseChange, projectPhase }: ProjectPhasesSidebarProps) {
   const allPhases: { phase: ProjectPhase; label: string }[] = [
-    { phase: "analysis", label: "Phase 1 - Analysis" },
-    { phase: "design", label: "Phase 2 - Design" },
-    { phase: "development", label: "Phase 3 - Development" },
-    { phase: "deployment", label: "Phase 4 - Deployment" },
+    { phase: "Analysis", label: "Phase 1 - Analysis" },
+    { phase: "Design", label: "Phase 2 - Design" },
+    { phase: "Development", label: "Phase 3 - Development" },
+    { phase: "Deployment", label: "Phase 4 - Deployment" },
   ]
 
   // Determine available phases based on project progress
   const getAvailablePhases = (currentPhase: ProjectPhase): ProjectPhase[] => {
-    const phases: ProjectPhase[] = ["analysis", "design", "development", "deployment"]
+    const phases: ProjectPhase[] = ["Analysis", "Design", "Development", "Deployment"]
     const currentIndex = phases.indexOf(currentPhase)
     return phases.slice(0, currentIndex + 1)
   }
