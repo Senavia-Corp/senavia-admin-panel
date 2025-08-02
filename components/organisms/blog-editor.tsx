@@ -126,7 +126,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
   };
   //  -----------------
   const handleSave = async () => {
-    
+    console.log("deberia funcionar")
     const form_data = new FormData();
     
     if (formData2.imageUrl instanceof File) {
@@ -276,7 +276,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
   const _date = String(formatDate(new Date()));
 
   return (
-    <div className="h-full w-screen max-w-none px-6">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button

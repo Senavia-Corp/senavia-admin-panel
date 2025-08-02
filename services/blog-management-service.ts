@@ -78,9 +78,6 @@ export class BlogManagementService {
     return filteredBlogs;
   }
 
-  static async getBlogById(id: number): Promise<Blog | null> {
-    return mockBlogs.find((blog) => blog.id === id) || null;
-  }
 
   static async createBlog(blogData: CreateBlogData): Promise<Blog> {
     const newBlog: Blog = {
@@ -128,4 +125,7 @@ export class BlogManagementService {
   static async getBlogThemes(): Promise<BlogTopic[]> {
     return mockThemes;
   }
+
+
+  
 }

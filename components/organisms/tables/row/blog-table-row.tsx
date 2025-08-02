@@ -11,7 +11,8 @@ interface BlogTableRowProps {
 }
 
 export function BlogTableRow({ blog, onView, onDelete }: BlogTableRowProps) {
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: Date) => {
+     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
@@ -25,7 +26,7 @@ export function BlogTableRow({ blog, onView, onDelete }: BlogTableRowProps) {
       <td className="flex-1 px-6 py-4 text-sm text-gray-900 truncate">{blog.title}</td>
       <td className="w-32 px-6 py-4 text-sm text-gray-900">{formatDate(blog.createdAt)}</td>
       <td className="w-40 px-6 py-4">
-        <ThemeBadge theme={blog.theme} />
+        <ThemeBadge theme={blog.topic} />
       </td>
       <td className="w-32 px-6 py-4">
         <div className="flex space-x-2">
