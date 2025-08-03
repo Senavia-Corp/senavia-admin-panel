@@ -7,6 +7,10 @@ import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialo
 import { BlogManagementService } from "@/services/blog-management-service"
 import type { Blog, BlogTopic } from "@/types/blog-management"
 import { BlogEditor } from "@/components/organisms/blog-editor"
+import { GeneralTable } from "@/components/organisms/tables/general-table"
+
+
+import BlogViewModel from "./blog/BlogViewModel"
  
 export function BlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([])
@@ -18,6 +22,11 @@ export function BlogsPage() {
   const [themeFilter, setThemeFilter] = useState("")
   const [showEditor, setShowEditor] = useState(false)
   const [editingBlogId, setEditingBlogId] = useState<number | null>(null)
+
+  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
+  const [offset, setOffset] = useState(0);  
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const { posts, loading, pageInfo } = BlogViewModel({ simpleBlog: true, offset,simpleBlogsPerPage});
 
   useEffect(() => {
     loadBlogs()
@@ -61,6 +70,16 @@ export function BlogsPage() {
     setEditingBlogId(null)
     setShowEditor(true)
   }
+  const handleFilterChange=()=>{
+    
+  }
+const handlers = {
+    onCreate: handleCreateBlog,
+    onView: handleViewBlog,
+    onDelete: (blog: Blog) => setBlogToDelete(blog),
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
+  }
 
   if (showEditor) {
     return (
@@ -91,15 +110,15 @@ export function BlogsPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">Blog Posts</h1>
 
             <div className="flex-1 min-h-0">
-              <BlogsTable
-                blogs={blogs}
-                topics={themes}
-                onAddBlog={handleCreateBlog}
-                onViewBlog={handleViewBlog}
-                onDeleteBlog={setBlogToDelete}
-                onSearch={setSearchTerm}
-                onThemeFilter={setThemeFilter}
-              />
+             {GeneralTable(
+              "blogs-page",
+              "Add post",
+              "Description",
+              "All Posts",
+              "Description",
+              ["Blog ID","Title", "Date","Topic","Actions"],
+              posts,handlers               
+             )}
             </div>
           </div>
         </div>

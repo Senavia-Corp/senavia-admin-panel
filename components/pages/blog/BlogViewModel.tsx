@@ -17,9 +17,6 @@ export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pageInfo, setPageInfo] = useState<any>(null);
-
-  
-
   useEffect(() => {
     const getBlogs = async () => {
       const { response, status, errorLogs } = await fetchData<any>(
