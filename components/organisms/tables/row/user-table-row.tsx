@@ -8,6 +8,7 @@ interface UserTableRowProps {
   user: User;
   onView: (user: User) => void;
   onDelete: (user: User) => void;
+  onEdit?: (user: User) => void;
   isLast?: boolean;
   isFirst?: boolean;
 }
@@ -16,6 +17,7 @@ export function UserTableRow({
   user,
   onView,
   onDelete,
+  onEdit,
   isLast,
   isFirst,
 }: UserTableRowProps) {
@@ -42,6 +44,7 @@ export function UserTableRow({
       <td className="w-1/6 px-6 py-[10px] text-center align-middle">
         <div className="flex justify-center items-center h-full space-x-2">
           <ActionButton type="view" onClick={() => onView(user)} />
+          {onEdit && <ActionButton type="edit" onClick={() => onEdit(user)} />}
           <ActionButton type="delete" onClick={() => onDelete(user)} />
         </div>
       </td>

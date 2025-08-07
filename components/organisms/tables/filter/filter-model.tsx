@@ -159,7 +159,15 @@ export const FilterRole = ({
   );
 };
 
-const billingStatuses = ["Created", "Processing", "InReview", "Rejected", "Accepted", "Invoice", "Paid"]
+const billingStatuses = [
+  "Created",
+  "Processing",
+  "InReview",
+  "Rejected",
+  "Accepted",
+  "Invoice",
+  "Paid",
+];
 
 export const FilterBilling = ({
   onFilter,
@@ -193,6 +201,51 @@ export const FilterBilling = ({
             {billingStatuses.map((status) => (
               <SelectItem key={status} value={status}>
                 {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// User filter component
+export const FilterUser = ({
+  onFilter,
+}: {
+  onFilter: (filter: string) => void;
+}) => {
+  const [selectedRole, setSelectedRole] = useState<string>("all");
+
+  const handleRoleFilter = (role: string) => {
+    setSelectedRole(role);
+    onFilter(`role:${role}`);
+  };
+
+  // Roles que coinciden con los IDs en UserManagementService
+  const userRoles = [
+    { id: "1", name: "Administrator" },
+    { id: "2", name: "Customer" },
+    { id: "3", name: "Developer" },
+    { id: "4", name: "Designer" },
+  ];
+
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Filter className="h-5 w-5" />
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0 m-0 bg-gray-800 border-gray-700">
+        <Select value={selectedRole} onValueChange={handleRoleFilter}>
+          <SelectTrigger className="w-32 bg-gray-800 border-gray-700 text-white">
+            <SelectValue placeholder="Filter by role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Roles</SelectItem>
+            {userRoles.map((role) => (
+              <SelectItem key={role.id} value={role.id}>
+                {role.name}
               </SelectItem>
             ))}
           </SelectContent>

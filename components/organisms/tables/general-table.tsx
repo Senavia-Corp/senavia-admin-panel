@@ -18,6 +18,7 @@ import {
   FilterBilling,
   FilterPermission,
   FilterRole,
+  FilterUser,
 } from "@/components/organisms/tables/filter/filter-model";
 
 {
@@ -30,6 +31,7 @@ type GeneralTableHandlers = {
   onSearch: (term: string) => void;
   onFilter: (filter: string) => void;
   onViewTasks?: (item: any) => void;
+  onEdit?: (item: any) => void;
 };
 
 export function GeneralTable(
@@ -42,8 +44,15 @@ export function GeneralTable(
   data: any[],
   handlers: GeneralTableHandlers
 ) {
-  const { onCreate, onView, onDelete, onSearch, onFilter, onViewTasks } =
-    handlers;
+  const {
+    onCreate,
+    onView,
+    onDelete,
+    onSearch,
+    onFilter,
+    onViewTasks,
+    onEdit,
+  } = handlers;
 
   const tableRows = data.map((item) => {
     switch (Page.toLowerCase()) {
@@ -81,6 +90,7 @@ export function GeneralTable(
             user={item}
             onView={() => onView(item)}
             onDelete={() => onDelete(item)}
+            onEdit={onEdit ? () => onEdit(item) : undefined}
           />
         );
       case "contracts-page":
@@ -142,6 +152,8 @@ export function GeneralTable(
         return <FilterRole onFilter={onFilter} />;
       case "billing-page":
         return <FilterBilling onFilter={onFilter} />;
+      case "users-page":
+        return <FilterUser onFilter={onFilter} />;
       default:
         return null;
     }
