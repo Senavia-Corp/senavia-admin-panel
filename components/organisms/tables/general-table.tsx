@@ -19,6 +19,7 @@ import {
   FilterPermission,
   FilterRole,
   FilterUser,
+  FilterContract,
 } from "@/components/organisms/tables/filter/filter-model";
 
 {
@@ -100,6 +101,7 @@ export function GeneralTable(
             contract={item}
             onView={() => onView(item)}
             onDelete={() => onDelete(item)}
+            onEdit={onEdit ? () => onEdit(item) : undefined}
           />
         );
       case "blogs-page":
@@ -154,6 +156,8 @@ export function GeneralTable(
         return <FilterBilling onFilter={onFilter} />;
       case "users-page":
         return <FilterUser onFilter={onFilter} />;
+      case "contracts-page":
+        return <FilterContract onFilter={onFilter} />;
       default:
         return null;
     }
