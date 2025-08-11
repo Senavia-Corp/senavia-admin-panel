@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MultiSelect } from "@/components/atoms/multiselect";
+import { Trash2 } from "lucide-react";
 
 interface CreateUserFormValues {
   name: string;
@@ -43,6 +44,14 @@ export function CreateUserForm() {
     if (file) {
       setProfileImage(file);
       setProfileImageUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage(null);
+    setProfileImageUrl("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -125,27 +134,48 @@ export function CreateUserForm() {
             <label className="block text-sm font-medium mb-1 mt-4">
               Profile Picture
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={profileImage?.name || "Picture.png"}
-                readOnly
-              />
-              {profileImageUrl && (
-                <img
-                  src={profileImageUrl}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover shadow"
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  className="flex-1 border rounded px-3 py-2 text-sm"
+                  value={profileImage?.name || "No image"}
+                  readOnly
                 />
+                {profileImageUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                    title="Remove image"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+
+              {profileImageUrl ? (
+                <div className="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                  <img
+                    src={profileImageUrl}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">No image</span>
+                </div>
               )}
+
               <button
                 type="button"
-                className="ml-2 px-2 py-1 bg-[#181B29] text-white rounded-full text-xs"
+                className="px-4 py-2 bg-[#181B29] text-white rounded-full text-sm hover:bg-[#252938] transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
                 Upload new image
               </button>
+
               <input
                 type="file"
                 accept="image/*"
