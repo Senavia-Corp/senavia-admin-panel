@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ProjectsTable } from "@/components/organisms/projects-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
 import type { ProjectRecord } from "@/types/project-management";
+import { GeneralTable } from "@/components/organisms/tables/general-table";
+import { ProjectEditor } from "@/components/organisms/project-editor";
 import { toast } from "@/components/ui/use-toast";
 
 export function ProjectsPage() {
@@ -18,6 +15,10 @@ export function ProjectsPage() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+  const [showEditorForm, setShowEditorForm] = useState(false);
 
   useEffect(() => {
     loadProjects();
@@ -40,6 +41,16 @@ export function ProjectsPage() {
     }
   };
 
+  const handleCreateProject = () => {
+    setSelectedProjectId(null);
+    setShowEditorForm(true);
+  };
+
+  const handleViewProject = (project: ProjectRecord) => {
+    setSelectedProjectId(project.id);
+    setShowEditorForm(true);
+  };
+
   const handleDeleteProject = async (project: ProjectRecord) => {
     try {
       await ProjectManagementService.deleteProject(project.id);
@@ -59,8 +70,23 @@ export function ProjectsPage() {
     }
   };
 
+  const handleFilterChange = (filter: string) => {
+    setPhaseFilter(filter);
+  };
+
+  const handleBackToList = () => {
+    setSelectedProjectId(null);
+    setShowEditorForm(false);
+  };
+
+  const handleSaveSuccess = () => {
+    setSelectedProjectId(null);
+    setShowEditorForm(false);
+    loadProjects();
+  };
+
   const handleViewTasks = (project: ProjectRecord) => {
-    // Implementar vista de tareas
+    // TODO: Implement tasks view
     console.log("View tasks for project:", project);
     toast({
       title: "Info",
@@ -68,28 +94,62 @@ export function ProjectsPage() {
     });
   };
 
+  const handlers = {
+    onCreate: handleCreateProject,
+    onView: handleViewProject,
+    onDelete: (project: ProjectRecord) => setProjectToDelete(project),
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
+    onViewTasks: handleViewTasks,
+  };
+
+  // Show editor form for creating/editing project
+  if (showEditorForm) {
+    return (
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <main className="flex-1 bg-gray-50 overflow-auto">
+          <div className="p-6 h-full w-full">
+            <ProjectEditor
+              projectId={selectedProjectId || undefined}
+              onBack={handleBackToList}
+              onSave={handleSaveSuccess}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
-              Project Management
-            </h1>
-
+            <div className="flex items-center mb-6 flex-shrink-0">
+              <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
+              <h1 className="font-sans font-medium text-[25px] leading-none tracking-normal align-middle text-gray-900">
+                Project Management
+              </h1>
+            </div>
             <div className="flex-1 min-h-0">
-              <ProjectsTable
-                projects={projects}
-                onAddProject={() => loadProjects()}
-                onViewProject={() => loadProjects()}
-                onDeleteProject={setProjectToDelete}
-                onViewTasks={handleViewTasks}
-                onSearch={setSearchTerm}
-                onPhaseFilter={setPhaseFilter}
-                onStatusFilter={setPhaseFilter}
-              />
+              {GeneralTable(
+                "projects-page",
+                "Add Project",
+                "Create a new project to manage your work",
+                "All Projects",
+                "View and manage all your projects in the system",
+                [
+                  "Project ID",
+                  "Name",
+                  "Start Date",
+                  "Current Phase",
+                  "Tasks",
+                  "Actions",
+                ],
+                projects,
+                handlers
+              )}
             </div>
           </div>
         </div>

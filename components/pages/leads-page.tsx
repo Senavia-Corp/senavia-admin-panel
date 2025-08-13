@@ -125,7 +125,7 @@ export function LeadsPage() {
                 "Create a new lead for potential business opportunity",
                 "All Leads",
                 "View and manage all lead opportunities in the system",
-                ["ID", "Client Name", "Start Date", "Status", "Actions"],
+                ["Lead ID", "Client Name", "Start Date", "Status", "Actions"],
                 leads,
                 handlers
               )}

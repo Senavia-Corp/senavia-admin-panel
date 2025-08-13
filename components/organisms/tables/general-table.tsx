@@ -21,6 +21,7 @@ import {
   FilterUser,
   FilterContract,
 } from "@/components/organisms/tables/filter/filter-model";
+import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
 
 {
   /* HANDLERS */
@@ -158,6 +159,8 @@ export function GeneralTable(
         return <FilterUser onFilter={onFilter} />;
       case "contracts-page":
         return <FilterContract onFilter={onFilter} />;
+      case "leads-page":
+        return <FilterLead onFilter={onFilter} />;
       default:
         return null;
     }
@@ -176,7 +179,7 @@ export function GeneralTable(
             onClick={onCreate}
             className="[&_svg]:size-7 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
           >
-            <Plus color="#04081E" strokeWidth={3} />
+            <Plus className="h-5 w-5" color="#04081E" strokeWidth={3} />
           </Button>
         </CardHeader>
       </Card>
