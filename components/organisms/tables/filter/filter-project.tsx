@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/select";
 import { Filter, Plus } from "lucide-react";
 
-interface FilterLeadProps {
+interface FilterProjectProps {
   onFilter: (filter: string) => void;
 }
 
-export function FilterLead({ onFilter }: FilterLeadProps) {
+export function FilterProject({ onFilter }: FilterProjectProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("all");
 
@@ -28,25 +28,20 @@ export function FilterLead({ onFilter }: FilterLeadProps) {
     onFilter(value);
   };
 
-  const statuses = [
-    "Send",
-    "Processing",
-    "Estimating",
-    "Finished",
-  ];
+  const statuses = ["Analysis", "Design", "Development", "Deployment"];
 
   return (
     <div className="flex items-center space-x-2">
       <Button
         variant="ghost"
         onClick={toggleFilters}
-        className="[&_svg]:size-7 "
+        className="[&_svg]:size-7"
       >
         <Filter className="h-5 w-5" />
       </Button>
       {showFilters && (
         <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+          <SelectTrigger className="w-32 bg-gray-800 border-gray-700 ">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>

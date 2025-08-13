@@ -22,6 +22,7 @@ import {
   FilterContract,
 } from "@/components/organisms/tables/filter/filter-model";
 import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
+import { FilterProject } from "@/components/organisms/tables/filter/filter-project";
 
 {
   /* HANDLERS */
@@ -161,6 +162,8 @@ export function GeneralTable(
         return <FilterContract onFilter={onFilter} />;
       case "leads-page":
         return <FilterLead onFilter={onFilter} />;
+      case "projects-page":
+        return <FilterProject onFilter={onFilter} />;
       default:
         return null;
     }
