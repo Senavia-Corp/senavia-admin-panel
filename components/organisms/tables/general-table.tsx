@@ -42,6 +42,7 @@ export function GeneralTable(
   data: any[],
   handlers: GeneralTableHandlers
 ) {
+  //console.log("📦 Datos recibidos en GeneralTable:", data);
   const { onCreate, onView, onDelete, onSearch, onFilter, onViewTasks } =
     handlers;
 

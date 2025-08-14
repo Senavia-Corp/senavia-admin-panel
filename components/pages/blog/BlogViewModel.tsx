@@ -11,12 +11,13 @@ export interface BlogViewModelParams {
 
 export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage = 10,
 }: BlogViewModelParams = {}) => 
-  {
+  {     
   const { fetchData } = useFetch();
   const [posts, setPosts] = useState<Blog[] | SimpleBlog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pageInfo, setPageInfo] = useState<any>(null);
+  
   useEffect(() => {
     const getBlogs = async () => {
       const { response, status, errorLogs } = await fetchData<any>(
@@ -43,19 +44,18 @@ export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage 
       if (offset) params.append("offset", offset.toString());
       if (simpleBlog && simpleBlogsPerPage)
         params.append("simpleBlogsPerPage", simpleBlogsPerPage.toString());
-      //const url = `${endpoints.blog.getPosts}${params.toString() ? `?${params.toString()}` : ""}`;
-      const  url = "http://localhost:3000/api/blog"
+      const url = `${endpoints.blog.getPosts}${params.toString() ? `?${params.toString()}` : ""}`;
+      //const  url = "http://localhost:3000/api/blog"
 
       
       if (simpleBlog) {
         
         const { response, status, errorLogs } = await fetchData<SimpleBlogApiResponse>(url, "get");
-        if (status === 200 && response && response.success) {
-        
-          setPosts(response.data);
-        
+        if (status === 200 && response && response.success) {        
+          setPosts(response.data);        
           setPageInfo(response.page);
-        } else {
+        } 
+        else {
           const errorMessage =
             errorLogs?.message ||
             response?.message ||

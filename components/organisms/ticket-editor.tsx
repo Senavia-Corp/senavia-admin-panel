@@ -1,5 +1,6 @@
 "use client";
 
+import { Search, ChevronDown, X,FileText, Trash2, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,27 @@ interface TicketEditorProps {
 }
 
 export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
+  //----------------- datos de prueba -----------------
+  const [labels, setLabels] = useState(["Label1", "Label2", "Label3"]);
+
+  const removeLabel = (label: string) => {
+    setLabels(labels.filter((l) => l !== label));
+  };
+  const [documents, setDocuments] = useState([
+    "Document1.docx",
+    "Document1.docx",
+    "Document1.docx"
+  ])
+   const removeDocument = (index: number) => {
+    setDocuments(documents.filter((_, i) => i !== index))
+  }
+
+  const addDocument = () => {
+    // Aquí puedes abrir un file picker o agregar un documento dummy
+    setDocuments([...documents, `Document${documents.length + 1}.docx`])
+  }
+  //----------------- fin datos de prueba -----------------
+
   const [ticket, setBlog] = useState<SupportTicket | null>(null);
   const [themes, setThemes] = useState<BlogTopic[]>([]);
 
@@ -54,7 +76,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
     status: "",
   });
 
-/*  useEffect(() => {
+  /*  useEffect(() => {
     loadThemes();
     if (blogId) {
       loadBlog(blogId);
@@ -63,7 +85,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
 */
   const loadBlog = async (id: number) => {
     try {
-     /* const blogData = await BlogManagementService.getBlogById(id);
+      /* const blogData = await BlogManagementService.getBlogById(id);
        if (blogData) {
         setBlog(blogData);
         setticketData2({
@@ -120,32 +142,32 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
       },
       body: JSON.stringify(_ticketData),
     });
-    
   };
 
   const handleUpdate = async () => {
-const rawTicketData={
-  title: ticketData.title,
-  type: ticketData.type,
-  status: ticketData.status,
-  description: ticketData.description,
-}
-const _ticketData = Object.fromEntries(
-    Object.entries(rawTicketData).filter(([_, value]) => 
-      value != null && (typeof value !== "string" || value.trim() !== "")
-    )
-  );
-const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
-  method:"PATCH",
-  body:JSON.stringify(_ticketData),
-  headers:{
-    "Content-Type": "application/json",
-  }
-})
-}
-
-
-  
+    const rawTicketData = {
+      title: ticketData.title,
+      type: ticketData.type,
+      status: ticketData.status,
+      description: ticketData.description,
+    };
+    const _ticketData = Object.fromEntries(
+      Object.entries(rawTicketData).filter(
+        ([_, value]) =>
+          value != null && (typeof value !== "string" || value.trim() !== "")
+      )
+    );
+    const response = await fetch(
+      `http://localhost:3000/api/ticket?id=${ticketId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(_ticketData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  };
 
   const handleDelete = async () => {
     if (ticketId) {
@@ -188,7 +210,7 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
   const _date = String(formatDate(new Date()));
 
   return (
-    <div className="h-full w-screen max-w-none px-6 ">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
@@ -205,9 +227,9 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full " >
+      <div className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full ">
         {/* Left Column - Content Editor */}
-        <div className="flex-1 bg-white rounded-lg p-8 mr-6 max-w-none">
+        <div className="flex-1 bg-white rounded-lg p-8 mr-6 max-w-none ">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4"></div>
           </div>
@@ -218,7 +240,7 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
               Ticket Title
             </Label>
             <Input
-              value={ticketId?ticketData.title:""}
+              value={ticketData.title}
               onChange={(e) => {
                 setticketData((prev) => ({ ...prev, title: e.target.value }));
               }}
@@ -227,7 +249,7 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
           </div>
 
           {/* Content Sections */}
-          <div className="space-y-6">
+          <div className="space-y-6 mb-6">
             <div>
               <Label className="text-sm font-medium text-gray-700 mb-2 block">
                 Add a description
@@ -247,58 +269,58 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
           </div>
           {/* Type TicketPlan */}
           <div>
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Type</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={ticketData.type}
-                onValueChange={(value) => {
-                  setticketData((prev) => ({ ...prev, type: value }));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ticketPlan.map((elem) => (
-                    <SelectItem key={elem.id} value={elem.name}>
-                      {elem.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-          {/* Fin Type TicketPlan */}
-</div>
+            <Card className="bg-white mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Type</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={ticketData.type}
+                  onValueChange={(value) => {
+                    setticketData((prev) => ({ ...prev, type: value }));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Dropdown here" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ticketPlan.map((elem) => (
+                      <SelectItem key={elem.id} value={elem.name}>
+                        {elem.displayName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+            {/* Fin Type TicketPlan */}
+          </div>
           {/* Select Status */}
           <div>
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={ticketData.status}
-                onValueChange={(value) => {
-                  setticketData((prev) => ({ ...prev, status: value }));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ticketStatus.map((elem) => (
-                    <SelectItem key={elem.id} value={elem.name}>
-                      {elem.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg">Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={ticketData.status}
+                  onValueChange={(value) => {
+                    setticketData((prev) => ({ ...prev, status: value }));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Dropdown here" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ticketStatus.map((elem) => (
+                      <SelectItem key={elem.id} value={elem.name}>
+                        {elem.displayName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
           </div>
           {/* Fin  Select Status*/}
         </div>
@@ -306,6 +328,120 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
 
         {/* Right Column - Metadata */}
         <div className="w-96 space-y-6 flex-shrink-0">
+          {/* Type TicketPlan */}
+          <div>
+            <Card className="bg-white mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Assignees</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={ticketData.type}
+                  onValueChange={(value) => {
+                    setticketData((prev) => ({ ...prev, type: value }));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Dropdown here" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ticketPlan.map((elem) => (
+                      <SelectItem key={elem.id} value={elem.name}>
+                        {elem.displayName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+              <div className="flex justify-end  p-4">
+                <Button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
+                >
+                  Add Assignee
+                </Button>
+              </div>
+            </Card>
+            {/* Fin Type TicketPlan */}
+          </div>
+          {/*Search Project*/}
+          <Card className="bg-white mb-6 transition-all duration-200  ">
+            <CardHeader>
+              <CardTitle className="text-lg">Project</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="relative">
+                {/* Lupa a la izquierda */}
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+
+                {/* Input con espacio para íconos */}
+                <Input
+                  placeholder="Search"
+                  className="pl-10 pr-8 xl:w-80 bg-white border-gray-300 text-black rounded-md"
+                />
+
+                {/* Flechita de dropdown */}
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 cursor-pointer hover:text-black" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/*Labels */}
+
+          <Card className="bg-white mb-6 p-4">
+            <CardTitle className="text-lg">Labels</CardTitle>
+            <div className="border border-gray-300 rounded-md p-2 flex flex-wrap gap-2">
+              {labels.map((label) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full px-3 py-1 text-sm"
+                >
+                  {label}
+                  <button
+                    onClick={() => removeLabel(label)}
+                    className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </Card>
+
+{/*Documents */}
+<Card className="bg-white mb-6 p-4">
+ <label className="text-gray-700 font-medium">Documents</label>
+      <div className="border border-gray-300 rounded-md p-3 space-y-2">
+        {documents.map((doc, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between bg-gray-100 rounded-full px-3 py-2"
+          >
+            <div className="flex items-center space-x-2">
+              <FileText className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-700">{doc}</span>
+            </div>
+            <button
+              onClick={() => removeDocument(index)}
+              className="bg-black rounded-full p-1 hover:bg-gray-800 transition"
+            >
+              <Trash2 className="h-4 w-4 text-white" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={addDocument}
+        className="flex items-center space-x-2 bg-black text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-gray-800 transition"
+      >
+        <Plus className="h-4 w-4" />
+        <span>Add Document</span>
+      </button>
+</Card>
+
           {/* Action Buttons */}
           <div className="space-y-3">
             {ticketId ? (
@@ -340,10 +476,9 @@ const response =await fetch(`http://localhost:3000/api/ticket?id=${ticketId}`,{
               </Button>
             )}
           </div>
-            {/*Fin  Right Column - Metadata */}
+          {/*Fin  Right Column - Metadata */}
         </div>
         <div className="border"></div>
-
       </div>
 
       <DeleteConfirmDialog

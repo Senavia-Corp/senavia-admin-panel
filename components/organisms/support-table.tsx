@@ -1,5 +1,5 @@
 "use client"
-
+//este codigo ya no se usa 
 import { useState } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { SupportTableRow } from "@/components/molecules/ticket-table-row"
 import { Plus, Search, Filter } from "lucide-react"
 
 import type { SupportTicket, TicketType, TicketStatus } from "@/types/support-management"
-import TicketViewModel from "@/types/ViewsModels/TicketViewModel"
+import TicketViewModel from "@/components/pages/ticket/TicketViewModel"
 import { useEffect } from "react"; // Asegúrate que esté importado
 
 interface SupportTableProps {

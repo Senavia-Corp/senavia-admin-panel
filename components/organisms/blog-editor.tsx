@@ -81,19 +81,18 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     try {
       const blogData = await BlogManagementService.getBlogById(id);
 
-      
       if (blogData) {
         setBlog(blogData);
         setFormData({
           title: blogData.title,
           resume: blogData.resume,
           topic: blogData.topic,
-          publicationDate: blogData.publicationDate,                 
+          publicationDate: blogData.publicationDate,
           ImageReference: blogData.ImageReference,
           ImageSubTitle: blogData.ImageSubTitle,
           SubTitle: blogData.SubTitle,
           content: blogData.content,
-          userId:"1",
+          userId: "1",
         });
       }
     } catch (error) {
@@ -126,9 +125,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
   };
   //  -----------------
   const handleSave = async () => {
-    console.log("deberia funcionar")
+    console.log("deberia funcionar");
     const form_data = new FormData();
-    
+
     if (formData2.imageUrl instanceof File) {
       form_data.append("imageUrl", formData2.imageUrl);
     } else {
@@ -141,9 +140,15 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       }
     }
     //campos opcionales
-    if (formData2.ImageReference) {form_data.append("ImageReference", formData2.ImageReference);}
-    if (formData2.ImageSubTitle) {form_data.append("ImageSubTitle", formData2.ImageSubTitle);}
-    if (formData2.content) {form_data.append("content", JSON.stringify(formData2.content));}
+    if (formData2.ImageReference) {
+      form_data.append("ImageReference", formData2.ImageReference);
+    }
+    if (formData2.ImageSubTitle) {
+      form_data.append("ImageSubTitle", formData2.ImageSubTitle);
+    }
+    if (formData2.content) {
+      form_data.append("content", JSON.stringify(formData2.content));
+    }
 
     form_data.append("title", formData2.title);
     form_data.append("resume", formData2.resume);
@@ -157,8 +162,6 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       method: "POST",
       body: form_data,
     });
-
-
 
     logFormData2();
     setIsLoading(true);
@@ -216,10 +219,10 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       //Debe agregar al json content1
       //_formData.append("content", formData2.content.content1);
     }
-    if(formData2.content.content2){
+    if (formData2.content.content2) {
       //Debe agregar al json content2
     }
-    if(formData2.content.quote){
+    if (formData2.content.quote) {
       //Debe agregar al json quote
     }
     if (formData2.userId) {
@@ -232,7 +235,6 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
         body: _formData,
       }
     );
-    
   };
 
   const handleDelete = async () => {
@@ -245,7 +247,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       );
     }
 
-   /* if (blogId) {
+    /* if (blogId) {
       try {
         await BlogManagementService.deleteBlog(blogId);
         setShowDeleteDialog(false);
@@ -309,7 +311,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
           {/* Blog Title */}
           <div className="mb-6">
             <Input
-              value={blog?blog.title:formData2.title}
+              value={blog ? blog.title : formData2.title}
               onChange={(e) => {
                 setFormData((prev) => ({ ...prev, title: e.target.value }));
                 setFormData2((prev) => ({ ...prev, title: e.target.value }));
@@ -353,7 +355,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Subtitle
               </Label>
               <Input
-                value={blog?blog.SubTitle:formData2.SubTitle}
+                value={blog ? blog.SubTitle : formData2.SubTitle}
                 onChange={(e) => {
                   /*handleContentChange("subtitle", e.target.value);*/
                   setFormData2((prev) => ({
@@ -371,7 +373,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Content 1
               </Label>
               <Textarea
-                value={blog?blog.content.content1:formData2.content.content1}
+                value={
+                  blog ? blog.content.content1 : formData2.content.content1
+                }
                 onChange={(e) =>
                   /* handleContentChange("content1", e.target.value)*/
                   setFormData2((prev) => ({
@@ -393,7 +397,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Quote
               </Label>
               <Textarea
-                value={blog?blog.content.quote:formData2.content.quote}
+                value={blog ? blog.content.quote : formData2.content.quote}
                 onChange={(e) =>
                   /*  handleContentChange("quote", e.target.value)*/
                   setFormData2((prev) => ({
@@ -415,7 +419,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Image SubTitle
               </Label>
               <Input
-                value={blog?blog.ImageSubTitle:formData2.ImageSubTitle}
+                value={blog ? blog.ImageSubTitle : formData2.ImageSubTitle}
                 onChange={(e) =>
                   setFormData2((prev) => ({
                     ...prev,
@@ -432,7 +436,9 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 Content 2
               </Label>
               <Textarea
-                value={blog?blog.content.content2:formData2.content.content2}
+                value={
+                  blog ? blog.content.content2 : formData2.content.content2
+                }
                 onChange={(e) =>
                   /* handleContentChange("content2", e.target.value)*/
                   setFormData2((prev) => ({
@@ -451,7 +457,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
         </div>
 
         {/* Right Column - Metadata */}
-        <div className="w-96 space-y-6 flex-shrink-0">
+        <div className="w-96 bg-white rounded-lg space-y-6 flex-shrink-0 p-4">
           {/* Resume */}
           <Card className="bg-white">
             <CardHeader>
@@ -462,7 +468,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 value={formData2.resume}
                 onChange={(e) => {
                   setFormData((prev) => ({ ...prev, resume: e.target.value }));
-                  setFormData2((prev) => ({ ...prev, resume: e.target.value }));                  
+                  setFormData2((prev) => ({ ...prev, resume: e.target.value }));
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={4}
@@ -482,7 +488,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
             <CardContent>
               <Select
                 value={formData2.topic}
-                onValueChange={(value) => {                  
+                onValueChange={(value) => {
                   setFormData2((prev) => ({ ...prev, topic: value }));
                 }}
               >
@@ -513,33 +519,25 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 </Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <p className="text-gray-500 mb-4">
-                    Drag and drop an image here
+                    Drag and drop an image here or
                   </p>
-                  <Button
-                    onClick={(e) => {
-                      console.log(e);
-                    }}
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
+                  {/* First Image */}
+                  <label className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block">
                     Upload from my Computer
-                  </Button>
-                  <Input
-                  className="bg-green-500 hover:bg-green-600 text-white"
-                    type="file"
-                    onChange={(e) => {
-                      // Get the files from the input event
-                      const files = e.target.files;
-                      // If files are selected, update the state with the first file
-                      if (files && files.length > 0) {
-                        setFormData2((prev) => ({
-                          ...prev,
-                          imageUrl: files[0],
-                        }));
-                      }
-                    }}
-                  >    
-                  </Input>
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          setFormData2((prev) => ({
+                            ...prev,
+                            imageUrl: files[0],
+                          }));
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -550,27 +548,27 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
                 </Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <p className="text-gray-500 mb-4">
-                    Drag and drop an image here
+                    Drag and drop an image here or
                   </p>
-                  <Button className="bg-green-500 hover:bg-green-600 text-white">
-                    <Upload className="h-4 w-4 mr-2" />
+
+                  <label className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block">
                     Upload from my Computer
-                  </Button>
-              
-                  <Input className="bg-green-500 hover:bg-green-600 text-white" type="file"  onChange={(e) => {
-                      // Get the files from the input event
-                      const files = e.target.files;
-                      // If files are selected, update the state with the first file
-                      if (files && files.length > 0) {
-                        setFormData2((prev) => ({
-                          ...prev,
-                          ContentImageUrl: files[0],
-                        }));
-                      }
-                    }}
-                  ></Input>
-            
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          setFormData2((prev) => ({
+                            ...prev,
+                            ContentImageUrl: files[0],
+                          }));
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
+                {/*Ingresar texto de "Imagen Referencia" */}
                 <Input
                   value={formData2.ImageReference}
                   onChange={(e) =>
@@ -589,35 +587,41 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
           {/* Action Buttons */}
           <div className="space-y-3">
             {blogId ? (
-              <Button
-                onClick={handleUpdate}
-                disabled={isLoading}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
-              >
-                Update Entry
-              </Button>
+              <div className="flex justify-center my-4">
+                <Button
+                  onClick={handleUpdate}
+                  disabled={isLoading}
+                  className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-4"
+                >
+                  Update Entry
+                </Button>
+              </div>
             ) : (
-              <Button
-                onClick={handleSave}
-                disabled={isLoading}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
-              >
-                {isLoading
-                  ? "Saving..."
-                  : blogId
-                  ? "Create Entry"
-                  : "Publish Entry"}
-              </Button>
+              <div className="flex justify-center my-4">
+                <Button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
+                >
+                  {isLoading
+                    ? "Saving..."
+                    : blogId
+                    ? "Create Entry"
+                    : "Publish Entry"}
+                </Button>
+              </div>
             )}
 
             {blogId && (
+              <div className="flex justify-end my-4">
               <Button
                 onClick={() => setShowDeleteDialog(true)}
                 variant="destructive"
-                className="w-full py-3"
+                className="rounded-full bg-[#C61417] text-white font-bold text-base items-center py-2 px-4"
               >
                 Delete Entry
               </Button>
+              </div>
             )}
           </div>
         </div>
