@@ -13,7 +13,7 @@ import { useTestPortfolioData } from "@/hooks/useTestPortfolioData";
 
 export default function DashboardPage() {
   // Tabs y chat tabs
-  const REQUEST_TABS = ["Profile Info", "Requests", "Projects"];
+  const REQUEST_TABS = ["Requests", "Projects"];
   const CHAT_TABS = ["Chat", "Estimated value", "Invoices"];
 
   // Hook de datos y lógica
@@ -42,8 +42,6 @@ export default function DashboardPage() {
       data.setLoadingProjects(true);
       setRequestTab(tab);
       data.fetchProjects();
-    } else if (tab === "Profile Info") {
-      setRequestTab(tab);
     }
   };
 
@@ -282,17 +280,13 @@ export default function DashboardPage() {
               onSelect={handleSelectRequest}
               loading={data.loadingRequests}
             />
-          ) : requestTab === "Projects" ? (
+          ) : (
             <ProjectList
               projects={data.projects}
               selectedId={data.selectedProject}
               onSelect={handleSelectProject}
               loading={data.loadingProjects}
             />
-          ) : (
-            <div className="flex items-center justify-center h-full w-full text-gray-400 text-lg font-semibold border-2 border-dashed border-gray-700 rounded-lg">
-              asd
-            </div>
           )}
         </div>
         {/* Main Content */}

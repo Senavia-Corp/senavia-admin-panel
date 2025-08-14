@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UsersTable } from "@/components/organisms/users-table";
+import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { DetailTabs } from "../molecules/detail-tabs";
 
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
@@ -58,6 +58,13 @@ export function UsersPage() {
     }
   };
 
+  const handleFilterChange = (filter: string) => {
+    const [type, value] = filter.split(":");
+    if (type === "role") {
+      setRoleFilter(value === "all" ? "" : value);
+    }
+  };
+
   if (selectedUser) {
     return (
       <div className="min-h-screen w-full bg-white ">
@@ -103,6 +110,16 @@ export function UsersPage() {
     );
   }
 
+  // Handlers for GeneralTable
+  const handlers = {
+    onCreate: () => setShowCreatePage(true),
+    onView: setSelectedUser,
+    onEdit: () => setShowEditPage(true),
+    onDelete: setUserToDelete,
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
+  };
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Main Content */}
@@ -117,22 +134,20 @@ export function UsersPage() {
             </div>
 
             <div className="flex-1 min-h-0">
-              <UsersTable
-                onEditUser={() => setShowEditPage(true)}
-                users={users}
-                roles={roles}
-                onAddUser={() => setShowCreatePage(true)}
-                onViewUser={setSelectedUser}
-                onDeleteUser={setUserToDelete}
-                onSearch={setSearchTerm}
-                onRoleFilter={setRoleFilter}
-              />
+              {GeneralTable(
+                "users-page",
+                "Add User",
+                "Create new user accounts with specific roles and permissions",
+                "All Users",
+                "View and manage all user accounts in the system",
+                ["User ID", "Name", "Role", "Email", "Phone", "Actions"],
+                users,
+                handlers
+              )}
             </div>
           </div>
         </div>
       </main>
-
-      {/* El modal ya no se usa, solo la página */}
 
       <DeleteConfirmDialog
         open={!!userToDelete}
