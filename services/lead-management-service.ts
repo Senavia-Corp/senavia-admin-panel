@@ -1,4 +1,5 @@
 import type { Lead, CreateLeadData, LeadStatus } from "@/types/lead-management";
+import Axios from "axios";
 
 export class LeadManagementService {
   static async getLeads(
@@ -6,19 +7,18 @@ export class LeadManagementService {
     statusFilter?: string
   ): Promise<Lead[]> {
     try {
-      const response = await fetch("http://localhost:3000/api/lead", {
-        method: "GET",
+      const response = await Axios.get("http://localhost:3000/api/lead", {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       });
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error fetching leads");
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching leads");
       }
 
-      let leads = data.data;
+      let leads = response.data.data;
 
       // Apply client-side filtering if needed
       if (search) {
@@ -34,34 +34,50 @@ export class LeadManagementService {
       }
 
       return leads;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching leads:", error);
-      throw error;
+
+      if (error.response?.status === 401) {
+        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(
+          "Error al obtener leads. Por favor, intente nuevamente."
+        );
+      }
     }
   }
 
   static async getLeadById(id: string): Promise<Lead | null> {
     try {
-      const response = await fetch(`http://localhost:3000/api/lead?id=${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await Axios.get(
+        `http://localhost:3000/api/lead?id=${id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching lead");
       }
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error fetching lead");
-      }
-
-      return data.data[0] || null;
-    } catch (error) {
+      return response.data.data[0] || null;
+    } catch (error: any) {
       console.error("Error fetching lead:", error);
-      throw error;
+
+      if (error.response?.status === 401) {
+        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(
+          "Error al obtener el lead. Por favor, intente nuevamente."
+        );
+      }
     }
   }
 
