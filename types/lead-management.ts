@@ -38,7 +38,7 @@ export interface CreateLeadData {
   state: LeadStatus;
   startDate: string;
   endDate?: string;
-  workTeamId?: string;
-  serviceId?: string;
-  userId?: string;
+  workTeamId?: number;
+  serviceId?: number;
+  userId?: number;
 }

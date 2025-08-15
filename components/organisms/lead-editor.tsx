@@ -116,6 +116,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
     try {
       // Clean the data before sending
       // Extraer solo los campos necesarios para evitar duplicados
+      // Convertir IDs a números y validar
       const cleanData = {
         clientName: formData.clientName.trim(),
         clientEmail: formData.clientEmail.trim(),
@@ -124,9 +125,13 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
         description: formData.description.trim(),
         startDate: formData.startDate.trim(),
         endDate: formData.endDate?.trim() || "",
-        serviceId: formData.serviceId?.trim() || undefined,
-        userId: formData.userId?.trim() || undefined,
-        workTeamId: formData.workTeamId?.trim() || undefined,
+        serviceId: formData.serviceId
+          ? parseInt(formData.serviceId.trim())
+          : undefined,
+        userId: formData.userId ? parseInt(formData.userId.trim()) : undefined,
+        workTeamId: formData.workTeamId
+          ? parseInt(formData.workTeamId.trim())
+          : undefined,
         state: formData.state,
       };
 
@@ -193,6 +198,17 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
       !emailRegex.test(formData.clientEmail.trim())
     ) {
       errors.push("Invalid email format");
+    }
+
+    // ID validations
+    if (formData.userId && isNaN(parseInt(formData.userId))) {
+      errors.push("User ID must be a valid number");
+    }
+    if (formData.serviceId && isNaN(parseInt(formData.serviceId))) {
+      errors.push("Service ID must be a valid number");
+    }
+    if (formData.workTeamId && isNaN(parseInt(formData.workTeamId))) {
+      errors.push("Work Team ID must be a valid number");
     }
 
     return errors;
