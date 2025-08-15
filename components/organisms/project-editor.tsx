@@ -31,7 +31,7 @@ interface ProjectFormData {
   startDate: string;
   endDate: string;
   estimateId: string;
-  workteamId: string;
+  workTeamId: string;
   estimatedValue: string;
   attendant: string;
 }
@@ -49,7 +49,7 @@ export function ProjectEditor({
     startDate: "",
     endDate: "",
     estimateId: "",
-    workteamId: "",
+    workTeamId: "",
     estimatedValue: "",
     attendant: "",
   });
@@ -71,7 +71,7 @@ export function ProjectEditor({
               startDate: project.startDate,
               endDate: project.endDate,
               estimateId: project.estimateId || "",
-              workteamId: project.workteamId || "",
+              workTeamId: project.workTeamId || "",
               estimatedValue: "",
               attendant: "",
             });
@@ -101,7 +101,7 @@ export function ProjectEditor({
         endDate: formData.endDate,
         currentPhase: formData.currentPhase,
         estimateId: formData.estimateId || undefined,
-        workteamId: formData.workteamId || undefined,
+        workTeamId: formData.workTeamId || undefined,
         status: formData.status,
       };
 
@@ -163,7 +163,7 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Estimated
+                Estimated Id
               </Label>
               <Input
                 value={formData.estimatedValue}
@@ -174,6 +174,20 @@ export function ProjectEditor({
                 className="mt-1"
               />
             </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-700">
+                WorkTeam Id
+              </Label>
+              <Input
+                value={formData.workTeamId}
+                onChange={(e) =>
+                  setFormData({ ...formData, workTeamId: e.target.value })
+                }
+                placeholder="work_team_Id"
+                className="mt-1"
+              />
+            </div>
+
 
             <div>
               <Label className="text-sm font-medium text-gray-700">Name</Label>

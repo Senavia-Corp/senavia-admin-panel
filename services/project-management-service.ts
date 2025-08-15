@@ -1,7 +1,7 @@
 import type {
   ProjectRecord,
   CreateProjectData,
-  ProjectPhase,
+  
 } from "@/types/project-management";
 
 // Mock data
@@ -14,6 +14,9 @@ const mockProjects: ProjectRecord[] = [
     endDate: "2024-06-15",
     currentPhase: "Development",
     projectType: "Web",
+    workTeamId: "1",
+    estimateId: "1",
+    attendant: "John Doe",
     status: "In Progress",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
@@ -26,6 +29,9 @@ const mockProjects: ProjectRecord[] = [
     endDate: "2024-07-10",
     currentPhase: "Design",
     projectType: "Web",
+    workTeamId: "1",
+    estimateId: "1",
+    attendant: "John Doe",
     status: "On Hold",
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
@@ -38,6 +44,9 @@ const mockProjects: ProjectRecord[] = [
     endDate: "2021-02-26",
     currentPhase: "Analysis",
     projectType: "Mobile",
+    workTeamId: "1",
+    estimateId: "1",
+    attendant: "John Doe",
     status: "Active",
     createdAt: new Date("2024-01-12"),
     updatedAt: new Date("2024-01-19"),
@@ -50,6 +59,9 @@ const mockProjects: ProjectRecord[] = [
     endDate: "2024-03-08",
     currentPhase: "Deployment",
     projectType: "Marketing",
+    workTeamId: "1",
+    estimateId: "1",
+    attendant: "John Doe",
     status: "Completed",
     createdAt: new Date("2024-01-08"),
     updatedAt: new Date("2024-01-16"),
