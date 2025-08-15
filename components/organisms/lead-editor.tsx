@@ -29,7 +29,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
   const [formData, setFormData] = useState<CreateLeadData>({
     clientName: "",
     state: "SEND",
-    workteamId: "",
+    workTeamId: "",
     serviceId: "",
     userId: "",
     description: "",
@@ -58,7 +58,7 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
         setFormData({
           clientName: leadData.clientName || "",
           state: leadData.state || "SEND",
-          workteamId: leadData.workteamId ? leadData.workteamId.toString() : "",
+          workTeamId: leadData.workTeamId ? leadData.workTeamId.toString() : "",
           serviceId: leadData.serviceId ? leadData.serviceId.toString() : "",
           userId: leadData.userId ? leadData.userId.toString() : "",
           description: leadData.description || "",
@@ -115,8 +115,8 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
     try {
       // Clean the data before sending
+      // Extraer solo los campos necesarios para evitar duplicados
       const cleanData = {
-        ...formData,
         clientName: formData.clientName.trim(),
         clientEmail: formData.clientEmail.trim(),
         clientPhone: formData.clientPhone.trim(),
@@ -126,7 +126,8 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
         endDate: formData.endDate?.trim() || "",
         serviceId: formData.serviceId?.trim() || undefined,
         userId: formData.userId?.trim() || undefined,
-        workteamId: formData.workteamId?.trim() || undefined,
+        workTeamId: formData.workTeamId?.trim() || undefined,
+        state: formData.state,
       };
 
       if (leadId) {
@@ -259,12 +260,12 @@ export function LeadEditor({ leadId, onBack, onSave }: LeadEditorProps) {
 
                 <div>
                   <Label className="text-sm font-medium text-gray-700">
-                    Workteam ID
+                    Work Team ID
                   </Label>
                   <Input
-                    value={formData.workteamId}
+                    value={formData.workTeamId}
                     onChange={(e) =>
-                      setFormData({ ...formData, workteamId: e.target.value })
+                      setFormData({ ...formData, workTeamId: e.target.value })
                     }
                     placeholder="0000"
                     className="mt-1"

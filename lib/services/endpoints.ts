@@ -15,7 +15,7 @@ export const endpoints = {
     updatePost: (id: number) => `${API}/blog?id=${id}`,
     deletePost: (id: number) => `${API}/blog?id=${id}`,
   },
-  ticket:{
+  ticket: {
     getTickets: `${API}/ticket`,
     createTicket: `${API}/ticket`,
     updateTicket: (id: number) => `${API}/ticket?id=${id}`,
@@ -42,7 +42,10 @@ const CONFIG_JSON = {
   headers: {
     accept: "/",
     "Content-Type": "application/json",
+    // Asegurarse de que las credenciales se envíen siempre
+    "X-Requested-With": "XMLHttpRequest",
   },
+  withCredentials: true,
 };
 
 const CONFIG_FORM = {
@@ -102,12 +105,15 @@ export const useFetch = () => {
         axiosConfig = { ...axiosConfig, data: formFiles };
       }
 
-      if (withCredentials) {
-        axiosConfig = { ...axiosConfig, withCredentials: true };
-      }
+      // Siempre mantener withCredentials en true para las llamadas API
+      axiosConfig = { ...axiosConfig, withCredentials: true };
 
       if (isValidHttpMethod(method)) {
-        const res: AxiosResponse<T> = await Axios[method](url, body ?? {}, axiosConfig);
+        const res: AxiosResponse<T> = await Axios[method](
+          url,
+          body ?? {},
+          axiosConfig
+        );
         response = res.data;
         status = res.status;
       } else {
