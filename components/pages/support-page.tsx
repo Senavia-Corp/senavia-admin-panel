@@ -1,19 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SupportTable } from "@/components/organisms/support-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
 import { SupportManagementService } from "@/services/support-management-service";
 import type { SupportTicket } from "@/types/support-management";
-
 import { TicketEditor } from "../organisms/ticket-editor";
+import { GeneralTable } from "../organisms/tables/general-table";
+import TicketViewModel from "./ticket/TicketViewModel";
 
 export function SupportPage() {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  
   const [ticketToDelete, setTicketToDelete] = useState<SupportTicket | null>(
     null
   );
@@ -24,9 +20,20 @@ export function SupportPage() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
 
+  //paginado
+  const[ticketsPerPage,setTicketsPerPage]=useState(10)
+  const [offset, setOffset] = useState(0);  
+  const[allTickets,setAllTickets]=useState<any[]>([])
+  const {tickets,loading,pageInfo}=TicketViewModel({paginacionTicket:true,offset,ticketsPerPage})
+
   useEffect(() => {
-    loadTickets();
+    loadTickets();     
   }, [searchTerm, typeFilter, statusFilter]);
+
+  useEffect(() => {
+  console.log("Tickets actualizados:", tickets);
+}, [tickets]);
+
 
   const loadTickets = async () => {
     try {
@@ -35,7 +42,7 @@ export function SupportPage() {
         typeFilter,
         statusFilter
       );
-      setTickets(ticketsData);
+      //setTickets(ticketsData);
     } catch (error) {
       console.error("Error loading tickets:", error);
     }
@@ -61,6 +68,17 @@ export function SupportPage() {
     setEditingTicketId(null);
     setShowEditor(true);
   };
+   const handleFilterChange=()=>{
+    
+  }
+  const handlers = {
+      onCreate: handleCreateTicket,
+      onView: handleViewTicket,
+      onDelete: (ticket: SupportTicket) => setTicketToDelete(ticket),
+      onSearch: setSearchTerm,
+      onFilter: handleFilterChange,
+    }
+  
   
   if(showEditor){
     return (<div className="flex-1 flex flex-col h-screen overflow-hidden">
@@ -75,6 +93,7 @@ export function SupportPage() {
       </div>
     </div>)
   }
+  
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">      
@@ -85,8 +104,16 @@ export function SupportPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
               Tickets
             </h1>
-
-            <div className="flex-1 min-h-0">
+{GeneralTable(
+  "tickets-page",
+  "Add Ticket",
+  "Description",
+  "All Tickets",
+  "Description",
+  ["Ticket ID","Title","Assignee", "Type","Status","Project","Actions"],
+tickets, handlers
+  )}
+            {/*<div className="flex-1 min-h-0">
               <SupportTable
                 tickets={tickets}
                 onAddTicket={handleCreateTicket}
@@ -96,7 +123,7 @@ export function SupportPage() {
                 onTypeFilter={setTypeFilter}
                 onStatusFilter={setStatusFilter}
               />
-            </div>
+            </div>*/}
           </div>
         </div>
       </main>
@@ -108,6 +135,35 @@ export function SupportPage() {
         title="Delete Ticket"
         description={`Are you sure you want to delete ticket "${ticketToDelete?.title}"? This action cannot be undone.`}
       />
+         {/* Controles de paginación */}
+<div className="flex justify-between items-center mt-4">
+  <button
+    onClick={() => setOffset((prev) => Math.max(prev - ticketsPerPage, 0))}
+    disabled={offset === 0 || loading}
+    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+  >
+    ⬅️ Anterior
+  </button>
+
+  <span>
+    Página {Math.floor(offset / ticketsPerPage) + 1}
+  </span>
+
+  <button
+    onClick={() => {
+      if (!pageInfo || offset + ticketsPerPage < pageInfo.totalTickets) {                
+        const lastTicketId = tickets[tickets.length - 1].id;
+        setOffset(lastTicketId);        
+      }     
+      console.log("soy el total: "+pageInfo.totalTickets)
+    }}
+    disabled={loading || (pageInfo && offset + ticketsPerPage >= pageInfo.totalTickets)}
+    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Siguiente ➡️
+  </button>
+</div>
+
     </div>
   );
 }
