@@ -1,25 +1,35 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { TaskColumn } from "@/components/molecules/task-column"
-import { CreateTaskDialog } from "@/components/organisms/create-task-dialog"
-import { ArrowLeft, MoreHorizontal } from "lucide-react"
-import { TaskManagementService } from "@/services/task-management-service"
-import type { Task, TaskStatus, ProjectPhase, CreateTaskData } from "@/types/task-management"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { TaskColumn } from "@/components/molecules/task-column";
+import { CreateTaskDialog } from "@/components/organisms/create-task-dialog";
+import { ArrowLeft, MoreHorizontal } from "lucide-react";
+import { TaskManagementService } from "@/services/task-management-service";
+import type {
+  Task,
+  TaskStatus,
+  ProjectPhase,
+  CreateTaskData,
+} from "@/types/task-management";
 
 interface TaskBoardProps {
-  projectId: string
-  projectName: string
-  selectedPhase: ProjectPhase
-  onBack: () => void
+  projectId: string;
+  projectName: string;
+  selectedPhase: ProjectPhase;
+  onBack: () => void;
 }
 
-export function TaskBoard({ projectId, projectName, selectedPhase, onBack }: TaskBoardProps) {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("Pending")
-  const [loading, setLoading] = useState(true)
+export function TaskBoard({
+  projectId,
+  projectName,
+  selectedPhase,
+  onBack,
+}: TaskBoardProps) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<TaskStatus>("Pending");
+  const [loading, setLoading] = useState(true);
 
   const taskStatuses: { status: TaskStatus; title: string }[] = [
     { status: "Pending", title: "Pending" },
@@ -27,59 +37,69 @@ export function TaskBoard({ projectId, projectName, selectedPhase, onBack }: Tas
     { status: "InProcess", title: "In Progress" },
     { status: "InReview", title: "Under Review" },
     { status: "Finished", title: "Finished" },
-  ]
+  ];
 
   useEffect(() => {
-    loadTasks()
-  }, [projectId, selectedPhase])
+    loadTasks();
+  }, [projectId, selectedPhase]);
 
   const loadTasks = async () => {
     try {
-      setLoading(true)
-      const projectTasks = await TaskManagementService.getTasksByProject(projectId, selectedPhase)
-      setTasks(projectTasks)
+      setLoading(true);
+      const projectTasks = await TaskManagementService.getTasksByProject(
+        projectId,
+        selectedPhase
+      );
+      setTasks(projectTasks);
     } catch (error) {
-      console.error("Error loading tasks:", error)
+      console.error("Error loading tasks:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAddTask = (status: TaskStatus) => {
-    setSelectedStatus(status)
-    setIsCreateDialogOpen(true)
-  }
+    setSelectedStatus(status);
+    setIsCreateDialogOpen(true);
+  };
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
     try {
-      const newTask = await TaskManagementService.createTask(taskData)
-      setTasks((prev) => [...prev, newTask])
+      const newTask = await TaskManagementService.createTask(taskData);
+      setTasks((prev) => [...prev, newTask]);
     } catch (error) {
-      console.error("Error creating task:", error)
+      console.error("Error creating task:", error);
     }
-  }
+  };
 
   const handleTaskMove = async (taskId: string, newStatus: TaskStatus) => {
     try {
-      const updatedTask = await TaskManagementService.updateTaskStatus(taskId, newStatus)
+      const updatedTask = await TaskManagementService.updateTaskStatus(
+        taskId,
+        newStatus
+      );
       if (updatedTask) {
-        setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+          )
+        );
       }
     } catch (error) {
-      console.error("Error moving task:", error)
+      console.error("Error moving task:", error);
     }
-  }
+  };
 
   const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter((task) => task.status === status)
-  }
+    return tasks.filter((task) => task.status === status);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-gray-500">Loading tasks...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -91,13 +111,15 @@ export function TaskBoard({ projectId, projectName, selectedPhase, onBack }: Tas
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Project Board</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Project Board
+            </h1>
             <p className="text-sm text-gray-500">
               {projectName} - {selectedPhase} Phase
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="p-2">
+        <Button variant="ghost" size="sm" className="p-2" onClick={onBack}>
           <MoreHorizontal className="h-5 w-5" />
         </Button>
       </div>
@@ -128,5 +150,5 @@ export function TaskBoard({ projectId, projectName, selectedPhase, onBack }: Tas
         phase={selectedPhase}
       />
     </div>
-  )
+  );
 }

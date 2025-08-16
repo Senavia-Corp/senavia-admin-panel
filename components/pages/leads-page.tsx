@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LeadsTable } from "@/components/organisms/leads-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
 import { LeadManagementService } from "@/services/lead-management-service";
 import type { Lead } from "@/types/lead-management";
+import { GeneralTable } from "@/components/organisms/tables/general-table";
+import { LeadEditor } from "@/components/organisms/lead-editor";
 import { toast } from "@/components/ui/use-toast";
 
 export function LeadsPage() {
@@ -16,6 +13,8 @@ export function LeadsPage() {
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [showEditorForm, setShowEditorForm] = useState(false);
 
   useEffect(() => {
     loadLeads();
@@ -38,6 +37,16 @@ export function LeadsPage() {
     }
   };
 
+  const handleCreateLead = () => {
+    setSelectedLeadId(null);
+    setShowEditorForm(true);
+  };
+
+  const handleViewLead = (lead: Lead) => {
+    setSelectedLeadId(lead.id);
+    setShowEditorForm(true);
+  };
+
   const handleDeleteLead = async (lead: Lead) => {
     try {
       await LeadManagementService.deleteLead(lead.id);
@@ -57,53 +66,69 @@ export function LeadsPage() {
     }
   };
 
+  const handleFilterChange = (filter: string) => {
+    setStatusFilter(filter);
+  };
+
+  const handleBackToList = () => {
+    setSelectedLeadId(null);
+    setShowEditorForm(false);
+  };
+
+  const handleSaveSuccess = () => {
+    setSelectedLeadId(null);
+    setShowEditorForm(false);
+    loadLeads();
+  };
+
+  const handlers = {
+    onCreate: handleCreateLead,
+    onView: handleViewLead,
+    onDelete: (lead: Lead) => setLeadToDelete(lead),
+    onSearch: setSearchTerm,
+    onFilter: handleFilterChange,
+  };
+
+  // Show editor form for creating/editing lead
+  if (showEditorForm) {
+    return (
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <main className="flex-1 bg-gray-50 overflow-auto">
+          <div className="p-6 h-full w-full">
+            <LeadEditor
+              leadId={selectedLeadId}
+              onBack={handleBackToList}
+              onSave={handleSaveSuccess}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center space-x-2">
-              <img
-                src="/images/senavia-logo.png"
-                alt="Senavia Logo"
-                className="w-8 h-8 object-contain"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm">U</span>
-              </div>
-              <span className="text-sm font-medium">Username</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
-              Lead Management
-            </h1>
-
+            <div className="flex items-center mb-6 flex-shrink-0">
+              <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
+              <h1 className="font-sans font-medium text-[25px] leading-none tracking-normal align-middle text-gray-900">
+                Lead Management
+              </h1>
+            </div>
             <div className="flex-1 min-h-0">
-              <LeadsTable
-                leads={leads}
-                onAddLead={() => loadLeads()}
-                onViewLead={() => loadLeads()}
-                onDeleteLead={setLeadToDelete}
-                onSearch={setSearchTerm}
-                onStatusFilter={setStatusFilter}
-              />
+              {GeneralTable(
+                "leads-page",
+                "Add Lead",
+                "Create a new lead for potential business opportunity",
+                "All Leads",
+                "View and manage all lead opportunities in the system",
+                ["Lead ID", "Client Name", "Start Date", "Status", "Actions"],
+                leads,
+                handlers
+              )}
             </div>
           </div>
         </div>
