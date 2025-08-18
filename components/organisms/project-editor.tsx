@@ -26,14 +26,14 @@ interface ProjectEditorProps {
 interface ProjectFormData {
   name: string;
   description: string;
+  expectedDuration: string;
   currentPhase: ProjectPhase;
   status: string;
   startDate: string;
   endDate: string;
-  estimateId: string;
-  workTeamId: string;
-  estimatedValue: string;
-  attendant: string;
+  imagePreviewUrl: string;
+  workTeam_id: number;
+  estimate_id: number;
 }
 
 export function ProjectEditor({
@@ -44,14 +44,14 @@ export function ProjectEditor({
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     description: "",
+    expectedDuration: "",
     currentPhase: "Analysis",
     status: "Active",
     startDate: "",
     endDate: "",
-    estimateId: "",
-    workTeamId: "",
-    estimatedValue: "",
-    attendant: "",
+    imagePreviewUrl: "",
+    workTeam_id: 0,
+    estimate_id: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,14 +66,14 @@ export function ProjectEditor({
             setFormData({
               name: project.name,
               description: project.description,
+              expectedDuration: project.expectedDuration,
               currentPhase: project.currentPhase,
               status: project.status,
               startDate: project.startDate,
               endDate: project.endDate,
-              estimateId: project.estimateId || "",
-              workTeamId: project.workTeamId || "",
-              estimatedValue: "",
-              attendant: "",
+              imagePreviewUrl: project.imagePreviewUrl || "",
+              workTeam_id: project.workTeam_id?.id || 0,
+              estimate_id: project.estimate_id?.id || 0,
             });
           }
         } catch (error) {
@@ -100,8 +100,8 @@ export function ProjectEditor({
         startDate: formData.startDate,
         endDate: formData.endDate,
         currentPhase: formData.currentPhase,
-        estimateId: formData.estimateId || undefined,
-        workTeamId: formData.workTeamId || undefined,
+        estimate_id: formData.estimate_id || undefined,
+        workTeam_id: formData.workTeam_id || undefined,
         status: formData.status,
       };
 
@@ -166,9 +166,9 @@ export function ProjectEditor({
                 Estimated Id
               </Label>
               <Input
-                value={formData.estimatedValue}
+                value={formData.estimate_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, estimatedValue: e.target.value })
+                  setFormData({ ...formData, estimate_id: parseInt(e.target.value) })
                 }
                 placeholder="estimate_Id"
                 className="mt-1"
@@ -179,15 +179,17 @@ export function ProjectEditor({
                 WorkTeam Id
               </Label>
               <Input
-                value={formData.workTeamId}
+                value={formData.workTeam_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, workTeamId: e.target.value })
+                  setFormData({
+                    ...formData,
+                    workTeam_id: parseInt(e.target.value),
+                  })
                 }
                 placeholder="work_team_Id"
                 className="mt-1"
               />
             </div>
-
 
             <div>
               <Label className="text-sm font-medium text-gray-700">Name</Label>
@@ -244,12 +246,12 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Attendant
+                Expected Duration
               </Label>
               <Input
-                value={formData.attendant}
+                value={formData.expectedDuration}
                 onChange={(e) =>
-                  setFormData({ ...formData, attendant: e.target.value })
+                  setFormData({ ...formData, expectedDuration: e.target.value })
                 }
                 placeholder="Attendant"
                 className="mt-1"
