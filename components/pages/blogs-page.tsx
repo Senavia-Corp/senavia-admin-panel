@@ -1,15 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BlogsTable } from "@/components/organisms/blogs-table"
 import { CreateBlogDialog } from "@/components/organisms/create-blog-dialog"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
 import { BlogManagementService } from "@/services/blog-management-service"
 import type { Blog, BlogTopic } from "@/types/blog-management"
 import { BlogEditor } from "@/components/organisms/blog-editor"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
-
-
 import BlogViewModel from "./blog/BlogViewModel"
  
 export function BlogsPage() {
@@ -23,7 +20,7 @@ export function BlogsPage() {
   const [showEditor, setShowEditor] = useState(false)
   const [editingBlogId, setEditingBlogId] = useState<number | null>(null)
 
-  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
+  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);  
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const { posts, loading, pageInfo } = BlogViewModel({ simpleBlog: true, offset,simpleBlogsPerPage});
@@ -36,7 +33,7 @@ export function BlogsPage() {
   const loadBlogs = async () => {
     try {
       const blogsData = await BlogManagementService.getBlogs(searchTerm, themeFilter)
-      setBlogs(blogsData)      
+      //setBlogs(blogsData)      
     } catch (error) {
       console.error("Error loading blogs:", error)
     }
@@ -138,6 +135,35 @@ const handlers = {
         title="Delete Blog Post"
         description={`Are you sure you want to delete "${blogToDelete?.title}"? This action cannot be undone.`}
       />
+      {/* Controles de paginación */}
+<div className="flex justify-between items-center mt-4">
+  <button
+    onClick={() => setOffset((prev) => Math.max(prev - simpleBlogsPerPage, 0))}
+    disabled={offset === 0 || loading}
+    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+  >
+    ⬅️ Anterior
+  </button>
+
+  <span>
+    Página {Math.floor(offset / simpleBlogsPerPage) + 1}
+  </span>
+
+  <button
+    onClick={() => {
+      if (!pageInfo || offset + simpleBlogsPerPage < pageInfo.totalBlogs) {                
+        const lastBlogId = posts[posts.length - 1].id;
+        setOffset(lastBlogId);        
+      }     
+    }}
+    disabled={loading || (pageInfo && offset + simpleBlogsPerPage >= pageInfo.totalBlogs)}
+    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Siguiente ➡️
+  </button>
+</div>
     </div>
+    
   )
+  
 }

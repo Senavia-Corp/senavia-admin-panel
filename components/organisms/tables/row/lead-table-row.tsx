@@ -23,7 +23,7 @@ export function LeadTableRow({ lead, onView, onDelete }: LeadTableRowProps) {
         {lead.estimatedStartDate}
       </td>
       <td className="w-1/4 px-6 py-4">
-        <StatusBadge status={lead.status} />
+        <StatusBadge status={lead.state} />
       </td>
       <td className="w-1/4 px-6 py-4">
         <div className="flex space-x-2">

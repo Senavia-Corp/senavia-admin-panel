@@ -29,7 +29,7 @@ export function BlogsTable({blogs, topics, onAddBlog, onViewBlog, onDeleteBlog, 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
   //------------------------------- get Blogs --------------------------------
-  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(3);
+  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
 
   const [allPosts, setAllPosts] = useState<any[]>([]);

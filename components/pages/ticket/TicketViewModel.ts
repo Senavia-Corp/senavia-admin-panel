@@ -1,21 +1,18 @@
 import { useEffect,useState } from "react";
 import { endpoints,useFetch } from "@/lib/services/endpoints";
 //importo las interfaces
-import { Ticket,TicketApiResponse, ApiResponse } from "../ticket-management";
+import { Ticket,TicketApiResponse, ApiResponse } from "../../../types/ticket-management";
 
 export interface TicketViewModelParams {
-    simpleTicket?:boolean;
+    paginacionTicket?:boolean;
     offset?:number;
     ticketsPerPage?:number;
 }
 
-export const TicketViewModel = ({
-    simpleTicket = false,
-    offset = 0,
-    ticketsPerPage = 10,
+export const TicketViewModel = ({paginacionTicket = false,offset = 0,ticketsPerPage = 10,
 }: TicketViewModelParams = {}) => {
     const { fetchData } = useFetch();
-    const [_tickets, setTickets] = useState<Ticket[]>([]);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [pageInfo, setPageInfo] = useState<any>(null);
@@ -28,26 +25,31 @@ export const TicketViewModel = ({
                 "get"
             );
         }
+        getTickets();
     }, []);
+    
+    
     useEffect(() => {
         getAllTickets();
-    },[simpleTicket,offset,ticketsPerPage])
+    },[paginacionTicket,offset,ticketsPerPage])
 
     const getAllTickets = async () => {
       setLoading(true);
       setError(null);
      try{
         const params = new URLSearchParams();
-        if(simpleTicket) params.append("ticket",simpleTicket.toString());
+        if(paginacionTicket) params.append("paginacionTicket",paginacionTicket.toString());
         if(offset) params.append("offset",offset.toString());
-        if(simpleTicket )
+        if(paginacionTicket )
         params.append("ticketsPerPage",ticketsPerPage.toString());
-        const url = "http://localhost:3000/api/ticket"
+        const url =`${endpoints.ticket.getTickets}${params.toString() ? `?${params.toString()}`:""}`
+        //const url = "http://localhost:3000/api/ticket"
        
-        if(simpleTicket){
+        if(paginacionTicket){
             const { response, status, errorLogs } = await fetchData<TicketApiResponse>(url, "get",);
             if(status === 200 && response && response.success){
-                setTickets(response.data);                
+                setTickets(response.data);   
+                setPageInfo(response.page)                                    
             }
             else{
                 const errorMessage= errorLogs?.message|| `Failed to fetch ticket posts (Status ${status})`
@@ -80,6 +82,6 @@ export const TicketViewModel = ({
     }
 }
 
-return{_tickets,loading,error,pageInfo}
+return{tickets,loading,error,pageInfo}
 }
 export default TicketViewModel;
