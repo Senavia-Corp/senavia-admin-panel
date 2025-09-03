@@ -3,35 +3,53 @@
 import { useEffect, useState } from "react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { TestimonialVideoEditor } from "@/components/organisms/testimonial-video-editor";
-
-type TestimonialVideo = {
-  id: number;
-  title: string;
-  resume?: string;
-  createdAt: Date;
-};
+import { TestimonialVideoManagementService } from "@/services/testimonial-video-management-service";
+import type { TestimonialVideo } from "@/types/testimonial-video-management";
 
 export function TestimonialVideosPage() {
   const [items, setItems] = useState<TestimonialVideo[]>([]);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadTestimonialVideos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const videos =
+        await TestimonialVideoManagementService.getTestimonialVideos();
+      setItems(videos);
+    } catch (err: any) {
+      setError(err.message || "Error loading testimonial videos");
+      console.error("Error loading testimonial videos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // TODO: replace with real service
-    const seed: TestimonialVideo[] = [
-      { id: 1, title: "Example testimonial", createdAt: new Date() },
-    ];
-    setItems(seed);
+    loadTestimonialVideos();
   }, []);
 
   const handleCreate = () => {
     setEditingId(null);
   };
+
   const handleView = (item: TestimonialVideo) => {
     setEditingId(item.id);
   };
-  const handleDelete = (item: TestimonialVideo) => {
-    // TODO: hook up delete API
-    setItems((prev) => prev.filter((x) => x.id !== item.id));
+
+  const handleDelete = async (item: TestimonialVideo) => {
+    try {
+      await TestimonialVideoManagementService.deleteTestimonialVideo(item.id);
+      setItems((prev) => prev.filter((x) => x.id !== item.id));
+      if (editingId === item.id) {
+        setEditingId(null);
+      }
+    } catch (err: any) {
+      setError(err.message || "Error deleting testimonial video");
+      console.error("Error deleting testimonial video:", err);
+    }
   };
 
   const handlers = {
@@ -54,6 +72,16 @@ export function TestimonialVideosPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
               Study Cases
             </h1>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+            {loading && (
+              <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+                Loading testimonial videos...
+              </div>
+            )}
             <div className="flex-1 min-h-0 grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="min-h-0">
                 {GeneralTable(
@@ -70,30 +98,44 @@ export function TestimonialVideosPage() {
               <div className="min-h-0">
                 <TestimonialVideoEditor
                   item={selectedItem}
-                  onSave={(data) => {
-                    if (!data.id || !items.some((x) => x.id === data.id)) {
-                      const nextId =
-                        items.length > 0
-                          ? Math.max(...items.map((x) => x.id)) + 1
-                          : 1;
-                      setItems((prev) => [
-                        ...prev,
-                        {
-                          id: nextId,
+                  onSave={async (data) => {
+                    try {
+                      if (!data.id || !items.some((x) => x.id === data.id)) {
+                        // Create new testimonial video
+                        const createData = {
                           title: data.title,
                           resume: data.resume,
-                          createdAt: new Date(),
-                        },
-                      ]);
-                      setEditingId(nextId);
-                    } else {
-                      setItems((prev) =>
-                        prev.map((x) =>
-                          x.id === data.id
-                            ? { ...x, title: data.title, resume: data.resume }
-                            : x
-                        )
-                      );
+                        };
+
+                        const newVideo =
+                          await TestimonialVideoManagementService.createTestimonialVideo(
+                            createData
+                          );
+                        setItems((prev) => [...prev, newVideo]);
+                        setEditingId(newVideo.id);
+                      } else {
+                        // Update existing testimonial video
+                        const updateData = {
+                          title: data.title,
+                          resume: data.resume,
+                        };
+
+                        const updatedVideo =
+                          await TestimonialVideoManagementService.updateTestimonialVideo(
+                            data.id,
+                            updateData
+                          );
+                        if (updatedVideo) {
+                          setItems((prev) =>
+                            prev.map((x) =>
+                              x.id === data.id ? updatedVideo : x
+                            )
+                          );
+                        }
+                      }
+                    } catch (err: any) {
+                      setError(err.message || "Error saving testimonial video");
+                      console.error("Error saving testimonial video:", err);
                     }
                   }}
                 />

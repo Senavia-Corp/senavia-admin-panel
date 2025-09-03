@@ -7,17 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export type TestimonialVideo = {
-  id: number;
-  title: string;
-  resume?: string;
-  createdAt: Date;
-  videoFileName?: string;
-};
+import type { TestimonialVideo } from "@/types/testimonial-video-management";
 
 type Props = {
   item: TestimonialVideo | null;
-  onSave: (data: Omit<TestimonialVideo, "createdAt"> & { video?: File | null }) => void;
+  onSave: (data: Omit<TestimonialVideo, "createdAt" | "updatedAt"> & { video?: File | null }) => void;
 };
 
 export function TestimonialVideoEditor({ item, onSave }: Props) {
@@ -35,7 +29,7 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
 
   const handleSave = () => {
     const payload = {
-      id: item?.id ?? 0,
+      id: item?.id ?? "",
       title,
       resume,
       video,
