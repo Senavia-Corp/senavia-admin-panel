@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
-import type { ProjectPhase } from "@/types/project-management";
+import type {
+  Project,
+  ProjectPhase,
+  PhaseName,
+} from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectEditorProps {
@@ -63,12 +67,12 @@ export function ProjectEditor({
             projectId
           );
           if (project) {
+            const currentPhase = getPhaseLabel(project);
             setFormData({
               name: project.name,
               description: project.description,
-              expectedDuration: project.expectedDuration,
-              currentPhase: project.currentPhase,
-              status: project.status,
+              currentPhase: currentPhase as ProjectPhase,
+              status: "Active",
               startDate: project.startDate,
               endDate: project.endDate,
               imagePreviewUrl: project.imagePreviewUrl || "",
@@ -93,16 +97,29 @@ export function ProjectEditor({
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Create the data object that matches CreateProjectData interface
+      // Create payload similar to backend expectations
+      const phaseEnum: Record<ProjectPhase, PhaseName> = {
+        Analysis: "ANALYSIS",
+        Design: "DESIGN",
+        Development: "DEVELOPMENT",
+        Deployment: "DEPLOY",
+      };
       const projectData = {
         name: formData.name,
         description: formData.description,
+        expectedDuration: formData.expectedDuration,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        currentPhase: formData.currentPhase,
-        estimate_id: formData.estimate_id || undefined,
-        workTeam_id: formData.workTeam_id || undefined,
-        status: formData.status,
+        imagePreviewUrl: formData.imagePreviewUrl,
+        phases: [
+          {
+            name: phaseEnum[formData.currentPhase],
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+          },
+        ],
+        workTeam_id: formData.workTeam_id,
+        estimate_id: formData.estimate_id,
       };
 
       if (projectId) {
@@ -131,7 +148,36 @@ export function ProjectEditor({
     }
   };
 
-  const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
+  const phases: ProjectPhase[] = [
+    "Analysis",
+    "Design",
+    "Development",
+    "Deployment",
+  ];
+
+  function getPhaseLabel(project: Project): ProjectPhase {
+    const lastPhase = (project.phases || [])
+      .slice()
+      .sort((a, b) => {
+        const aTime = new Date(a.startDate || "").getTime();
+        const bTime = new Date(b.startDate || "").getTime();
+        return aTime - bTime;
+      })
+      .pop();
+    const name = lastPhase?.name as PhaseName | undefined;
+    switch (name) {
+      case "ANALYSIS":
+        return "Analysis";
+      case "DESIGN":
+        return "Design";
+      case "DEVELOPMENT":
+        return "Development";
+      case "DEPLOY":
+        return "Deployment";
+      default:
+        return "Analysis";
+    }
+  }
 
   return (
     <div className="h-full w-screen max-w-none px-6">
@@ -168,7 +214,10 @@ export function ProjectEditor({
               <Input
                 value={formData.estimate_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, estimate_id: parseInt(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    estimate_id: parseInt(e.target.value),
+                  })
                 }
                 placeholder="estimate_Id"
                 className="mt-1"

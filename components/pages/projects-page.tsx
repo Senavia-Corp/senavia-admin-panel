@@ -10,9 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectToDelete, setProjectToDelete] = useState<Project | null>(
-    null
-  );
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
@@ -97,7 +95,7 @@ export function ProjectsPage() {
   const handlers = {
     onCreate: handleCreateProject,
     onView: handleViewProject,
-      onDelete: (project: Project) => setProjectToDelete(project),
+    onDelete: (project: Project) => setProjectToDelete(project),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
     onViewTasks: handleViewTasks,

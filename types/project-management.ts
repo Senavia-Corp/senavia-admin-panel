@@ -5,12 +5,13 @@ export enum PhaseName {
   DEPLOY = "DEPLOY",
 }
 
+// UI-friendly phase labels
+export type ProjectPhase = "Analysis" | "Design" | "Development" | "Deployment";
 
 export interface Phase {
   id: number;
   name: PhaseName;
   description?: string;
-  expectedDuration: string;
   startDate: string;
   endDate?: string;
   project_id: number;
@@ -22,7 +23,6 @@ export interface Project {
   id: number;
   name: string;
   description: string;
-  expectedDuration: string;
   startDate: string;
   endDate?: string;
   imagePreviewUrl?: string;
@@ -42,7 +42,6 @@ export interface Project {
 export interface CreateProjectData {
   name: string;
   description: string;
-  expectedDuration: string;
   startDate: string;
   endDate?: string;
   imagePreviewUrl?: string;
