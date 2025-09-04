@@ -2,7 +2,6 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { BillingRecord } from "@/types/billing-management";
 import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
 import { BillingStatus } from "@/types/billing-management";
@@ -15,20 +14,41 @@ import {
 } from "@/components/ui/select";
 import { Card, CardHeader } from "../ui/card";
 import { DocumentPreviewBilling } from "./document-preview-billing";
+import {Billings, Billing} from "@/types/billing-management";
+import {Leads, Lead} from "@/types/lead-management";
 
 interface BillingDetailFormProps {
-  billingId?: string;
+  selectedBilling: (Billings & Partial<Billing>) | null;
+  billingId: number;
+  leads: Leads[];
+  lead: Lead[];
   onBack: () => void;
   onSave: () => void;
 }
 
+const servicesID = (service_ID: number) => {
+  if (service_ID === 1) {
+    return "Digital Marketing Service";
+  } else if (service_ID === 2) {
+    return "Web Design";
+  } else if (service_ID === 3) {
+    return "Web Development Service";
+  } else {
+    return "Service not found";
+  }
+}
 export function BillingDetailForm({
+  selectedBilling,
   billingId,
+  leads,
+  lead,
   onBack,
   onSave,
 }: BillingDetailFormProps) {
-  const [billing, setBilling] = useState<BillingRecord | null>(null);
-  const [totalLeads, setTotalLeads] = useState<string[]>([]);
+  console.log('selectedBilling recibido:', selectedBilling);
+  console.log('billingId recibido:', billingId);
+  console.log('leads recibidos:', leads);
+  console.log('lead recibido:', lead);
   const [showDocument, setShowDocument] = useState(false);
   
   // Estados para campos editables
@@ -39,41 +59,16 @@ export function BillingDetailForm({
   const [service, setService] = useState("");
 
   useEffect(() => {
-    if (billingId) {
-      loadBilling(billingId);
+    // Inicializar estados con selectedBilling si existe
+    if (selectedBilling) {
+      setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
+      setDescription(selectedBilling.description || "");
+      setStatus(selectedBilling.state || "");
+      setAssociatedLead(selectedBilling.lead_id?.toString() || "");
+      setService(""); // No hay service en estos datos
     }
-    loadLeads();
-  }, [billingId]);
+  }, []);
 
-  const loadLeads = async () => {
-    try {
-      const records = await BillingManagementService.getBillingRecords();
-      const leads = records.map(record => record.associatedLead);
-      setTotalLeads(leads);
-    } catch (error) {
-      console.error("Error loading leads:", error);
-    }
-  };
-
-  const loadBilling = async (id: string) => {
-    try {
-      const billingData = await BillingManagementService.getBillingRecordById(
-        id
-      );
-      setBilling(billingData);
-      // Inicializar estados con los datos cargados
-      if (billingData) {
-        setEstimatedTime(billingData.estimatedTime.toString());
-        setDescription(billingData.description);
-        setStatus(billingData.status);
-        setAssociatedLead(billingData.associatedLead);
-        setService(billingData.service);
-      }
-    } catch (error) {
-      console.error("Error loading billing record:", error);
-      setBilling(null);
-    }
-  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -87,20 +82,20 @@ export function BillingDetailForm({
   }
 
   const statuses: BillingStatus[] = [
-    "Created",
-    "Processing",
-    "InReview",
-    "Rejected",
-    "Accepted",
-    "Invoice",
-    "Paid",
+    "CREATED",
+    "PROCESSING",
+    "IN_REVIEW",
+    "REJECTED",
+    "ACCEPTED",
+    "INVOICE",
+    "PAID",
   ];
 
-  const services: string[] = ["Web Development", "Graphic Design", "Web Design"];
+  const services: string[] = ["Digital Marketing Service", "Web Design", "Web Development Service", "Service not found"];
 
-  if (showDocument && billing) {
-    return <DocumentPreviewBilling {...billing} onBack={() => setShowDocument(false)} />
-  }
+  // if (showDocument && selectedBilling) {
+  //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
+  // }
 
   return (
     <div className="flex flex-col">
@@ -122,12 +117,13 @@ export function BillingDetailForm({
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
           <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">
-            <p>ID: {billing?.id ?? "N/A"}</p>
+            <p>ID: {selectedBilling?.id ?? "N/A"}</p>
             <hr className="border-[#EBEDF2]" />
             <p>
               Total:{" "}
-              {billing?.totalValue ? formatCurrency(billing.totalValue) : "N/A"}
+              {selectedBilling?.totalValue ? formatCurrency(parseFloat(selectedBilling.totalValue)) : "N/A"}
             </p>
+            <hr className="border-[#EBEDF2]" />
             <hr className="border-[#EBEDF2]" />
                          <Label className=" text-[#393939] text-base/4 font-normal block">
                Estimated Time
@@ -181,18 +177,18 @@ export function BillingDetailForm({
                  <SelectTrigger className="w-full h-7 mt-3">
                    <SelectValue placeholder="Dropdown here" />
                  </SelectTrigger>
-                 <SelectContent>
-                   {totalLeads.map((lead) => (
-                     <SelectItem key={lead} value={lead}>
-                       {lead}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
+                  <SelectContent>
+                 {leads.map((lead) => (
+                   <SelectItem key={lead.id} value={lead.id.toString()}>
+                     {lead.clientName}
+                   </SelectItem>
+                 ))}
+               </SelectContent>
                </Select>
              </p>
              <hr className="border-[#EBEDF2]" />
              <p>service</p>
-             <Select value={service} onValueChange={setService}>
+             <Select value={servicesID(lead[0]?.serviceId || 0)} onValueChange={setService}>
                <SelectTrigger className="w-full h-7">
                  <SelectValue placeholder="Dropdown here" />
                </SelectTrigger>

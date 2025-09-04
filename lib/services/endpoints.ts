@@ -22,11 +22,11 @@ export const endpoints = {
     deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
   },
   lead: {
-    getPosts: `${API}/lead`,
-    getPost: (id: number) => `${API}/lead?id=${id}`,
-    createPost: `${API}/lead`,
+    getLeads: `${API}/lead`,
+    getLead: (id: number) => `${API}/lead?id=${id}`,
+    createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
-    deletePost: (id: number) => `${API}/lead?id=${id}`,
+    deleteLead: (id: number) => `${API}/lead?id=${id}`,
   },
   project: {
     getPosts: `${API}/project`,
@@ -35,6 +35,13 @@ export const endpoints = {
     updatePost: (id: number) => `${API}/project?id=${id}`,
     deletePost: (id: number) => `${API}/project?id=${id}`,
   },
+  estimate: {
+    getEstimates: `${API}/estimate`,
+    getEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    createEstimate: `${API}/estimate`,
+    updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+  }
 };
 
 // Header configurations

@@ -1,55 +1,63 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import { BillingTable } from "@/components/organisms/billing-table"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import { Button } from "@/components/ui/button"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Bell } from "lucide-react"
-import { BillingManagementService } from "@/services/billing-management-service"
-import type { BillingRecord } from "@/types/billing-management"
+import type { BillingRecord, Billings, Billing } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
+import { BillingViewModel } from "./BillingViewModel"
 
 export function BillingPage() {
-  const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([])
-  const [billingToDelete, setBillingToDelete] = useState<BillingRecord | null>(null)
+  const [billingRecords, setBillingRecords] = useState<Billings[]>([])
+  const [billingToDelete, setBillingToDelete] = useState<Billings | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [showCreateBilling, setShowCreateBilling] = useState(false)
-  const [selectedBillingId, setSelectedBillingId] = useState<string | undefined>()
+  const [selectedBillingId, setSelectedBillingId] = useState<number>()
   const [showBillingDetail, setShowBillingDetail] = useState(false)
+  const { billings, getBillings, getLeads, leads, getLeadById, lead, deleteBilling } = BillingViewModel()
+  const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
 
   useEffect(() => {
-    loadBillingRecords()
+    getBillings()
+    getLeads()
   }, [searchTerm, statusFilter])
+
+  useEffect(() => {
+    if (billings.length > 0) {
+      loadBillingRecords()
+    }
+  }, [billings])
 
   const loadBillingRecords = async () => {
     try {
-      const billingData = await BillingManagementService.getBillingRecords(searchTerm, statusFilter)
+      const billingData = billings
       setBillingRecords(billingData)
+      console.log("Billing records:", billingData)
     } catch (error) {
       console.error("Error loading billing records:", error)
     }
   }
 
-  const handleDeleteBilling = async (billing: BillingRecord) => {
+  const handleDeleteBilling = async (billing: Billings) => {
     try {
-      await BillingManagementService.deleteBillingRecord(billing.id)
+      await deleteBilling(billing.id)
       setBillingToDelete(null)
-      loadBillingRecords()
+      getBillings() // Recargar datos del ViewModel
     } catch (error) {
       console.error("Error deleting billing record:", error)
     }
   }
 
-  const handleViewBilling = (billing: BillingRecord) => {
+  
+
+  const handleViewBilling = (billing: Billing) => {
+    getLeadById(billing.lead_id)
+    console.log("Lead:", lead)
     console.log("View billing:", billing)
     setSelectedBillingId(billing.id)
+    setSelectedBilling(billing)
     setShowBillingDetail(true)
-    // TODO: Implement billing detail view
-  }
+  } 
 
   const handleCreateBilling = () => {
     console.log("Create new billing record")
@@ -77,7 +85,7 @@ export function BillingPage() {
   const handlers = {
     onCreate: handleCreateBilling,
     onView: handleViewBilling,
-    onDelete: (billing: BillingRecord) => setBillingToDelete(billing),
+    onDelete: (billing: Billings) => setBillingToDelete(billing),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
   }
@@ -88,7 +96,10 @@ export function BillingPage() {
         <main className="">
           <div className="px-6 py-6 h-full">
             <BillingDetailForm
-              billingId={selectedBillingId}
+              selectedBilling={selectedBilling!}
+              billingId={selectedBillingId!}
+              leads={leads}
+              lead={lead}
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
@@ -104,7 +115,10 @@ export function BillingPage() {
         <main className="">
           <div className="px-6 py-6 h-full">
             <BillingDetailForm
-              billingId={undefined}
+              selectedBilling={null}
+              billingId={0}
+              leads={leads} 
+              lead={lead}
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
@@ -113,9 +127,6 @@ export function BillingPage() {
       </div>
     )
   }
-
-  
-
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Main Content */}
