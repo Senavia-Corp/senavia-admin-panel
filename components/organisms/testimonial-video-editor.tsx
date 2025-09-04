@@ -11,7 +11,11 @@ import type { TestimonialVideo } from "@/types/testimonial-video-management";
 
 type Props = {
   item: TestimonialVideo | null;
-  onSave: (data: Omit<TestimonialVideo, "createdAt" | "updatedAt"> & { video?: File | null }) => void;
+  onSave: (
+    data: Omit<TestimonialVideo, "createdAt" | "updatedAt"> & {
+      video?: File | null;
+    }
+  ) => void;
 };
 
 export function TestimonialVideoEditor({ item, onSave }: Props) {
@@ -52,7 +56,9 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
               className="mb-4"
             />
 
-            <Label className="text-sm font-medium text-gray-700 mb-2 block">Resume</Label>
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+              Resume
+            </Label>
             <Textarea
               value={resume}
               onChange={(e) => setResume(e.target.value)}
@@ -60,10 +66,14 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
               maxLength={200}
               placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
             />
-            <div className="text-right text-sm text-gray-500 mt-1">{resume.length}/200</div>
+            <div className="text-right text-sm text-gray-500 mt-1">
+              {resume.length}/200
+            </div>
 
             <div className="mt-6">
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">Video</Label>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                Video
+              </Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <p className="text-gray-500 mb-4">Drag and drop a video here</p>
                 <span className="text-gray-500 mb-2 block">or</span>
@@ -96,5 +106,3 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
     </div>
   );
 }
-
-

@@ -20,8 +20,8 @@ export function TestimonialVideosPage() {
         await TestimonialVideoManagementService.getTestimonialVideos();
       setItems(videos);
     } catch (err: any) {
-      setError(err.message || "Error loading testimonial videos");
-      console.error("Error loading testimonial videos:", err);
+      setError(err.message || "Error loading study cases");
+      console.error("Error loading study cases:", err);
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,8 @@ export function TestimonialVideosPage() {
         setEditingId(null);
       }
     } catch (err: any) {
-      setError(err.message || "Error deleting testimonial video");
-      console.error("Error deleting testimonial video:", err);
+      setError(err.message || "Error deleting study case");
+      console.error("Error deleting study case:", err);
     }
   };
 
@@ -79,7 +79,7 @@ export function TestimonialVideosPage() {
             )}
             {loading && (
               <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-                Loading testimonial videos...
+                Loading study cases...
               </div>
             )}
             <div className="flex-1 min-h-0 grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -101,7 +101,7 @@ export function TestimonialVideosPage() {
                   onSave={async (data) => {
                     try {
                       if (!data.id || !items.some((x) => x.id === data.id)) {
-                        // Create new testimonial video
+                        // Create new study case
                         const createData = {
                           title: data.title,
                           resume: data.resume,
@@ -114,7 +114,7 @@ export function TestimonialVideosPage() {
                         setItems((prev) => [...prev, newVideo]);
                         setEditingId(newVideo.id);
                       } else {
-                        // Update existing testimonial video
+                        // Update existing study case
                         const updateData = {
                           title: data.title,
                           resume: data.resume,
@@ -134,8 +134,8 @@ export function TestimonialVideosPage() {
                         }
                       }
                     } catch (err: any) {
-                      setError(err.message || "Error saving testimonial video");
-                      console.error("Error saving testimonial video:", err);
+                      setError(err.message || "Error saving study case");
+                      console.error("Error saving study case:", err);
                     }
                   }}
                 />

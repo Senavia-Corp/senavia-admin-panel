@@ -35,6 +35,14 @@ export const endpoints = {
     updatePost: (id: number) => `${API}/project?id=${id}`,
     deletePost: (id: number) => `${API}/project?id=${id}`,
   },
+  studycases: {
+    getPosts: `${API}/studycase`,
+    getPost: (id: string | number) => `${API}/studycase?id=${id}`,
+    createPost: `${API}/studycase`,
+    updatePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    deletePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    upload: `${API}/studycase/upload`,
+  },
 };
 
 // Header configurations

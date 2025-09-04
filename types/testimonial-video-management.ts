@@ -1,5 +1,5 @@
 export interface TestimonialVideo {
-  id: string;
+  id: string | number;
   title: string;
   resume?: string;
   videoUrl?: string;
