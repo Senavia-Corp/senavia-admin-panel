@@ -61,7 +61,7 @@ export class TestimonialVideoManagementService {
       });
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Error fetching study case");
+        throw new Error(response.data.message || "Error fetching Testimonial Video");
       }
 
       return response.data.data[0] || null;

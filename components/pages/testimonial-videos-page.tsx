@@ -70,7 +70,7 @@ export function TestimonialVideosPage() {
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
-              Study Cases
+              Testimonial Videos
             </h1>
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -79,16 +79,16 @@ export function TestimonialVideosPage() {
             )}
             {loading && (
               <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-                Loading study cases...
+                Loading testimonial videos...
               </div>
             )}
             <div className="flex-1 min-h-0 grid grid-cols-1 gap-6 xl:grid-cols-2">
               <div className="min-h-0">
                 {GeneralTable(
                   "testimonial-videos-page",
-                  "Add Case",
+                  "Add Testimonial",
                   "Description",
-                  "All Cases",
+                  "All Testimonial",
                   "Description",
                   ["Case ID", "Title", "Actions"],
                   items,
