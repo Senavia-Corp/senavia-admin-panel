@@ -8,7 +8,7 @@ import type { TestimonialVideo } from "@/types/testimonial-video-management";
 
 export function TestimonialVideosPage() {
   const [items, setItems] = useState<TestimonialVideo[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +18,9 @@ export function TestimonialVideosPage() {
       setError(null);
       const videos =
         await TestimonialVideoManagementService.getTestimonialVideos();
-      setItems(videos);
+      // Ensure all videos have valid IDs
+      const validVideos = videos.filter((video) => video && video.id);
+      setItems(validVideos);
     } catch (err: any) {
       setError(err.message || "Error loading study cases");
       console.error("Error loading study cases:", err);
@@ -100,24 +102,36 @@ export function TestimonialVideosPage() {
                   item={selectedItem}
                   onSave={async (data) => {
                     try {
-                      if (!data.id || !items.some((x) => x.id === data.id)) {
+                      if (
+                        !data.id ||
+                        data.id === "" ||
+                        !items.some((x) => x.id === data.id)
+                      ) {
                         // Create new study case
                         const createData = {
                           title: data.title,
                           resume: data.resume,
+                          videoUrl: data.videoUrl,
                         };
 
                         const newVideo =
                           await TestimonialVideoManagementService.createTestimonialVideo(
                             createData
                           );
-                        setItems((prev) => [...prev, newVideo]);
-                        setEditingId(newVideo.id);
+                        if (newVideo && newVideo.id) {
+                          setItems((prev) => [...prev, newVideo]);
+                          setEditingId(newVideo.id);
+                        } else {
+                          throw new Error(
+                            "Failed to create testimonial video - invalid response"
+                          );
+                        }
                       } else {
                         // Update existing study case
                         const updateData = {
                           title: data.title,
                           resume: data.resume,
+                          videoUrl: data.videoUrl,
                         };
 
                         const updatedVideo =
@@ -125,11 +139,15 @@ export function TestimonialVideosPage() {
                             data.id,
                             updateData
                           );
-                        if (updatedVideo) {
+                        if (updatedVideo && updatedVideo.id) {
                           setItems((prev) =>
                             prev.map((x) =>
                               x.id === data.id ? updatedVideo : x
                             )
+                          );
+                        } else {
+                          throw new Error(
+                            "Failed to update testimonial video - invalid response"
                           );
                         }
                       }

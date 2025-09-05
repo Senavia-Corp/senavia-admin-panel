@@ -10,9 +10,11 @@ export interface TestimonialVideo {
 export interface CreateTestimonialVideoData {
   title: string;
   resume?: string;
+  videoUrl?: string;
 }
 
 export interface UpdateTestimonialVideoData {
   title?: string;
   resume?: string;
+  videoUrl?: string;
 }

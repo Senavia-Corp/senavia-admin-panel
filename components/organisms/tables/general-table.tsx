@@ -58,7 +58,7 @@ export function GeneralTable(
     onEdit,
   } = handlers;
 
-  const tableRows = data.map((item) => {
+  const tableRows = data.filter(item => item && item.id).map((item) => {
     switch (Page.toLowerCase()) {
       case "roles-page":
         return (

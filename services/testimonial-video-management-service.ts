@@ -28,12 +28,15 @@ export class TestimonialVideoManagementService {
       if (search) {
         testimonialVideos = testimonialVideos.filter(
           (video: TestimonialVideo) =>
-            video.title?.toLowerCase().includes(search.toLowerCase()) ||
-            video.resume?.toLowerCase().includes(search.toLowerCase())
+            video &&
+            video.id &&
+            (video.title?.toLowerCase().includes(search.toLowerCase()) ||
+              video.resume?.toLowerCase().includes(search.toLowerCase()))
         );
       }
 
-      return testimonialVideos;
+      // Filter out any invalid items
+      return testimonialVideos.filter((video: any) => video && video.id);
     } catch (error: any) {
       console.error("Error fetching study cases:", error);
 
@@ -61,7 +64,9 @@ export class TestimonialVideoManagementService {
       });
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Error fetching Testimonial Video");
+        throw new Error(
+          response.data.message || "Error fetching Testimonial Video"
+        );
       }
 
       return response.data.data[0] || null;
@@ -118,13 +123,59 @@ export class TestimonialVideoManagementService {
       }
 
       const data = await response.json();
-      console.log("Server response:", data);
+      console.log("Server response for create:", JSON.stringify(data, null, 2));
+      console.log("data.success:", data.success);
+      console.log("data.data exists:", !!data.data);
+      console.log("data.id exists:", !!data.id);
 
       if (!data.success) {
         throw new Error(data.message || "Error creating study case");
       }
 
-      return data.data[0];
+      // Handle different response formats
+      let createdVideo;
+      console.log("Starting response format detection...");
+
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        // Format: { success: true, data: [video] }
+        console.log("Using format 1: array data");
+        createdVideo = data.data[0];
+      } else if (data.data && typeof data.data === "object" && data.data.id) {
+        // Format: { success: true, data: video }
+        console.log("Using format 2: object data");
+        createdVideo = data.data;
+      } else if (data.id) {
+        // Format: { success: true, id: "...", title: "...", ... }
+        console.log("Using format 3: root level data");
+        createdVideo = data;
+      } else {
+        console.error("Unexpected response format:", data);
+        console.error("data.data:", data.data);
+        console.error("typeof data.data:", typeof data.data);
+        console.error("Array.isArray(data.data):", Array.isArray(data.data));
+        console.error("data.data?.length:", data.data?.length);
+
+        // Temporary fallback - try to use the entire data object if it has an id
+        if (data && typeof data === "object") {
+          console.log("Using fallback: entire data object");
+          console.log("Fallback data keys:", Object.keys(data));
+          createdVideo = data;
+        } else {
+          console.error("No fallback possible - data is not an object");
+          throw new Error("Invalid response: no data returned from server");
+        }
+      }
+
+      if (!createdVideo || !createdVideo.id) {
+        console.error("Created video missing ID:", createdVideo);
+        console.error(
+          "Full createdVideo object:",
+          JSON.stringify(createdVideo, null, 2)
+        );
+        throw new Error("Invalid response: created video has no ID");
+      }
+
+      return createdVideo;
     } catch (error) {
       console.error("Error creating study case:", error);
       throw error;
@@ -150,11 +201,50 @@ export class TestimonialVideoManagementService {
       }
 
       const data = await response.json();
+      console.log("Server response for update:", JSON.stringify(data, null, 2));
+
       if (!data.success) {
         throw new Error(data.message || "Error updating study case");
       }
 
-      return data.data[0];
+      // Handle different response formats
+      let updatedVideo;
+
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        // Format: { success: true, data: [video] }
+        updatedVideo = data.data[0];
+      } else if (data.data && typeof data.data === "object" && data.data.id) {
+        // Format: { success: true, data: video }
+        updatedVideo = data.data;
+      } else if (data.id) {
+        // Format: { success: true, id: "...", title: "...", ... }
+        updatedVideo = data;
+      } else {
+        console.error("Unexpected response format:", data);
+        console.error("data.data:", data.data);
+        console.error("typeof data.data:", typeof data.data);
+        console.error("Array.isArray(data.data):", Array.isArray(data.data));
+        console.error("data.data?.length:", data.data?.length);
+
+        // Temporary fallback - try to use the entire data object if it has an id
+        if (data && typeof data === "object") {
+          console.log("Attempting to use entire data object as fallback");
+          updatedVideo = data;
+        } else {
+          throw new Error("Invalid response: no data returned from server");
+        }
+      }
+
+      if (!updatedVideo || !updatedVideo.id) {
+        console.error("Updated video missing ID:", updatedVideo);
+        console.error(
+          "Full updatedVideo object:",
+          JSON.stringify(updatedVideo, null, 2)
+        );
+        throw new Error("Invalid response: updated video has no ID");
+      }
+
+      return updatedVideo;
     } catch (error) {
       console.error("Error updating study case:", error);
       throw error;
@@ -183,35 +273,6 @@ export class TestimonialVideoManagementService {
       return true;
     } catch (error) {
       console.error("Error deleting study case:", error);
-      throw error;
-    }
-  }
-
-  static async uploadVideo(
-    file: File
-  ): Promise<{ fileName: string; url?: string }> {
-    try {
-      const formData = new FormData();
-      formData.append("video", file);
-
-      const response = await fetch(endpoints.studycases.upload, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error uploading video");
-      }
-
-      return data.data;
-    } catch (error) {
-      console.error("Error uploading video:", error);
       throw error;
     }
   }

@@ -11,32 +11,28 @@ import type { TestimonialVideo } from "@/types/testimonial-video-management";
 
 type Props = {
   item: TestimonialVideo | null;
-  onSave: (
-    data: Omit<TestimonialVideo, "createdAt" | "updatedAt"> & {
-      video?: File | null;
-    }
-  ) => void;
+  onSave: (data: Partial<TestimonialVideo> & { title: string }) => void;
 };
 
 export function TestimonialVideoEditor({ item, onSave }: Props) {
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState("");
-  const [video, setVideo] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
 
   useEffect(() => {
     setTitle(item?.title ?? "");
     setResume(item?.resume ?? "");
-    setVideo(null);
+    setVideoUrl(item?.videoUrl ?? "");
   }, [item?.id]);
 
   const isEditing = useMemo(() => Boolean(item?.id), [item?.id]);
 
   const handleSave = () => {
     const payload = {
-      id: item?.id ?? "",
+      ...(item?.id && { id: item.id }),
       title,
       resume,
-      video,
+      videoUrl,
     };
     onSave(payload);
   };
@@ -72,24 +68,15 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
 
             <div className="mt-6">
               <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Video
+                Video URL
               </Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <p className="text-gray-500 mb-4">Drag and drop a video here</p>
-                <span className="text-gray-500 mb-2 block">or</span>
-                <label className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block">
-                  Upload from my Computer
-                  <input
-                    type="file"
-                    accept="video/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const files = e.target.files;
-                      setVideo(files && files.length > 0 ? files[0] : null);
-                    }}
-                  />
-                </label>
-              </div>
+              <Input
+                type="url"
+                placeholder="https://example.com/video.mp4"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                className="mb-4"
+              />
             </div>
 
             <div className="flex justify-center mt-8">
