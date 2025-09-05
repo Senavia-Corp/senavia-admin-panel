@@ -72,7 +72,7 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
               </Label>
               <Input
                 type="url"
-                placeholder="https://example.com/video.mp4"
+                placeholder="Here put the video URL https://www.youtube.com/watch?v=..."
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
                 className="mb-4"

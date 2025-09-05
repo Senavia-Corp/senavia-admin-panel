@@ -24,6 +24,7 @@ export const endpoints = {
   lead: {
     getPosts: `${API}/lead`,
     getPost: (id: number) => `${API}/lead?id=${id}`,
+    getPostsByUser: (userId: string | number) => `${API}/lead?userId=${userId}`,
     createPost: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
     deletePost: (id: number) => `${API}/lead?id=${id}`,
