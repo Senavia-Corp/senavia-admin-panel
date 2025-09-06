@@ -77,6 +77,25 @@ export function TestimonialVideoEditor({ item, onSave }: Props) {
                 onChange={(e) => setVideoUrl(e.target.value)}
                 className="mb-4"
               />
+
+              {/* Guía paso a paso para obtener el src de YouTube */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm">
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  📋 Cómo obtener la URL del video de YouTube:
+                </h4>
+                <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                  <li>Ve al video en YouTube que quieres usar</li>
+                  <li>Haz clic en el botón "Compartir" debajo del video</li>
+                  <li>Selecciona "Insertar" en las opciones que aparecen</li>
+                  <li>
+                    Copia la URL que aparece en el campo src (entre comillas)
+                  </li>
+                  <li>Pega la URL completa en el campo de arriba</li>
+                </ol>
+                <p className="mt-2 text-xs text-gray-500">
+                  💡 Ejemplo: https://www.youtube.com/embed/VIDEO_ID
+                </p>
+              </div>
             </div>
 
             <div className="flex justify-center mt-8">
