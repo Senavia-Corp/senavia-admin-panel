@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
-import { BillingStatus } from "@/types/billing-management";
+import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import {
   Select,
   SelectContent,
@@ -18,15 +18,15 @@ import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
+import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 
-interface BillingDetailFormProps {
+interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
-  billingId: number;
   leads: Leads[];
   lead: Lead[];
   plans: Plans[];
   onBack: () => void;
-  onSave: () => void;
+  onSave: (billingData: CreateBillingData) => void;
 }
 
 const servicesID = (service_ID: number) => {
@@ -40,23 +40,24 @@ const servicesID = (service_ID: number) => {
     return "Service not found";
   }
 };
-export function BillingDetailForm({
+export function BillingDetailCreateForm({
   selectedBilling,
-  billingId,
   leads,
   lead,
   plans,
   onBack,
   onSave,
-}: BillingDetailFormProps) {
+}: BillingDetailCreateFormProps) {
   console.log("selectedBilling recibido:", selectedBilling);
-  console.log("billingId recibido:", billingId);
   console.log("leads recibidos:", leads);
   console.log("lead recibido:", lead);
   const [showDocument, setShowDocument] = useState(false);
+  const { createBilling} = BillingViewModel();
 
   // Estados para campos editables
+  const [totalValue, setTotalValue] = useState(selectedBilling?.totalValue?.toString() || "");
   const [estimatedTime, setEstimatedTime] = useState("");
+  const [deadlineToPay, setDeadlineToPay] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
   const [associatedLead, setAssociatedLead] = useState("");
@@ -69,7 +70,6 @@ export function BillingDetailForm({
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
       setAssociatedLead(selectedBilling.lead_id?.toString() || "");
-      setAssociatedPlan(selectedBilling.plan_id?.toString() || "");
       setService(""); // No hay service en estos datos
     }
   }, []);
@@ -102,6 +102,46 @@ export function BillingDetailForm({
     "Service not found",
   ];
 
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
+  };
+
+  const invoiceReference = "INV-2025-0456";
+
+  const isFormValid = () => {
+    return (
+      totalValue !== "" &&
+      estimatedTime !== "" &&
+      description !== "" &&
+      status !== "" &&
+      associatedLead !== "" &&
+      associatedPlan !== "" &&
+      deadlineToPay !== ""
+    );
+  };
+
+  const handleCreateBilling = async () => {
+    const billingData: CreateBillingData = {
+      totalValue: Number(totalValue),
+      estimatedTime: estimatedTime,
+      description: description,
+      state: status,
+      lead_id: Number(associatedLead),
+      plan_id: Number(associatedPlan),
+      deadLineToPay: deadlineToPay,
+      invoiceDateCreated: getTodayDate(),
+      invoiceReference: invoiceReference
+    };
+    
+    try {
+      await createBilling(billingData);
+      onSave(billingData);
+    } catch (error) {
+      console.error("Error creating billing:", error);
+    }
+  };
+
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
   // }
@@ -120,7 +160,7 @@ export function BillingDetailForm({
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-4xl font-medium text-[#04081E]">
-            Billing Details
+            Create Billing
           </h1>
         </div>
         <Button
@@ -133,26 +173,27 @@ export function BillingDetailForm({
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
           <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">
-            <p>ID: {selectedBilling?.id ?? "N/A"}</p>
+              <p>
+                Total $:
+              </p>
+              <Input
+                type="number"
+                className="w-full h-7"
+                value={totalValue}
+                onChange={(e) => setTotalValue(e.target.value)}
+                placeholder="Enter total value"
+              />
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Total:{" "}
-              {selectedBilling?.totalValue
-                ? formatCurrency(parseFloat(selectedBilling.totalValue))
-                : "N/A"}
-            </p>
-            <hr className="border-[#EBEDF2]" />
-            <hr className="border-[#EBEDF2]" />
-            <Label className=" text-[#393939] text-base/4 font-normal block">
-              Estimated Time
-              <input
-                id="Estimated Time"
+              <p>
+                Estimated Time:
+              </p>
+              <Input
+                type="text"
+                className="w-full h-7"
                 value={estimatedTime}
                 onChange={(e) => setEstimatedTime(e.target.value)}
-                placeholder="Enter estimated time"
-                className="w-full h-7 pl-2 text-[#A2ADC5] border rounded-md mt-3"
+                placeholder="Enter estimated time in months"
               />
-            </Label>
             <hr className="border-[#EBEDF2]" />
             <Label
               htmlFor="description"
@@ -165,7 +206,7 @@ export function BillingDetailForm({
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                placeholder="Enter the description of the Estimate"
                 rows={6}
                 maxLength={200}
                 className="w-full h-28 resize-none text-xs"
@@ -237,6 +278,14 @@ export function BillingDetailForm({
                 ))}
               </SelectContent>
             </Select>
+            <hr className="border-[#EBEDF2]" />
+            <p>Deadline to pay</p>
+            <Input
+              type="date"
+              className="w-4/5 h-7"
+              value={deadlineToPay}
+              onChange={(e) => setDeadlineToPay(e.target.value)}
+            />
             <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
               <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                 <div>
@@ -248,6 +297,16 @@ export function BillingDetailForm({
                 </Button>
               </CardHeader>
             </Card>
+             <Button 
+                className={`rounded-full text-3xl items-center py-2 px-4 ${
+                  isFormValid() 
+                    ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80" 
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                onClick={handleCreateBilling}
+                disabled={!isFormValid()}>
+              Create Billing
+            </Button>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import type { BillingRecord, Billings, Billing } from "@/types/billing-managemen
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { BillingViewModel } from "./BillingViewModel"
+import { BillingDetailCreateForm } from "@/components/organisms/billing-detail-form-create"
 
 export function BillingPage() {
   const [billingRecords, setBillingRecords] = useState<Billings[]>([])
@@ -14,12 +15,13 @@ export function BillingPage() {
   const [showCreateBilling, setShowCreateBilling] = useState(false)
   const [selectedBillingId, setSelectedBillingId] = useState<number>()
   const [showBillingDetail, setShowBillingDetail] = useState(false)
-  const { billings, getBillings, getLeads, leads, getLeadById, lead, deleteBilling } = BillingViewModel()
+  const { billings, getBillings, getLeads, leads, getLeadById, lead, deleteBilling, getPlans, plans } = BillingViewModel()
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
 
   useEffect(() => {
     getBillings()
     getLeads()
+    getPlans()
   }, [searchTerm, statusFilter])
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export function BillingPage() {
               billingId={selectedBillingId!}
               leads={leads}
               lead={lead}
+              plans={plans}
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
@@ -114,11 +117,11 @@ export function BillingPage() {
       <div className="">
         <main className="">
           <div className="px-6 py-6 h-full">
-            <BillingDetailForm
+            <BillingDetailCreateForm
               selectedBilling={null}
-              billingId={0}
               leads={leads} 
               lead={lead}
+              plans={plans}
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />

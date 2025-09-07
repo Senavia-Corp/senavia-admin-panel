@@ -40,10 +40,13 @@ export interface apiResponse<T> {
 export type BillingStatus = "CREATED" | "PROCESSING" | "IN_REVIEW" | "REJECTED" | "ACCEPTED" | "INVOICE" | "PAID"
 
 export interface CreateBillingData {
-  estimatedTime: number
-  status: BillingStatus
-  totalValue: number
-  description: string
-  associatedLead: string
-  service: string
+  estimatedTime: string,
+  description: string,
+  state: string,
+  totalValue: number,
+  lead_id: number,
+  plan_id: number,
+  deadLineToPay: string,
+  invoiceDateCreated: string,
+  invoiceReference: string
 }
