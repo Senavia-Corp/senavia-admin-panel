@@ -52,7 +52,9 @@ export function BillingDetailCreateForm({
   console.log("leads recibidos:", leads);
   console.log("lead recibido:", lead);
   const [showDocument, setShowDocument] = useState(false);
-  const { createBilling} = BillingViewModel();
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
+  const { createBilling, error, successMessage } = BillingViewModel();
 
   // Estados para campos editables
   const [totalValue, setTotalValue] = useState(selectedBilling?.totalValue?.toString() || "");
@@ -130,16 +132,31 @@ export function BillingDetailCreateForm({
       lead_id: Number(associatedLead),
       plan_id: Number(associatedPlan),
       deadLineToPay: deadlineToPay,
-      invoiceDateCreated: getTodayDate(),
+      invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
       invoiceReference: invoiceReference
     };
     
-    try {
-      await createBilling(billingData);
-      onSave(billingData);
-    } catch (error) {
-      console.error("Error creating billing:", error);
-    }
+      const result = await createBilling(billingData);
+      
+      // Verificamos si hay datos en la respuesta
+      if (result && result.data) {
+        setPopupMessage({
+          type: 'success',
+          message: 'Estimate created successfully!'
+        });
+        setShowPopup(true);
+        setTimeout(() => {
+          setShowPopup(false);
+          onSave(billingData);
+        }, 3000);
+      } else {
+        setPopupMessage({
+          type: 'error',
+          message: error || 'Failed to create estimate'
+        });
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 3000);
+      }
   };
 
   // if (showDocument && selectedBilling) {
@@ -310,6 +327,21 @@ export function BillingDetailCreateForm({
           </div>
         </div>
       </div>
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black opacity-50"></div>
+          <div className={`bg-white rounded-lg p-8 z-10 text-center ${
+            popupMessage.type === 'success' ? 'border-2 border-[#99CC33]' : 'border-2 border-red-500'
+          }`}>
+            <h3 className={`text-2xl font-bold mb-4 ${
+              popupMessage.type === 'success' ? 'text-[#04081E]' : 'text-red-500'
+            }`}>
+              {popupMessage.type === 'success' ? '¡Success!' : '¡Error!'}
+            </h3>
+            <p className="text-lg text-[#393939]">{popupMessage.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

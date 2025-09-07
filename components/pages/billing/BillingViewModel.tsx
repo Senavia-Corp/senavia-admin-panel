@@ -10,6 +10,7 @@ export function BillingViewModel() {
    const [leads, setLeads] = useState<Leads[]>([]);
    const [loading, setLoading] = useState<boolean>(true);
    const [error, setError] = useState<string | null>(null);
+   const [successMessage, setSuccessMessage] = useState<string | null>(null);
    const [billings, setBillings] = useState<Billings[]>([]);
    const [lead, setLead] = useState<Lead[]>([]);
    const [plans, setPlans] = useState<Plans[]>([]);
@@ -43,6 +44,7 @@ export function BillingViewModel() {
         try {
             setLoading(true);
             setError(null);
+            setSuccessMessage(null);
             
             // Validar datos requeridos
             if (!billing.totalValue || !billing.lead_id || !billing.plan_id) {
@@ -55,16 +57,17 @@ export function BillingViewModel() {
                 billing
             );
 
-            if (status === 200 && response?.success) {
+            if (status === 201 && response?.success) {
                 setBilling(response.data);
-                return response.data;
+                setSuccessMessage("Estimate created successfully!");
+                return { success: true, data: response.data };
             } else {
                 throw new Error(errorLogs?.message || response?.message || "Failed to create billing");
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : "Failed to create billing";
             setError(message);
-            return null;
+            return { success: false, error: message };
         } finally {
             setLoading(false);
         }
@@ -135,6 +138,7 @@ export function BillingViewModel() {
         billing,
         loading,
         error,
+        successMessage,
         getBillings,
         getBilling,
         getLeads,
