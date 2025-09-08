@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { BillingRecord } from "@/types/billing-management";
+import { Billing } from "@/types/billing-management";
+import { Lead } from "@/types/lead-management";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -18,7 +19,9 @@ import {
 /* -------------------------------------------------- *
  *  Props
  * -------------------------------------------------- */
-interface DocumentPreviewBillingProps extends BillingRecord {
+interface DocumentPreviewBillingProps extends Billing {
+  lead: Lead[];
+  billing: Billing[];
   onBack: () => void;
 }
 
@@ -51,7 +54,7 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
           {/* Cuatro tarjetas */}
           <View style={pdf.cardGrid}>
             <CardPDF title="Customer" lines={[
-              data.associatedLead,
+              data.lead[0].clientName,
               `ID: ${data.id}`,
               `(000) 000-0000`,
             ]} />
