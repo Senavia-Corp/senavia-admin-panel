@@ -32,6 +32,8 @@ export const endpoints = {
   project: {
     getPosts: `${API}/project`,
     getPost: (id: number) => `${API}/project?id=${id}`,
+    getPostsByUser: (userId: string | number) =>
+      `${API}/project?userId=${userId}`,
     createPost: `${API}/project`,
     updatePost: (id: number) => `${API}/project?id=${id}`,
     deletePost: (id: number) => `${API}/project?id=${id}`,

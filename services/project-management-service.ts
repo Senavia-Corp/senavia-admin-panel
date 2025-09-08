@@ -4,6 +4,7 @@ import type {
   Phase,
 } from "@/types/project-management";
 import Axios from "axios";
+import { endpoints } from "@/lib/services/endpoints";
 
 function getCurrentPhaseName(phases: Phase[] | undefined): string {
   if (!phases || phases.length === 0) return "-";
@@ -174,6 +175,60 @@ export class ProjectManagementService {
     } catch (error) {
       console.error("Error deleting project:", error);
       throw error;
+    }
+  }
+
+  static async getProjectsByUser(
+    userId: string | number,
+    search?: string,
+    phaseFilter?: string
+  ): Promise<Project[]> {
+    try {
+      const response = await Axios.get(
+        endpoints.project.getPostsByUser(userId),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Error fetching user projects"
+        );
+      }
+
+      let projects: Project[] = response.data.data;
+
+      if (search) {
+        projects = projects.filter((project: Project) => {
+          const currentPhase = getCurrentPhaseName(project.phases);
+          return (
+            project.name.toLowerCase().includes(search.toLowerCase()) ||
+            currentPhase.toLowerCase().includes(search.toLowerCase())
+          );
+        });
+      }
+
+      if (phaseFilter && phaseFilter !== "all") {
+        projects = projects.filter((project: Project) => {
+          const currentPhase = getCurrentPhaseName(project.phases);
+          return currentPhase.toLowerCase() === phaseFilter.toLowerCase();
+        });
+      }
+
+      return projects;
+    } catch (error: any) {
+      console.error("Error fetching user projects:", error);
+      if (error.response?.status === 401) {
+        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(
+          "Error al obtener proyectos del usuario. Por favor, intente nuevamente."
+        );
+      }
     }
   }
 }
