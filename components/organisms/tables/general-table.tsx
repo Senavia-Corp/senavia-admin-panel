@@ -14,6 +14,7 @@ import { BlogTableRow } from "@/components/organisms/tables/row/blog-table-row";
 import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
 import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-row";
+import { CostTableRow } from "@/components/organisms/tables/row/cost-table-row";
 import {
   FilterBilling,
   FilterPermission,
@@ -23,7 +24,6 @@ import {
 } from "@/components/organisms/tables/filter/filter-model";
 import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
 import { FilterProject } from "@/components/organisms/tables/filter/filter-project";
-
 {
   /* HANDLERS */
 }
@@ -143,6 +143,15 @@ export function GeneralTable(
             onDelete={() => onDelete(item)}
           />
         );
+      case "costs-page":
+        return (
+          <CostTableRow
+            key={item.id}
+            cost={item}
+            onView={() => onView(item)}
+            onDelete={() => onDelete(item)}
+          />
+        );
       default:
         return null;
     }
@@ -164,6 +173,8 @@ export function GeneralTable(
         return <FilterLead onFilter={onFilter} />;
       case "projects-page":
         return <FilterProject onFilter={onFilter} />;
+      case "costs-page":
+        // return <FilterCost onFilter={onFilter} />;
       default:
         return null;
     }

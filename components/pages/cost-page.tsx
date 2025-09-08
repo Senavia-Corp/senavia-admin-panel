@@ -13,42 +13,71 @@ import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 
 export function CostPage() {
-  const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([])
-  const [billingToDelete, setBillingToDelete] = useState<BillingRecord | null>(null)
+  // Datos mockup para costos
+  const mockupCosts = [
+    {
+      id: 1,
+      name: "Materiales de Diseño",
+      type: "Material",
+      value: 1500.00,
+      description: "Materiales para diseño gráfico y web",
+      status: "processing",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 2,
+      name: "Licencias Software",
+      type: "Software",
+      value: 2500.00,
+      description: "Licencias anuales de software de diseño",
+      status: "finished",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 3,
+      name: "Hosting y Dominio",
+      type: "Servicio",
+      value: 800.00,
+      description: "Hosting anual y renovación de dominio",
+      status: "development",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+
+  const [billingRecords, setBillingRecords] = useState(mockupCosts)
+  const [billingToDelete, setBillingToDelete] = useState<typeof mockupCosts[0] | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [showCreateBilling, setShowCreateBilling] = useState(false)
-  const [selectedBillingId, setSelectedBillingId] = useState<string | undefined>()
+  const [selectedBillingId, setSelectedBillingId] = useState<number>()
   const [showBillingDetail, setShowBillingDetail] = useState(false)
 
   useEffect(() => {
     loadBillingRecords()
   }, [searchTerm, statusFilter])
 
-  const loadBillingRecords = async () => {
-    try {
-      const billingData = await BillingManagementService.getBillingRecords(searchTerm, statusFilter)
-      setBillingRecords(billingData)
-    } catch (error) {
-      console.error("Error loading billing records:", error)
-    }
+  const loadBillingRecords = () => {
+    // Filtrar los datos mockup según searchTerm y statusFilter
+    const filteredData = mockupCosts.filter(cost => 
+      cost.name ||
+      cost.type
+    );
+    setBillingRecords(filteredData);
   }
 
-  const handleDeleteBilling = async (billing: BillingRecord) => {
-    try {
-      await BillingManagementService.deleteBillingRecord(billing.id)
-      setBillingToDelete(null)
-      loadBillingRecords()
-    } catch (error) {
-      console.error("Error deleting billing record:", error)
-    }
+  const handleDeleteBilling = (cost: typeof mockupCosts[0]) => {
+    // Simular eliminación filtrando el costo del array
+    setBillingRecords(prev => prev.filter(item => item.id !== cost.id));
+    setBillingToDelete(null);
   }
 
-  const handleViewBilling = (billing: BillingRecord) => {
-    console.log("View billing:", billing)
-    setSelectedBillingId(billing.id)
+  const handleViewBilling = (cost: typeof mockupCosts[0]) => {
+    console.log("View cost:", cost)
+    setSelectedBillingId(cost.id)
     setShowBillingDetail(true)
-    // TODO: Implement billing detail view
   }
 
   const handleCreateBilling = () => {
@@ -77,7 +106,7 @@ export function CostPage() {
   const handlers = {
     onCreate: handleCreateBilling,
     onView: handleViewBilling,
-    onDelete: (billing: BillingRecord) => setBillingToDelete(billing),
+    onDelete: (cost: typeof mockupCosts[0]) => setBillingToDelete(cost),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
   }
@@ -89,37 +118,43 @@ export function CostPage() {
     }).format(amount)
   }
 
-  if (showBillingDetail) {
-    return (
-      <div className="">
-        <main className="">
-          <div className="px-6 py-6 h-full">
-            <BillingDetailForm
-              billingId={selectedBillingId}
-              onBack={handleBackToList}
-              onSave={handleSaveSuccess}
-            />
-          </div>
-        </main>
-      </div>
-    )
-  }
+  // if (showBillingDetail) {
+  //   return (
+  //     <div className="">
+  //       <main className="">
+  //         <div className="px-6 py-6 h-full">
+  //           <BillingDetailForm
+  //             billingId={selectedBillingId || 0}
+  //             selectedBilling={mockupCosts.find(c => c.id === selectedBillingId) || null}
+  //             leads={[]}
+  //             lead={[]}
+  //             onBack={handleBackToList}
+  //             onSave={handleSaveSuccess}
+  //           />
+  //         </div>
+  //       </main>
+  //     </div>
+  //   )
+  // }
 
-  if (showCreateBilling) {
-    return (
-      <div className="">
-        <main className="">
-          <div className="px-6 py-6 h-full">
-            <BillingDetailForm
-              billingId={undefined}
-              onBack={handleBackToList}
-              onSave={handleSaveSuccess}
-            />
-          </div>
-        </main>
-      </div>
-    )
-  }
+  // if (showCreateBilling) {
+  //   return (
+  //     <div className="">
+  //       <main className="">
+  //         <div className="px-6 py-6 h-full">
+  //           <BillingDetailForm
+  //             billingId={0}
+  //             selectedBilling={null}
+  //             leads={[]}
+  //             lead={[]}
+  //             onBack={handleBackToList}
+  //             onSave={handleSaveSuccess}
+  //           />
+  //         </div>
+  //       </main>
+  //     </div>
+  //   )
+  // }
 
   
 
@@ -131,16 +166,18 @@ export function CostPage() {
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
             <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
-            <p className="font-bold text-[#393939] text-5xl">Total: {formatCurrency(billingRecords[0].totalValue)}</p>
+            <p className="font-bold text-[#393939] text-5xl">
+              Total: {formatCurrency(billingRecords.reduce((sum, cost) => sum + cost.value, 0))}
+            </p>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
-                "billing-page",
+                "costs-page",
                 "Add Cost",
                 "Description",
                 "All Costs",
                 "Description",
-                ["Cost ID", "Name", "Type", "Value", "Actions"],
+                ["Cost ID", "Name", "Type", "Status", "Value", "Actions"],
                 billingRecords,
                 handlers
               )}
