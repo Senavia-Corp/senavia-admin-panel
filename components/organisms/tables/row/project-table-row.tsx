@@ -3,14 +3,14 @@
 import { StatusBadge } from "@/components/atoms/status-badge";
 import { ActionButton } from "@/components/atoms/action-button";
 import { Button } from "@/components/ui/button";
-import type { ProjectRecord } from "@/types/project-management";
+import type { Project, PhaseName } from "@/types/project-management";
 import { useRouter } from "next/navigation";
 
 interface ProjectTableRowProps {
-  project: ProjectRecord;
-  onView: (project: ProjectRecord) => void;
-  onDelete: (project: ProjectRecord) => void;
-  onViewTasks: (project: ProjectRecord) => void;
+  project: Project;
+  onView: (project: Project) => void;
+  onDelete: (project: Project) => void;
+  onViewTasks: (project: Project) => void;
 }
 
 export function ProjectTableRow({
@@ -30,6 +30,30 @@ export function ProjectTableRow({
     router.push(`/projects/${project.id}/board`);
   };
 
+  const getPhaseLabel = (): string => {
+    const lastPhase = (project.phases || [])
+      .slice()
+      .sort((a, b) => {
+        const aTime = new Date(a.startDate || "").getTime();
+        const bTime = new Date(b.startDate || "").getTime();
+        return aTime - bTime;
+      })
+      .pop();
+    const name = lastPhase?.name as PhaseName | undefined;
+    switch (name) {
+      case "ANALYSIS":
+        return "Analysis";
+      case "DESIGN":
+        return "Design";
+      case "DEVELOPMENT":
+        return "Development";
+      case "DEPLOY":
+        return "Deploy";
+      default:
+        return "-";
+    }
+  };
+
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       <td className="w-32 px-6 py-4 text-sm text-gray-900 truncate">
@@ -42,7 +66,7 @@ export function ProjectTableRow({
         {formatDate(project.startDate)}
       </td>
       <td className="w-32 px-6 py-4">
-        <StatusBadge status={project.currentPhase} />
+        <StatusBadge status={getPhaseLabel()} />
       </td>
       <td className="w-32 px-6 py-4">
         <Button

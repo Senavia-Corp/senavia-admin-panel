@@ -11,6 +11,7 @@ import { BillingTableRow } from "@/components/organisms/tables/row/billing-table
 import { UserTableRow } from "@/components/organisms/tables/row/user-table-row";
 import { ContractTableRow } from "@/components/organisms/tables/row/contract-table-row";
 import { BlogTableRow } from "@/components/organisms/tables/row/blog-table-row";
+import { TestimonialVideoTableRow } from "@/components/organisms/tables/row/testimonial-video-table-row";
 import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
 import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-row";
@@ -57,7 +58,7 @@ export function GeneralTable(
     onEdit,
   } = handlers;
 
-  const tableRows = data.map((item) => {
+  const tableRows = data.filter(item => item && item.id).map((item) => {
     switch (Page.toLowerCase()) {
       case "roles-page":
         return (
@@ -111,6 +112,15 @@ export function GeneralTable(
           <BlogTableRow
             key={item.id}
             blog={item}
+            onView={() => onView(item)}
+            onDelete={() => onDelete(item)}
+          />
+        );
+      case "testimonial-videos-page":
+        return (
+          <TestimonialVideoTableRow
+            key={item.id}
+            item={item}
             onView={() => onView(item)}
             onDelete={() => onDelete(item)}
           />

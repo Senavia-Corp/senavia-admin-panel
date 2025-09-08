@@ -22,6 +22,10 @@ export const endpoints = {
     deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
   },
   lead: {
+    getPosts: `${API}/lead`,
+    getPost: (id: number) => `${API}/lead?id=${id}`,
+    getPostsByUser: (userId: string | number) => `${API}/lead?userId=${userId}`,
+    createPost: `${API}/lead`,
     getLeads: `${API}/lead`,
     getLead: (id: number) => `${API}/lead?id=${id}`,
     createLead: `${API}/lead`,
@@ -31,9 +35,19 @@ export const endpoints = {
   project: {
     getPosts: `${API}/project`,
     getPost: (id: number) => `${API}/project?id=${id}`,
+    getPostsByUser: (userId: string | number) =>
+      `${API}/project?userId=${userId}`,
     createPost: `${API}/project`,
     updatePost: (id: number) => `${API}/project?id=${id}`,
     deletePost: (id: number) => `${API}/project?id=${id}`,
+  },
+  studycases: {
+    getPosts: `${API}/studycase`,
+    getPost: (id: string | number) => `${API}/studycase?id=${id}`,
+    createPost: `${API}/studycase`,
+    updatePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    deletePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    upload: `${API}/studycase/upload`,
   },
   user: {
     getUsers: `${API}/user`,

@@ -3,16 +3,14 @@
 import { useState, useEffect } from "react";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import { ProjectManagementService } from "@/services/project-management-service";
-import type { ProjectRecord } from "@/types/project-management";
+import type { Project } from "@/types/project-management";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { ProjectEditor } from "@/components/organisms/project-editor";
 import { toast } from "@/components/ui/use-toast";
 
 export function ProjectsPage() {
-  const [projects, setProjects] = useState<ProjectRecord[]>([]);
-  const [projectToDelete, setProjectToDelete] = useState<ProjectRecord | null>(
-    null
-  );
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
@@ -46,14 +44,14 @@ export function ProjectsPage() {
     setShowEditorForm(true);
   };
 
-  const handleViewProject = (project: ProjectRecord) => {
-    setSelectedProjectId(project.id);
+  const handleViewProject = (project: Project) => {
+    setSelectedProjectId(project.id.toString());
     setShowEditorForm(true);
   };
 
-  const handleDeleteProject = async (project: ProjectRecord) => {
+  const handleDeleteProject = async (project: Project) => {
     try {
-      await ProjectManagementService.deleteProject(project.id);
+      await ProjectManagementService.deleteProject(project.id.toString());
       setProjectToDelete(null);
       loadProjects();
       toast({
@@ -85,7 +83,7 @@ export function ProjectsPage() {
     loadProjects();
   };
 
-  const handleViewTasks = (project: ProjectRecord) => {
+  const handleViewTasks = (project: Project) => {
     // TODO: Implement tasks view
     console.log("View tasks for project:", project);
     toast({
@@ -97,7 +95,7 @@ export function ProjectsPage() {
   const handlers = {
     onCreate: handleCreateProject,
     onView: handleViewProject,
-    onDelete: (project: ProjectRecord) => setProjectToDelete(project),
+    onDelete: (project: Project) => setProjectToDelete(project),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
     onViewTasks: handleViewTasks,
