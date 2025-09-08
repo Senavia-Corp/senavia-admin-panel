@@ -24,131 +24,178 @@ function toDisplayMessage(msg: any, idx: number): any {
   };
 }
 
+// Hook genérico para manejar loading states
+function useLoadingStates(initialStates: Record<string, boolean>) {
+  const [loadingStates, setLoadingStates] = useState(initialStates);
+
+  const setLoading = useCallback((key: string, value: boolean) => {
+    setLoadingStates((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  return { loadingStates, setLoading };
+}
+
 export function useTestPortfolioData() {
-  // Listados principales
-  const [requests, setRequests] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [loadingRequests, setLoadingRequests] = useState(false);
-  const [loadingProjects, setLoadingProjects] = useState(false);
+  // Estados consolidados
+  const [data, setData] = useState({
+    requests: [] as any[],
+    projects: [] as any[],
+    selectedRequest: null as string | null,
+    selectedProject: null as string | null,
+    requestDetail: null as any,
+    requestChat: [] as any[],
+    requestEstimate: null as any,
+    requestInvoice: null as any,
+    projectDetail: null as any,
+    projectChat: [] as any[],
+    chatTab: "Chat" as string,
+  });
 
-  // Selección
-  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  // Loading states consolidados
+  const { loadingStates, setLoading } = useLoadingStates({
+    requests: false,
+    projects: false,
+    requestDetail: false,
+    requestChat: false,
+    requestEstimate: false,
+    requestInvoice: false,
+    projectDetail: false,
+    projectChat: false,
+  });
 
-  // Detalles y subdatos de request
-  const [requestDetail, setRequestDetail] = useState<any | null>(null);
-  const [requestChat, setRequestChat] = useState<any[]>([]);
-  const [requestEstimate, setRequestEstimate] = useState<any | null>(null);
-  const [requestInvoice, setRequestInvoice] = useState<any | null>(null);
-  const [loadingRequestDetail, setLoadingRequestDetail] = useState(false);
-  const [loadingRequestChat, setLoadingRequestChat] = useState(false);
-  const [loadingRequestEstimate, setLoadingRequestEstimate] = useState(false);
-  const [loadingRequestInvoice, setLoadingRequestInvoice] = useState(false);
+  // Estados para EstimatedValue e Invoice
+  const [estimateStates, setEstimateStates] = useState({
+    openStates: [false],
+    showDeclineReasons: [false],
+    declineMessages: [""],
+  });
 
-  // Detalles y subdatos de project
-  const [projectDetail, setProjectDetail] = useState<any | null>(null);
-  const [projectChat, setProjectChat] = useState<any[]>([]);
-  const [loadingProjectDetail, setLoadingProjectDetail] = useState(false);
-  const [loadingProjectChat, setLoadingProjectChat] = useState(false);
+  const [invoiceStates, setInvoiceStates] = useState({
+    openStates: [false],
+  });
 
-  // Estado compartido para EstimatedValue e Invoice SOLO para la request seleccionada
-  const [estimateOpenStates, setEstimateOpenStates] = useState<boolean[]>([
-    false,
-  ]);
-  const [estimateShowDeclineReasons, setEstimateShowDeclineReasons] = useState<
-    boolean[]
-  >([false]);
-  const [estimateDeclineMessages, setEstimateDeclineMessages] = useState<
-    string[]
-  >([""]);
-  const [invoiceOpenStates, setInvoiceOpenStates] = useState<boolean[]>([
-    false,
-  ]);
+  // Helper genérico para fetch
+  const fetchData = useCallback(
+    async (
+      loadingKey: string,
+      dataKey: string,
+      mockData: any[],
+      id?: string,
+      transform?: (data: any) => any
+    ) => {
+      setLoading(loadingKey, true);
+      try {
+        let result;
+        if (id) {
+          const item = mockData.find((item) => item.id === id);
+          result = await fakeFetch(item);
+        } else {
+          result = await fakeFetch(mockData);
+        }
 
-  // Estado para la tab activa del chat
-  const [chatTab, setChatTab] = useState<string>("Chat");
+        const finalResult = transform ? transform(result) : result;
+        setData((prev) => ({ ...prev, [dataKey]: finalResult }));
+      } finally {
+        setLoading(loadingKey, false);
+      }
+    },
+    [setLoading]
+  );
 
-  // --- Métodos de "fetch" ---
-  const fetchRequests = useCallback(async () => {
-    setLoadingRequests(true);
-    const data = await fakeFetch(mockRequests);
-    setRequests(data);
-    setLoadingRequests(false);
-  }, []);
+  // Métodos de fetch simplificados
+  const fetchRequests = useCallback(
+    () => fetchData("requests", "requests", mockRequests),
+    [fetchData]
+  );
 
-  const fetchProjects = useCallback(async () => {
-    setLoadingProjects(true);
-    const data = await fakeFetch(mockProjects);
-    setProjects(data);
-    setLoadingProjects(false);
-  }, []);
+  const fetchProjects = useCallback(
+    () => fetchData("projects", "projects", mockProjects),
+    [fetchData]
+  );
 
-  const fetchRequestDetail = useCallback(async (id: string) => {
-    setLoadingRequestDetail(true);
-    const req = mockRequests.find((r) => r.id === id);
-    const data = await fakeFetch(req);
-    setRequestDetail(data);
-    setLoadingRequestDetail(false);
-  }, []);
+  const fetchRequestDetail = useCallback(
+    (id: string) =>
+      fetchData("requestDetail", "requestDetail", mockRequests, id),
+    [fetchData]
+  );
 
-  const fetchRequestChat = useCallback(async (id: string) => {
-    setLoadingRequestChat(true);
-    const req = mockRequests.find((r) => r.id === id);
-    const data = await fakeFetch(req?.chat || []);
-    setRequestChat((data as any[]).map(toDisplayMessage));
-    setLoadingRequestChat(false);
-  }, []);
+  const fetchRequestChat = useCallback(
+    (id: string) =>
+      fetchData("requestChat", "requestChat", mockRequests, id, (data) =>
+        (data?.chat || []).map(toDisplayMessage)
+      ),
+    [fetchData]
+  );
 
-  const fetchRequestEstimate = useCallback(async (id: string) => {
-    setLoadingRequestEstimate(true);
-    const req = mockRequests.find((r) => r.id === id);
-    const data = await fakeFetch(req?.estimate || null);
-    setRequestEstimate(data);
-    setEstimateOpenStates([false]);
-    setEstimateShowDeclineReasons([false]);
-    setEstimateDeclineMessages([""]);
-    setLoadingRequestEstimate(false);
-  }, []);
+  const fetchRequestEstimate = useCallback(
+    (id: string) => {
+      fetchData(
+        "requestEstimate",
+        "requestEstimate",
+        mockRequests,
+        id,
+        (data) => data?.estimate || null
+      );
+      setEstimateStates({
+        openStates: [false],
+        showDeclineReasons: [false],
+        declineMessages: [""],
+      });
+    },
+    [fetchData]
+  );
 
-  const fetchRequestInvoice = useCallback(async (id: string) => {
-    setLoadingRequestInvoice(true);
-    const req = mockRequests.find((r) => r.id === id);
-    const data = await fakeFetch(req?.invoice || null);
-    setRequestInvoice(data);
-    setInvoiceOpenStates([false]);
-    setLoadingRequestInvoice(false);
-  }, []);
+  const fetchRequestInvoice = useCallback(
+    (id: string) => {
+      fetchData(
+        "requestInvoice",
+        "requestInvoice",
+        mockRequests,
+        id,
+        (data) => data?.invoice || null
+      );
+      setInvoiceStates({ openStates: [false] });
+    },
+    [fetchData]
+  );
 
-  const fetchProjectDetail = useCallback(async (id: string) => {
-    setLoadingProjectDetail(true);
-    const proj = mockProjects.find((p) => p.id === id);
-    const data = await fakeFetch(proj);
-    setProjectDetail(data);
-    setLoadingProjectDetail(false);
-  }, []);
+  const fetchProjectDetail = useCallback(
+    (id: string) =>
+      fetchData("projectDetail", "projectDetail", mockProjects, id),
+    [fetchData]
+  );
 
-  const fetchProjectChat = useCallback(async (id: string) => {
-    setLoadingProjectChat(true);
-    const proj = mockProjects.find((p) => p.id === id);
-    const data = await fakeFetch(proj?.chat || []);
-    setProjectChat((data as any[]).map(toDisplayMessage));
-    setLoadingProjectChat(false);
-  }, []);
+  const fetchProjectChat = useCallback(
+    (id: string) =>
+      fetchData("projectChat", "projectChat", mockProjects, id, (data) =>
+        (data?.chat || []).map(toDisplayMessage)
+      ),
+    [fetchData]
+  );
 
   // Limpieza de detalles al cambiar selección
   const clearRequestData = useCallback(() => {
-    setRequestDetail(null);
-    setRequestChat([]);
-    setRequestEstimate(null);
-    setRequestInvoice(null);
-    setEstimateOpenStates([false]);
-    setEstimateShowDeclineReasons([false]);
-    setEstimateDeclineMessages([""]);
-    setInvoiceOpenStates([false]);
+    setData((prev) => ({
+      ...prev,
+      requestDetail: null,
+      requestChat: [],
+      requestEstimate: null,
+      requestInvoice: null,
+    }));
+    setEstimateStates({
+      openStates: [false],
+      showDeclineReasons: [false],
+      declineMessages: [""],
+    });
+    setInvoiceStates({ openStates: [false] });
   }, []);
+
   const clearProjectData = useCallback(() => {
-    setProjectDetail(null);
-    setProjectChat([]);
+    setData((prev) => ({
+      ...prev,
+      projectDetail: null,
+      projectChat: [],
+    }));
   }, []);
 
   // Handler para enviar mensaje al chat (simula respuesta automática)
@@ -158,31 +205,29 @@ export function useTestPortfolioData() {
         { from: "user", text: message },
         Date.now()
       );
-      if (selectedRequest) {
-        setRequestChat((prev) => [...prev, newMsg]);
-        setTimeout(() => {
-          setRequestChat((prev) => [
-            ...prev,
+
+      const isRequest = !!data.selectedRequest;
+      const chatKey = isRequest ? "requestChat" : "projectChat";
+
+      setData((prev) => ({
+        ...prev,
+        [chatKey]: [...prev[chatKey], newMsg],
+      }));
+
+      setTimeout(() => {
+        setData((prev) => ({
+          ...prev,
+          [chatKey]: [
+            ...prev[chatKey],
             toDisplayMessage(
               { from: "admin", text: `Respuesta automática a: ${message}` },
               Date.now()
             ),
-          ]);
-        }, 800);
-      } else if (selectedProject) {
-        setProjectChat((prev) => [...prev, newMsg]);
-        setTimeout(() => {
-          setProjectChat((prev) => [
-            ...prev,
-            toDisplayMessage(
-              { from: "admin", text: `Respuesta automática a: ${message}` },
-              Date.now()
-            ),
-          ]);
-        }, 800);
-      }
+          ],
+        }));
+      }, 800);
     },
-    [selectedRequest, selectedProject]
+    [data.selectedRequest, data.selectedProject]
   );
 
   // Handler para cargar historial de chat (simula paginación, aquí solo repite el mock)
@@ -191,54 +236,64 @@ export function useTestPortfolioData() {
     // Podrías agregar mensajes al principio del array si tuvieras paginación real
   }, []);
 
+  // Setters para compatibilidad
+  const setSelectedRequest = useCallback((id: string | null) => {
+    setData((prev) => ({ ...prev, selectedRequest: id }));
+  }, []);
+
+  const setSelectedProject = useCallback((id: string | null) => {
+    setData((prev) => ({ ...prev, selectedProject: id }));
+  }, []);
+
+  const setChatTab = useCallback((tab: string) => {
+    setData((prev) => ({ ...prev, chatTab: tab }));
+  }, []);
+
   return {
-    // Listados
-    requests,
-    projects,
-    loadingRequests,
-    loadingProjects,
+    // Datos principales
+    ...data,
+    // Loading states
+    loadingRequests: loadingStates.requests,
+    loadingProjects: loadingStates.projects,
+    loadingRequestDetail: loadingStates.requestDetail,
+    loadingRequestChat: loadingStates.requestChat,
+    loadingRequestEstimate: loadingStates.requestEstimate,
+    loadingRequestInvoice: loadingStates.requestInvoice,
+    loadingProjectDetail: loadingStates.projectDetail,
+    loadingProjectChat: loadingStates.projectChat,
+    // Estados de estimate e invoice
+    estimateOpenStates: estimateStates.openStates,
+    setEstimateOpenStates: (states: boolean[]) =>
+      setEstimateStates((prev) => ({ ...prev, openStates: states })),
+    estimateShowDeclineReasons: estimateStates.showDeclineReasons,
+    setEstimateShowDeclineReasons: (states: boolean[]) =>
+      setEstimateStates((prev) => ({ ...prev, showDeclineReasons: states })),
+    estimateDeclineMessages: estimateStates.declineMessages,
+    setEstimateDeclineMessages: (messages: string[]) =>
+      setEstimateStates((prev) => ({ ...prev, declineMessages: messages })),
+    invoiceOpenStates: invoiceStates.openStates,
+    setInvoiceOpenStates: (states: boolean[]) =>
+      setInvoiceStates((prev) => ({ ...prev, openStates: states })),
+    // Setters
+    setSelectedRequest,
+    setSelectedProject,
+    setChatTab,
+    setLoadingRequests: (loading: boolean) => setLoading("requests", loading),
+    setLoadingProjects: (loading: boolean) => setLoading("projects", loading),
+    setLoadingRequestDetail: (loading: boolean) =>
+      setLoading("requestDetail", loading),
+    setLoadingProjectDetail: (loading: boolean) =>
+      setLoading("projectDetail", loading),
+    // Métodos de fetch
     fetchRequests,
     fetchProjects,
-    setLoadingRequests,
-    setLoadingProjects,
-    // Selección
-    selectedRequest,
-    setSelectedRequest,
-    selectedProject,
-    setSelectedProject,
-    // Request detail y subdatos
-    requestDetail,
-    requestChat,
-    requestEstimate,
-    requestInvoice,
-    loadingRequestDetail,
-    loadingRequestChat,
-    loadingRequestEstimate,
-    loadingRequestInvoice,
     fetchRequestDetail,
     fetchRequestChat,
     fetchRequestEstimate,
     fetchRequestInvoice,
-    setLoadingRequestDetail,
-    // Project detail y subdatos
-    projectDetail,
-    projectChat,
-    loadingProjectDetail,
-    loadingProjectChat,
     fetchProjectDetail,
     fetchProjectChat,
-    setLoadingProjectDetail,
-    // Estado compartido para EstimatedValue e Invoice
-    estimateOpenStates,
-    setEstimateOpenStates,
-    estimateShowDeclineReasons,
-    setEstimateShowDeclineReasons,
-    estimateDeclineMessages,
-    setEstimateDeclineMessages,
-    invoiceOpenStates,
-    setInvoiceOpenStates,
-    chatTab,
-    setChatTab,
+    // Métodos de limpieza y handlers
     clearRequestData,
     clearProjectData,
     handleSendMessageRequest,

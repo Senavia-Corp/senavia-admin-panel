@@ -1,20 +1,25 @@
 import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
+import type { User } from "@/types/user-management";
 
 interface UserSettingsFormValues {
   email: string;
   password: string;
   name: string;
-  newsletterPreferences: boolean;
+  address: string;
 }
 
-export default function UserSettings() {
+interface UserSettingsProps {
+  user?: User | null;
+}
+
+export default function UserSettings({ user }: UserSettingsProps) {
   const { register, handleSubmit, watch } = useForm<UserSettingsFormValues>({
     defaultValues: {
-      email: "email@example.com",
+      email: user?.email || "email@example.com",
       password: "••••••••••••",
-      name: "User name",
-      newsletterPreferences: true,
+      name: user?.name || "User name",
+      address: user?.address || "No address provided",
     },
   });
 
@@ -64,9 +69,11 @@ export default function UserSettings() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-800 truncate">Name</p>
+                  <p className="font-medium text-gray-800 truncate">
+                    {user?.name || "Name"}
+                  </p>
                   <p className="text-sm text-gray-500 truncate">
-                    email@example.com
+                    {user?.email || "email@example.com"}
                   </p>
                 </div>
               </div>
@@ -135,20 +142,15 @@ export default function UserSettings() {
                 </button>
               </div>
 
-              {/* Newsletter Preferences */}
+              {/* Address */}
               <div className="bg-gray-50 rounded-lg px-7 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-2 shadow-md mt-3 sm:mt-0">
                 <div className="text-center sm:text-left w-full">
-                  <p className="font-medium text-gray-800">
-                    Newsletter Preferences
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {watch("newsletterPreferences") ? "Active" : "Inactive"}
-                  </p>
+                  <p className="font-medium text-gray-800">Address</p>
+                  <p className="text-sm text-gray-500">{watch("address")}</p>
                 </div>
                 <button
                   type="button"
-                  className="rounded-full bg-[#9bc04e] text-white border-0 hover:bg-[#9bc04e] hover:text-white hover:shadow-[0_0_15px_rgba(171,212,90,0.7)] px-5 py-1 font-bold text-[14px] h-8 transition-all flex items-center justify-center mt-3 sm:mt-0 w-full sm:w-auto"
-                  disabled
+                  className="rounded-full bg-[#abd45a] hover:bg-[#9bc04e] text-white border-0 hover:text-white hover:shadow-[0_0_15px_rgba(171,212,90,0.7)] px-5 py-1 font-bold text-[14px] h-8 transition-all flex items-center justify-center mt-3 sm:mt-0 w-full sm:w-auto"
                 >
                   Change
                 </button>

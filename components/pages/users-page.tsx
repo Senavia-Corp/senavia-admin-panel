@@ -3,18 +3,16 @@
 import { useState, useEffect } from "react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { DetailTabs } from "../molecules/detail-tabs";
-
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-
 import { UserManagementService } from "@/services/user-management-service";
-import type { User, UserRole } from "@/types/user-management";
+import type { User } from "@/types/user-management";
 import DashboardPage from "./dashboard/dashboard-page";
 import { CreateUserForm } from "./dashboard/create-user-form";
 import UserSettings from "./user-settings";
+import { toast } from "@/components/ui/use-toast";
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<UserRole[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showCreatePage, setShowCreatePage] = useState(false);
   const [showEditPage, setShowEditPage] = useState(false);
@@ -22,29 +20,16 @@ export function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
 
-  useEffect(() => {
-    loadUsers();
-    loadRoles();
-  }, [searchTerm, roleFilter]);
-
   const loadUsers = async () => {
     try {
-      const usersData = await UserManagementService.getUsers(
-        searchTerm,
-        roleFilter
-      );
-      setUsers(usersData);
+      setUsers(await UserManagementService.getUsers(searchTerm, roleFilter));
     } catch (error) {
       console.error("Error loading users:", error);
-    }
-  };
-
-  const loadRoles = async () => {
-    try {
-      const rolesData = await UserManagementService.getUserRoles();
-      setRoles(rolesData);
-    } catch (error) {
-      console.error("Error loading roles:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load users. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -53,27 +38,38 @@ export function UsersPage() {
       await UserManagementService.deleteUser(user.id);
       setUserToDelete(null);
       loadUsers();
+      toast({ title: "Success", description: "User deleted successfully" });
     } catch (error) {
       console.error("Error deleting user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleFilterChange = (filter: string) => {
     const [type, value] = filter.split(":");
-    if (type === "role") {
-      setRoleFilter(value === "all" ? "" : value);
-    }
+    if (type === "role") setRoleFilter(value === "all" ? "" : value);
   };
 
-  if (selectedUser) {
+  useEffect(() => {
+    loadUsers();
+  }, [searchTerm, roleFilter]);
+
+  if (showEditPage) {
     return (
-      <div className="min-h-screen w-full bg-white ">
+      <div className="min-h-screen w-full bg-white">
         <div className="p-6">
           <DetailTabs
-            title="User Information"
-            onBack={() => setSelectedUser(null)}
+            title="Edit User Information"
+            onBack={() => {
+              setShowEditPage(false);
+              setSelectedUser(null);
+            }}
           >
-            <DashboardPage />
+            <UserSettings user={selectedUser} />
           </DetailTabs>
         </div>
       </div>
@@ -82,7 +78,7 @@ export function UsersPage() {
 
   if (showCreatePage) {
     return (
-      <div className="min-h-screen w-full bg-white ">
+      <div className="min-h-screen w-full bg-white">
         <div className="p-6">
           <DetailTabs
             title="User Details"
@@ -95,26 +91,28 @@ export function UsersPage() {
     );
   }
 
-  if (showEditPage) {
+  if (selectedUser) {
     return (
-      <div className="min-h-screen w-full bg-white ">
+      <div className="min-h-screen w-full bg-white">
         <div className="p-6">
           <DetailTabs
-            title="Edit User Information"
-            onBack={() => setShowEditPage(false)}
+            title="User Information"
+            onBack={() => setSelectedUser(null)}
           >
-            <UserSettings />
+            <DashboardPage />
           </DetailTabs>
         </div>
       </div>
     );
   }
 
-  // Handlers for GeneralTable
   const handlers = {
     onCreate: () => setShowCreatePage(true),
     onView: setSelectedUser,
-    onEdit: () => setShowEditPage(true),
+    onEdit: (user: User) => {
+      setSelectedUser(user);
+      setShowEditPage(true);
+    },
     onDelete: setUserToDelete,
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
@@ -122,7 +120,6 @@ export function UsersPage() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
-      {/* Main Content */}
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
@@ -132,7 +129,6 @@ export function UsersPage() {
                 User Management
               </h1>
             </div>
-
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "users-page",
@@ -148,7 +144,6 @@ export function UsersPage() {
           </div>
         </div>
       </main>
-
       <DeleteConfirmDialog
         open={!!userToDelete}
         onClose={() => setUserToDelete(null)}
