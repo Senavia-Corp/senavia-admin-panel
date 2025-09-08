@@ -23,6 +23,7 @@ import {
 } from "@/components/organisms/tables/filter/filter-model";
 import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
 import { FilterProject } from "@/components/organisms/tables/filter/filter-project";
+import { PortfolioTableRow } from "./row/portfolio-table-row";
 
 {
   /* HANDLERS */
@@ -141,6 +142,15 @@ export function GeneralTable(
             ticket={item}
             onView={() => onView(item)}
             onDelete={() => onDelete(item)}
+          />
+        );
+      case "portfolio-page":
+        return (
+          <PortfolioTableRow
+            key={item.id}
+            project={item}
+            onView={() => onView?.(item)}
+            onDelete={() => onDelete?.(item)}            
           />
         );
       default:

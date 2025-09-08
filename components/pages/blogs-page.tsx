@@ -26,18 +26,18 @@ export function BlogsPage() {
   const { posts, loading, pageInfo } = BlogViewModel({ simpleBlog: true, offset,simpleBlogsPerPage});
 
   useEffect(() => {
-    loadBlogs()
+    //loadBlogs()
     loadThemes()
   }, [searchTerm, themeFilter])
 
-  const loadBlogs = async () => {
+  /*const loadBlogs = async () => {
     try {
       const blogsData = await BlogManagementService.getBlogs(searchTerm, themeFilter)
       //setBlogs(blogsData)      
     } catch (error) {
       console.error("Error loading blogs:", error)
     }
-  }
+  }*/
 
   const loadThemes = async () => {
     try {
@@ -52,7 +52,7 @@ export function BlogsPage() {
     try {
       await BlogManagementService.deleteBlog(blog.id)
       setBlogToDelete(null)
-      loadBlogs()
+      //loadBlogs()
     } catch (error) {
       console.error("Error deleting blog:", error)
     }
@@ -89,7 +89,7 @@ const handlers = {
               onBack={() => setShowEditor(false)}
               onSave={() => {
                 setShowEditor(false)
-                loadBlogs()
+                //loadBlogs()
               }}
             />
           </div>
@@ -120,13 +120,13 @@ const handlers = {
           </div>
         </div>
       </main>
-
+{/*
       <CreateBlogDialog
         open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
-        onSuccess={loadBlogs}
+        onSuccess={loadBlog}
         themes={themes}
-      />
+      />*/}
 
       <DeleteConfirmDialog
         open={!!blogToDelete}

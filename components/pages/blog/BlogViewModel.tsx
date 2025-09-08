@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { endpoints,useFetch } from "@/lib/services/endpoints";
+import { endpoints, useFetch } from "@/lib/services/endpoints";
 //Importo las interfaces
-import {ApiResponse,Blog,SimpleBlog, SimpleBlogApiResponse,} from "./blog";
+import { ApiResponse, Blog, SimpleBlog, SimpleBlogApiResponse } from "./blog";
 
 export interface BlogViewModelParams {
   simpleBlog?: boolean;
@@ -9,15 +9,17 @@ export interface BlogViewModelParams {
   simpleBlogsPerPage?: number;
 }
 
-export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage = 10,
-}: BlogViewModelParams = {}) => 
-  {     
+export const BlogViewModel = ({
+  simpleBlog = false,
+  offset = 0,
+  simpleBlogsPerPage = 10,
+}: BlogViewModelParams = {}) => {
   const { fetchData } = useFetch();
   const [posts, setPosts] = useState<Blog[] | SimpleBlog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pageInfo, setPageInfo] = useState<any>(null);
-  
+
   useEffect(() => {
     const getBlogs = async () => {
       const { response, status, errorLogs } = await fetchData<any>(
@@ -44,18 +46,18 @@ export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage 
       if (offset) params.append("offset", offset.toString());
       if (simpleBlog && simpleBlogsPerPage)
         params.append("simpleBlogsPerPage", simpleBlogsPerPage.toString());
-      const url = `${endpoints.blog.getPosts}${params.toString() ? `?${params.toString()}` : ""}`;
+      const url = `${endpoints.blog.getPosts}${
+        params.toString() ? `?${params.toString()}` : ""
+      }`;
       //const  url = "http://localhost:3000/api/blog"
 
-      
       if (simpleBlog) {
-        
-        const { response, status, errorLogs } = await fetchData<SimpleBlogApiResponse>(url, "get");
-        if (status === 200 && response && response.success) {        
-          setPosts(response.data);        
+        const { response, status, errorLogs } =
+          await fetchData<SimpleBlogApiResponse>(url, "get");
+        if (status === 200 && response && response.success) {
+          setPosts(response.data);
           setPageInfo(response.page);
-        } 
-        else {
+        } else {
           const errorMessage =
             errorLogs?.message ||
             response?.message ||
@@ -65,8 +67,9 @@ export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage 
           setPageInfo(null);
         }
       } else {
-        
-        const { response, status, errorLogs } = await fetchData<ApiResponse<Blog>>(url, "get");
+        const { response, status, errorLogs } = await fetchData<
+          ApiResponse<Blog>
+        >(url, "get");
         if (status === 200 && response && response.success) {
           setPosts(response.data);
         } else {
@@ -79,7 +82,9 @@ export const BlogViewModel = ({simpleBlog = false,offset = 0,simpleBlogsPerPage 
         }
       }
     } catch (err: any) {
-      const errorMessage = err.message || "An unexpected error occurred while fetching blog posts.";
+      const errorMessage =
+        err.message ||
+        "An unexpected error occurred while fetching blog posts.";
       setError(errorMessage);
       setPosts([]);
       setPageInfo(null);
