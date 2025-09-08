@@ -35,6 +35,7 @@ const services: AssociatedService[] = [
   "Permissions",
 ];
 const statuses: PermissionStatus[] = ["Active", "Inactive"];
+const roleStatuses: RoleStatus[] = ["Active", "Inactive"];
 
 export const FilterPermission = ({
   onFilter,
@@ -134,28 +135,32 @@ export const FilterRole = ({
   };
 
   return (
-    <Popover>
-      <PopoverTrigger>
+    <>
+      <Button
+        variant="ghost"
+        onClick={toggleFilters}
+        className="[&_svg]:size-7"
+      >
         <Filter className="h-5 w-5" />
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 m-0 bg-gray-800 border-gray-700">
-        <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-32 bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-800 text-white">
-            <SelectItem value="all" className="text-white">
-              All Status
-            </SelectItem>
-            {statuses.map((status) => (
-              <SelectItem key={status} value={status} className="text-white">
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </PopoverContent>
-    </Popover>
+      </Button>
+      {showFilters && (
+        <>
+          <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+            <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              {roleStatuses.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
+      )}
+    </>
   );
 };
 
@@ -174,12 +179,10 @@ export const FilterBilling = ({
 }: {
   onFilter: (filter: string) => void;
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    onFilter(`search:${value}`);
-  };
+
+  const toggleFilters = () => setShowFilters((prev) => !prev);
 
   const handleStatusFilter = (status: string) => {
     setSelectedStatus(status);
@@ -187,26 +190,32 @@ export const FilterBilling = ({
   };
 
   return (
-    <Popover>
-      <PopoverTrigger>
+    <>
+      <Button
+        variant="ghost"
+        onClick={toggleFilters}
+        className="[&_svg]:size-7"
+      >
         <Filter className="h-5 w-5" />
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 m-0 bg-gray-800 border-gray-700">
-        <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-32 bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            {billingStatuses.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </PopoverContent>
-    </Popover>
+      </Button>
+      {showFilters && (
+        <>
+          <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+            <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              {billingStatuses.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
+      )}
+    </>
   );
 };
 

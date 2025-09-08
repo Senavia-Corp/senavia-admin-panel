@@ -26,8 +26,11 @@ export const endpoints = {
     getPost: (id: number) => `${API}/lead?id=${id}`,
     getPostsByUser: (userId: string | number) => `${API}/lead?userId=${userId}`,
     createPost: `${API}/lead`,
+    getLeads: `${API}/lead`,
+    getLead: (id: number) => `${API}/lead?id=${id}`,
+    createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
-    deletePost: (id: number) => `${API}/lead?id=${id}`,
+    deleteLead: (id: number) => `${API}/lead?id=${id}`,
   },
   project: {
     getPosts: `${API}/project`,
@@ -46,6 +49,24 @@ export const endpoints = {
     deletePost: (id: string | number) => `${API}/studycase?id=${id}`,
     upload: `${API}/studycase/upload`,
   },
+  user: {
+    getUsers: `${API}/user`,
+    getUser: (id: number) => `${API}/user?id=${id}`,
+    createUser: `${API}/user`,
+    updateUser: (id: number) => `${API}/user?id=${id}`,
+    deleteUser: (id: number) => `${API}/user?id=${id}`,
+  },
+  estimate: {
+    getEstimates: `${API}/estimate`,
+    getEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    createEstimate: `${API}/estimate`,
+    updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+  },
+  plan: {
+    getPlans: `${API}/plan`,
+    getPlan: (id: number) => `${API}/plan?id=${id}`,
+  }
 };
 
 // Header configurations

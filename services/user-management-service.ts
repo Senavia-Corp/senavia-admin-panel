@@ -7,6 +7,8 @@ import type {
   ChatMessage,
   CreateUserData,
 } from "@/types/user-management";
+import Axios from "axios";
+import { endpoints } from "@/lib/services/endpoints";
 
 // Mock data
 const mockRoles: UserRole[] = [
@@ -118,23 +120,48 @@ const mockProjects: UserProject[] = [
 
 export class UserManagementService {
   static async getUsers(search?: string, roleFilter?: string): Promise<User[]> {
-    let filteredUsers = [...mockUsers];
+    try {
+      const response = await Axios.get(endpoints.user.getUsers, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
-    if (search) {
-      filteredUsers = filteredUsers.filter(
-        (user) =>
-          user.name.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase())
-      );
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching users");
+      }
+
+      let users = response.data.data;
+
+      // Apply client-side filtering if needed
+      if (search) {
+        users = users.filter(
+          (user: User) =>
+            user.name?.toLowerCase().includes(search.toLowerCase()) ||
+            user.email?.toLowerCase().includes(search.toLowerCase()) ||
+            user.phone?.includes(search)
+        );
+      }
+
+      if (roleFilter && roleFilter !== "all") {
+        users = users.filter((user: User) => user.role.id === roleFilter);
+      }
+
+      return users;
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(
+          "Error al obtener usuarios. Por favor, intente nuevamente."
+        );
+      }
     }
-
-    if (roleFilter) {
-      filteredUsers = filteredUsers.filter(
-        (user) => user.role.id === roleFilter
-      );
-    }
-
-    return filteredUsers;
   }
 
   static async getUserById(id: string): Promise<User | null> {
@@ -174,11 +201,28 @@ export class UserManagementService {
   }
 
   static async deleteUser(id: string): Promise<boolean> {
-    const userIndex = mockUsers.findIndex((user) => user.id === id);
-    if (userIndex === -1) return false;
+    try {
+      const response = await fetch(endpoints.user.deleteUser(parseInt(id)), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    mockUsers.splice(userIndex, 1);
-    return true;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || "Error deleting user");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
   }
 
   static async getUserRoles(): Promise<UserRole[]> {
