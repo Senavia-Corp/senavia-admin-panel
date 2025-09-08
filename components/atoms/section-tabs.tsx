@@ -1,22 +1,28 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 interface SectionTabsProps {
-  tabs: string[]
-  activeTab: string
-  onTabChange: (tab: string) => void
+  tabs: string[];
+  activeTab: string;
+  onTabChange: (tab: string) => void;
 }
 
-export function SectionTabs({ tabs, activeTab, onTabChange }: SectionTabsProps) {
+export function SectionTabs({
+  tabs,
+  activeTab,
+  onTabChange,
+}: SectionTabsProps) {
   return (
-    <div className="flex space-x-1 bg-gray-200 rounded-lg p-1">
+    <div className="flex space-x-1 bg-[#EBEDF2] rounded-[16px] p-[9px]">
       {tabs.map((tab) => (
         <Button
           key={tab}
           variant={activeTab === tab ? "default" : "ghost"}
-          className={`rounded-md px-4 py-2 text-sm font-medium ${
-            activeTab === tab ? "bg-green-500 text-white hover:bg-green-600" : "text-gray-700 hover:bg-gray-300"
+          className={`rounded-[6px] px-8 text-[14px] font-bold leading-[100%] tracking-normal text-center font-inter flex items-center justify-center  ${
+            activeTab === tab
+              ? "bg-[#D3E8A9] text-black hover:bg-[#D3E8A9]"
+              : "text-black hover:bg-[#D3E8A9]"
           }`}
           onClick={() => onTabChange(tab)}
         >
@@ -24,5 +30,5 @@ export function SectionTabs({ tabs, activeTab, onTabChange }: SectionTabsProps) 
         </Button>
       ))}
     </div>
-  )
+  );
 }

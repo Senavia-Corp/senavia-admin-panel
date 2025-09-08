@@ -1,13 +1,16 @@
 "use client"
-
+//este codigo ya no se usa 
 import { useState } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SupportTableRow } from "@/components/molecules/support-table-row"
+import { SupportTableRow } from "@/components/molecules/ticket-table-row"
 import { Plus, Search, Filter } from "lucide-react"
+
 import type { SupportTicket, TicketType, TicketStatus } from "@/types/support-management"
+import TicketViewModel from "@/components/pages/ticket/TicketViewModel"
+import { useEffect } from "react"; // Asegúrate que esté importado
 
 interface SupportTableProps {
   tickets: SupportTicket[]
@@ -19,18 +22,18 @@ interface SupportTableProps {
   onStatusFilter: (status: string) => void
 }
 
-export function SupportTable({
-  tickets,
-  onAddTicket,
-  onViewTicket,
-  onDeleteTicket,
-  onSearch,
-  onTypeFilter,
-  onStatusFilter,
-}: SupportTableProps) {
+export function SupportTable({tickets,onAddTicket,onViewTicket,onDeleteTicket, onSearch,onTypeFilter,onStatusFilter,}: SupportTableProps) {
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedType, setSelectedType] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+
+  //------------------------------- get Tickets --------------------------------
+  const [ticketsPerPage, setTicketsPerPage] = useState(3)
+  const [offset,setOffset] = useState(0)
+  
+  const[allTickets,setAllTickets] = useState<any[]>([])
+  const {_tickets,loading,pageInfo}=TicketViewModel({simpleTicket:true,offset,ticketsPerPage,})
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
@@ -47,8 +50,21 @@ export function SupportTable({
     onStatusFilter(status)
   }
 
-  const types: TicketType[] = ["Bug", "Request", "Review", "Other"]
-  const statuses: TicketStatus[] = ["Pending", "Assigned", "InProcess", "UnderReview", "Solved", "Closed"]
+  useEffect(()=>{
+    if(_tickets && _tickets.length > 0){
+      if(offset === 0){
+      setAllTickets(_tickets)
+    }else{
+      setAllTickets((pre)=>{
+        const existingIds = new Set(pre.map(ticket=>ticket.id))
+        const newTickets = tickets.filter(ticket=>!existingIds.has(ticket.id))
+        return [...pre,...newTickets]
+      })
+    }}
+  },[tickets,offset])
+
+  const types: TicketType[] = ["BUG", "REQUEST", "REVIEW", "OTHER"]
+  const statuses: TicketStatus[] = ["PENDING", "ASSIGNED", "INPROCESS", "UNDERREVIEW", "SOLVED", "CLOSED"]
 
   return (
     <div className="flex flex-col h-full space-y-6 w-full">
@@ -144,7 +160,7 @@ export function SupportTable({
             <div className="flex-1 overflow-auto">
               <table className="w-full table-fixed">
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {tickets.map((ticket) => (
+                  {_tickets.map((ticket) => (
                     <SupportTableRow key={ticket.id} ticket={ticket} onView={onViewTicket} onDelete={onDeleteTicket} />
                   ))}
                 </tbody>

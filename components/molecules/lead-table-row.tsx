@@ -1,38 +1,84 @@
-"use client"
+"use client";
 
-import { StatusBadge } from "@/components/atoms/status-badge"
-import { ActionButton } from "@/components/atoms/action-button"
-import type { LeadRecord } from "@/types/lead-management"
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Lead } from "@/types/lead-management";
+import { Eye, Trash2 } from "lucide-react";
 
 interface LeadTableRowProps {
-  lead: LeadRecord
-  onView: (lead: LeadRecord) => void
-  onDelete: (lead: LeadRecord) => void
+  lead: Lead;
+  onView: (lead: Lead) => void;
+  onDelete: (lead: Lead) => void;
+  isLoading?: boolean;
 }
 
-export function LeadTableRow({ lead, onView, onDelete }: LeadTableRowProps) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "2-digit",
-    })
-  }
+export function LeadTableRow({
+  lead,
+  onView,
+  onDelete,
+  isLoading,
+}: LeadTableRowProps) {
+  const getStatusColor = (state: Lead["state"]) => {
+    switch (state) {
+      case "SEND":
+        return "bg-blue-100 text-blue-800";
+      case "PROCESSING":
+        return "bg-yellow-100 text-yellow-800";
+      case "ESTIMATING":
+        return "bg-purple-100 text-purple-800";
+      case "FINISHED":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-32 px-6 py-4 text-sm text-gray-900 truncate">{lead.id}</td>
-      <td className="flex-1 px-6 py-4 text-sm text-gray-900 truncate">{lead.customerName}</td>
-      <td className="w-32 px-6 py-4 text-sm text-gray-900">{formatDate(lead.createdAt)}</td>
-      <td className="w-32 px-6 py-4">
-        <StatusBadge status={lead.status} />
+    <tr>
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{lead.id}</div>
       </td>
-      <td className="w-32 px-6 py-4">
-        <div className="flex space-x-2">
-          <ActionButton type="view" onClick={() => onView(lead)} className="text-gray-700 hover:text-gray-900" />
-          <ActionButton type="delete" onClick={() => onDelete(lead)} className="text-gray-700 hover:text-gray-900" />
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{lead.clientName}</div>
+      </td>
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{lead.clientEmail}</div>
+      </td>
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">
+          {format(new Date(lead.startDate), "MMM dd, yyyy")}
+        </div>
+      </td>
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap">
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+            lead.state
+          )}`}
+        >
+          {lead.state}
+        </span>
+      </td>
+      <td className="w-1/6 px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onView(lead)}
+            className="text-indigo-600 hover:text-indigo-900"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(lead)}
+            disabled={isLoading}
+            className="text-red-600 hover:text-red-900"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </td>
     </tr>
-  )
+  );
 }

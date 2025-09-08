@@ -1,14 +1,44 @@
-export interface LeadRecord {
-  id: string
-  customerName: string
-  status: LeadStatus
-  createdAt: Date
-  updatedAt: Date
+export type LeadStatus = "SEND" | "PROCESSING" | "ESTIMATING" | "FINISHED";
+
+export interface Lead {
+  id: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  clientAddress: string;
+  description: string;
+  state: LeadStatus;
+  startDate: string;
+  endDate: string;
+  workTeamId?: string;
+  serviceId?: string;
+  userId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  user?: {
+    id: number;
+    name: string;
+  };
+  service?: {
+    id: number;
+    name: string;
+  };
+  WorkTeam?: {
+    id: number;
+    name: string;
+  };
 }
 
-export type LeadStatus = "Send" | "Processing" | "Estimating" | "Finished"
-
 export interface CreateLeadData {
-  customerName: string
-  status: LeadStatus
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  clientAddress: string;
+  description: string;
+  state: LeadStatus;
+  startDate: string;
+  endDate?: string;
+  workTeamId?: number;
+  serviceId?: number;
+  userId?: number;
 }

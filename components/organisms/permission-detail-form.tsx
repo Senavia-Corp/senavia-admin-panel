@@ -93,7 +93,7 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
   const services = PermissionManagementService.getAssociatedServices()
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Button
@@ -104,25 +104,23 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Permission Details</h1>
+        <h1 className="text-4xl font-medium text-[#04081E]">Permission Details</h1>
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-900 rounded-lg p-6 flex-1">
-        <div className="bg-white rounded-lg p-12 h-full">
-          <div className="max-w-4xl mx-auto space-y-8">
+      <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
+        <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12">
+          <div className="max-w-4xl mx-auto space-y-3 text-[#393939] text-base/4">
             {/* ID Display */}
             <div>
-              <p className="text-lg text-gray-600 mb-6">ID: {displayId}</p>
+              <p className="">ID: {displayId}</p> 
             </div>
-
-            {/* Form Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column */}
-              <div className="space-y-8">
+            <hr className="border-[#EBEDF2]" />
+            {/* Form */}
+            <div className="flex-col space-y-3">
                 {/* Name */}
                 <div>
-                  <Label htmlFor="name" className="text-lg font-medium text-gray-900 mb-3 block">
+                  <Label htmlFor="name" className=" font-normal mb-3 block">
                     Name
                   </Label>
                   <Input
@@ -130,20 +128,60 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                     value={formData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                     placeholder="Permission Name"
-                    className="w-full h-12 text-base"
+                    className="w-full h-7  text-[#A2ADC5]"
                   />
                 </div>
+                <hr className="border-[#EBEDF2]" />
+                 {/* Description */}
+                 <div>
+                  <Label htmlFor="description" className=" font-normal mb-3 block">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                      rows={6}
+                      maxLength={200}
+                      className="w-full h-28 resize-none "
+                    />
+                    <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
+                      {formData.description.length}/200
+                    </div>
+                  </div>
+                </div>
+                <hr className="border-[#EBEDF2]" />
+                {/* Status */}
+                <div>
+                  <Label className=" font-normal text-[#393939] mb-3 block">Status</Label>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="status"
+                      checked={formData.status}
+                      onCheckedChange={(checked) => handleChange("status", checked as boolean)}
+                      className="w-5 h-5"
+                    />
+                    <Label htmlFor="status" className=" font-medium text-[#393939]">
+                      Active
+                    </Label>
+                  </div>
+                </div>
+                <hr className="border-[#EBEDF2]" />
 
                 {/* Action */}
+                <hr className="border-[#EBEDF2]" />
+                <hr className="border-[#EBEDF2]" />
                 <div>
-                  <Label htmlFor="action" className="text-lg font-medium text-gray-900 mb-3 block">
+                  <Label htmlFor="action" className=" font-normal mb-3 block">
                     Action
                   </Label>
                   <Select
                     value={formData.action}
                     onValueChange={(value: PermissionAction) => handleChange("action", value)}
                   >
-                    <SelectTrigger className="w-full h-12 text-base">
+                    <SelectTrigger className="w-full h-7 ">
                       <SelectValue placeholder="Dropdown here" />
                     </SelectTrigger>
                     <SelectContent>
@@ -155,17 +193,17 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                     </SelectContent>
                   </Select>
                 </div>
-
+                <hr className="border-[#EBEDF2]" />
                 {/* Associated Service */}
                 <div>
-                  <Label htmlFor="associatedService" className="text-lg font-medium text-gray-900 mb-3 block">
+                  <Label htmlFor="associatedService" className=" font-normal mb-3 block">
                     Associated Service
                   </Label>
                   <Select
                     value={formData.associatedService}
                     onValueChange={(value: AssociatedService) => handleChange("associatedService", value)}
                   >
-                    <SelectTrigger className="w-full h-12 text-base">
+                    <SelectTrigger className="w-full h-7">
                       <SelectValue placeholder="Dropdown here" />
                     </SelectTrigger>
                     <SelectContent>
@@ -178,54 +216,13 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
                   </Select>
                 </div>
               </div>
-
-              {/* Right Column */}
-              <div className="space-y-8">
-                {/* Description */}
-                <div>
-                  <Label htmlFor="description" className="text-lg font-medium text-gray-900 mb-3 block">
-                    Description
-                  </Label>
-                  <div className="relative">
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
-                      rows={6}
-                      maxLength={200}
-                      className="w-full resize-none text-base"
-                    />
-                    <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                      {formData.description.length}/200
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <Label className="text-lg font-medium text-gray-900 mb-3 block">Status</Label>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="status"
-                      checked={formData.status}
-                      onCheckedChange={(checked) => handleChange("status", checked as boolean)}
-                      className="w-5 h-5"
-                    />
-                    <Label htmlFor="status" className="text-base font-medium">
-                      Active
-                    </Label>
-                  </div>
-                </div>
-              </div>
             </div>
-
             {/* Save Button */}
             <div className="pt-8">
               <Button
                 onClick={handleSave}
                 disabled={isLoading || !formData.name.trim()}
-                className="w-full max-w-md mx-auto flex items-center justify-center bg-green-500 hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
+                className="w-full max-w-md mx-auto flex items-center justify-center bg-[#99CC33] hover:bg-green-600 text-white py-4 text-lg font-medium rounded-full"
               >
                 {isLoading ? "Saving..." : isEditMode ? "Update Permission" : "Add Permission"}
               </Button>
@@ -233,6 +230,5 @@ export function PermissionDetailForm({ permissionId, onBack, onSave }: Permissio
           </div>
         </div>
       </div>
-    </div>
   )
 }

@@ -12,9 +12,9 @@ A web-based admin panel for managing Senavia Corp's operations and resources.
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript, Material-UI
+- **Frontend:** Next.js, TypeScript, Material-UI
 - **Backend:** Node.js, Express
-- **Database:** MongoDB
+- **Database:** PostgreSQL
 
 ## Getting Started
 
@@ -31,10 +31,10 @@ cd senavia-admin-panel
 npm install
 ```
 
-### Running the App
+### Running the App in dev server
 
 ```bash
-npm start
+npm run dev
 ```
 
 The app will be available at `http://localhost:3000`.
@@ -52,13 +52,6 @@ senavia-admin-panel/
 ├── package.json
 └── README.md
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a new branch
-3. Make your changes
-4. Submit a pull request
 
 ## License
 
