@@ -26,8 +26,8 @@ export default function RootLayout({
               <div className="flex-1 overflow-auto">{children}</div>
             </SidebarInset>
           </div>
+          <Toaster />
         </SidebarProvider>
-        <Toaster />
       </body>
     </html>
   );

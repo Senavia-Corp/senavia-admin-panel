@@ -153,13 +153,11 @@ export class UserManagementService {
       console.error("Error fetching users:", error);
 
       if (error.response?.status === 401) {
-        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+        throw new Error("Unauthorized. Please log in again.");
       } else if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       } else {
-        throw new Error(
-          "Error al obtener usuarios. Por favor, intente nuevamente."
-        );
+        throw new Error("Error fetching users. Please try again.");
       }
     }
   }
@@ -291,26 +289,31 @@ export class UserManagementService {
 
   static async deleteUser(id: string): Promise<boolean> {
     try {
-      const response = await fetch(endpoints.user.deleteUser(parseInt(id)), {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await Axios.delete(
+        endpoints.user.deleteUser(parseInt(id)),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error deleting user");
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error deleting user");
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting user:", error);
-      throw error;
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error deleting user. Please try again.");
+      }
     }
   }
 

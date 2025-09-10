@@ -9,9 +9,10 @@ import type { User } from "@/types/user-management";
 import DashboardPage from "./dashboard/dashboard-page";
 import { CreateUserForm } from "./dashboard/create-user-form";
 import UserSettings from "./user-settings";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function UsersPage() {
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showCreatePage, setShowCreatePage] = useState(false);
