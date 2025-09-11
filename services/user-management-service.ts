@@ -11,22 +11,13 @@ import Axios from "axios";
 import { endpoints } from "@/lib/services/endpoints";
 
 // Mock data
-const mockRoles: UserRole[] = [
-  { id: "1", name: "Administrator", color: "#99CC33", permissions: ["all"] },
-  { id: "2", name: "Customer", color: "#A133CC", permissions: ["view_own"] },
-  {
-    id: "3",
-    name: "Developer",
-    color: "#33CCCC",
-    permissions: ["manage_projects"],
-  },
-  {
-    id: "4",
-    name: "Designer",
-    color: "#F59E0B",
-    permissions: ["manage_design"],
-  },
-];
+const defaultRole: UserRole = {
+  id: 1,
+  name: "User",
+  description: "Default user role",
+  active: true,
+  color: "#A133CC",
+};
 
 const mockUsers: User[] = [
   {
@@ -35,7 +26,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -45,7 +36,7 @@ const mockUsers: User[] = [
     email: "jane@example.com",
     phone: "(555) 987-6543",
     address: "456 Oak Ave, City, State",
-    role: mockRoles[1],
+    role: defaultRole,
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
   },
@@ -55,7 +46,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -65,7 +56,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -75,7 +66,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -85,7 +76,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -145,7 +136,9 @@ export class UserManagementService {
       }
 
       if (roleFilter && roleFilter !== "all") {
-        users = users.filter((user: User) => user.role.id === roleFilter);
+        users = users.filter(
+          (user: User) => user.role.id === parseInt(roleFilter)
+        );
       }
 
       return users;
@@ -173,8 +166,7 @@ export class UserManagementService {
       email: userData.email,
       phone: userData.phone,
       address: userData.address,
-      role:
-        mockRoles.find((role) => role.id === userData.roleId) || mockRoles[1],
+      role: await this.getRoleById(userData.roleId), // TODO: Remove this
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -318,7 +310,64 @@ export class UserManagementService {
   }
 
   static async getUserRoles(): Promise<UserRole[]> {
-    return mockRoles;
+    try {
+      const response = await Axios.get(endpoints.user.getRoles, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching roles");
+      }
+
+      // Usar directamente la respuesta del backend y agregar colores
+      const userRoles: UserRole[] = response.data.data
+        .filter((role: UserRole) => role.active) // Solo roles activos
+        .map((role: UserRole) => ({
+          ...role,
+          color: this.getDefaultRoleColor(role.name), // TODO: No tan necesario
+        }));
+
+      return userRoles;
+    } catch (error: any) {
+      console.error("Error fetching roles:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error fetching roles. Please try again.");
+      }
+    }
+  }
+
+  // Método para obtener un rol por ID
+  static async getRoleById(roleId: number): Promise<UserRole> {
+    // TODO: Remove this
+    const roles = await this.getUserRoles();
+    const role = roles.find((r) => r.id === roleId);
+    if (!role) {
+      throw new Error(`Role with ID ${roleId} not found`);
+    }
+    return role;
+  }
+
+  // Método auxiliar para asignar colores por defecto a los roles
+  private static getDefaultRoleColor(roleName: string): string {
+    const colorMap: Record<string, string> = {
+      Administrador: "#99CC33",
+      SUPERADMINISTRAITOR: "#FF6B6B",
+      User: "#A133CC",
+      Client: "#33CCCC",
+      GORDO: "#F59E0B",
+      STAKEOLDER: "#8B5CF6",
+      STAKEOLDERTHEENTERPRISE: "#10B981",
+    };
+
+    return colorMap[roleName] || "#6B7280"; // Color gris por defecto
   }
 
   static async getUserRequests(userId: string): Promise<UserRequest[]> {

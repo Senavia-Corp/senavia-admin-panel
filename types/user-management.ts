@@ -11,10 +11,11 @@ export interface User {
 }
 
 export interface UserRole {
-  id: string;
+  id: number;
   name: string;
-  color: string;
-  permissions: string[];
+  description: string;
+  active: boolean;
+  color?: string;
 }
 
 export interface UserRequest {
@@ -87,5 +88,5 @@ export interface CreateUserData {
   phone: string;
   address: string;
   profileImage?: File;
-  roleId: string;
+  roleId: number;
 }

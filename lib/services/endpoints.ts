@@ -41,6 +41,7 @@ export const endpoints = {
     createUser: `${API}/user`,
     updateUser: `${API}/user`,
     deleteUser: (id: number) => `${API}/user?id=${id}`,
+    getRoles: `${API}/role`,
   },
   estimate: {
     getEstimates: `${API}/estimate`,
@@ -52,7 +53,7 @@ export const endpoints = {
   plan: {
     getPlans: `${API}/plan`,
     getPlan: (id: number) => `${API}/plan?id=${id}`,
-  }
+  },
 };
 
 // Header configurations

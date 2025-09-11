@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MultiSelect } from "@/components/atoms/multiselect";
+import { RoleDropdown } from "@/components/atoms/role-dropdown";
 import { Trash2 } from "lucide-react";
 
 interface CreateUserFormValues {
@@ -9,15 +10,11 @@ interface CreateUserFormValues {
   password: string;
   phone: string;
   address: string;
-  role: string;
+  role: number;
   permissions: string[];
   profileImage?: File;
 }
 
-const roles = [
-  { id: "1", name: "Admin" },
-  { id: "2", name: "User" },
-];
 const allPermissions = [
   "Permission 1",
   "Permission 2",
@@ -30,13 +27,21 @@ export function CreateUserForm() {
   const { register, handleSubmit, setValue, watch } =
     useForm<CreateUserFormValues>();
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<number | undefined>(
+    undefined
+  );
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onSubmit = (data: CreateUserFormValues) => {
     // Aquí puedes manejar el envío del formulario
-    console.log({ ...data, permissions: selectedPermissions, profileImage });
+    console.log({
+      ...data,
+      role: selectedRole,
+      permissions: selectedPermissions,
+      profileImage,
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,17 +116,12 @@ export function CreateUserForm() {
           {/* Columna derecha */}
           <div>
             <label className="block text-sm font-medium mb-1">Role</label>
-            <select
-              className="w-full border rounded px-3 py-2 text-sm"
-              {...register("role")}
-            >
-              <option value="">Dropdown here - Role Name - Role ID</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
+            <RoleDropdown
+              value={selectedRole}
+              onChange={setSelectedRole}
+              placeholder="Select a role..."
+              className="w-full"
+            />
             <label className="block text-sm font-medium mb-1 mt-4">
               Custom Permissions
             </label>
@@ -191,7 +191,7 @@ export function CreateUserForm() {
             type="submit"
             className="w-full md:w-2/3 bg-[#99CC33] text-white py-2 rounded-full text-lg font-medium"
           >
-            Add / Update User
+            Add user
           </button>
         </div>
       </form>
