@@ -44,6 +44,9 @@ export const endpoints = {
     getRoles: `${API}/role`,
     getPermissions: `${API}/permission`,
   },
+  auth: {
+    register: `${API}/auth/register`,
+  },
   estimate: {
     getEstimates: `${API}/estimate`,
     getEstimate: (id: number) => `${API}/estimate?id=${id}`,

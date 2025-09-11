@@ -161,19 +161,50 @@ export class UserManagementService {
   }
 
   static async createUser(userData: CreateUserData): Promise<User> {
-    const newUser: User = {
-      id: (mockUsers.length + 1).toString().padStart(4, "0"),
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      address: userData.address,
-      role: await this.getRoleById(userData.roleId), // TODO: Remove this
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    try {
+      const formData = new FormData();
 
-    mockUsers.push(newUser);
-    return newUser;
+      // Agregar todos los campos requeridos al FormData
+      formData.append("email", userData.email);
+      formData.append("password", userData.password);
+      formData.append("name", userData.name);
+      formData.append("phone", userData.phone);
+      formData.append("address", userData.address);
+      formData.append("roleId", userData.roleId.toString());
+
+      // Agregar imagen si existe
+      if (userData.imageUrl) {
+        formData.append("imageUrl", userData.imageUrl);
+      }
+
+      // Agregar permisos si existen
+      if (userData.permissions && userData.permissions.length > 0) {
+        formData.append("permissions", userData.permissions.join(","));
+      }
+
+      const response = await Axios.post(endpoints.auth.register, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error creating user");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error creating user. Please try again.");
+      }
+    }
   }
 
   static async patchUser(

@@ -98,6 +98,7 @@ export interface CreateUserData {
   password: string;
   phone: string;
   address: string;
-  profileImage?: File;
+  imageUrl?: File;
   roleId: number;
+  permissions?: number[];
 }

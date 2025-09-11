@@ -7,12 +7,14 @@ interface MultiSelectProps {
   value: number[];
   onChange: (value: number[]) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function MultiSelect({
   value,
   onChange,
   placeholder = "Select permissions...",
+  disabled = false,
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -64,8 +66,11 @@ export function MultiSelect({
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        className="flex flex-wrap items-center gap-2 border rounded px-3 py-2 bg-white cursor-text "
+        className={`flex flex-wrap items-center gap-2 border rounded px-3 py-2 bg-white ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : "cursor-text"
+        }`}
         onClick={() => {
+          if (disabled) return;
           if (!open) {
             loadPermissions();
           }
@@ -84,7 +89,9 @@ export function MultiSelect({
                 <button
                   type="button"
                   className="text-xs"
+                  disabled={disabled}
                   onClick={(e) => {
+                    if (disabled) return;
                     e.stopPropagation();
                     onChange(value.filter((v) => v !== permId));
                   }}
@@ -99,8 +106,10 @@ export function MultiSelect({
           className="flex-1 min-w-[120px] border-none outline-none bg-transparent text-gray-700 text-sm"
           placeholder={placeholder}
           value={inputValue}
+          disabled={disabled}
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => {
+            if (disabled) return;
             if (!open) {
               loadPermissions();
             }
@@ -111,12 +120,16 @@ export function MultiSelect({
           type="button"
           className="ml-2 text-gray-400 hover:text-gray-700 flex items-center"
           tabIndex={-1}
-          onClick={() => setOpen((o) => !o)}
+          disabled={disabled}
+          onClick={() => {
+            if (disabled) return;
+            setOpen((o) => !o);
+          }}
         >
           <ChevronDown className="w-4 h-4" />
         </button>
       </div>
-      {open && (
+      {open && !disabled && (
         <div className="absolute left-0 right-0 mt-1 bg-white border rounded shadow z-10 max-h-40 overflow-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
