@@ -55,6 +55,19 @@ export function UsersPage() {
     if (type === "role") setRoleFilter(value === "all" ? "" : value);
   };
 
+  const handleUserCreated = (newUser: User) => {
+    // Add the new user to the current list
+    setUsers((prevUsers) => [newUser, ...prevUsers]);
+    // Show success message (already handled in CreateUserForm)
+    // Optionally reload the full list to ensure consistency
+    // loadUsers();
+  };
+
+  const handleCreateSuccess = () => {
+    // Navigate back to the users list
+    setShowCreatePage(false);
+  };
+
   useEffect(() => {
     loadUsers();
   }, [searchTerm, roleFilter]);
@@ -85,7 +98,10 @@ export function UsersPage() {
             title="User Details"
             onBack={() => setShowCreatePage(false)}
           >
-            <CreateUserForm />
+            <CreateUserForm
+              onUserCreated={handleUserCreated}
+              onSuccess={handleCreateSuccess}
+            />
           </DetailTabs>
         </div>
       </div>

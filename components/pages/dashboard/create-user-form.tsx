@@ -4,7 +4,7 @@ import { MultiSelect } from "@/components/atoms/multiselect";
 import { RoleDropdown } from "@/components/atoms/role-dropdown";
 import { Trash2, Loader2 } from "lucide-react";
 import { UserManagementService } from "@/services/user-management-service";
-import type { CreateUserData } from "@/types/user-management";
+import type { CreateUserData, User } from "@/types/user-management";
 import { useToast } from "@/hooks/use-toast";
 
 interface CreateUserFormValues {
@@ -18,7 +18,15 @@ interface CreateUserFormValues {
   profileImage?: File;
 }
 
-export function CreateUserForm() {
+interface CreateUserFormProps {
+  onUserCreated?: (user: User) => void;
+  onSuccess?: () => void;
+}
+
+export function CreateUserForm({
+  onUserCreated,
+  onSuccess,
+}: CreateUserFormProps = {}) {
   const { toast } = useToast();
   const {
     register,
@@ -78,8 +86,29 @@ export function CreateUserForm() {
         imageUrl: profileImage || undefined,
       };
 
-      const newUser = await UserManagementService.createUser(createUserData);
-      console.log("New user created:", newUser);
+      const backendResponse = await UserManagementService.createUser(
+        createUserData
+      );
+      console.log("New user created:", backendResponse);
+
+      // Transform backend response to User format
+      const newUser: User = {
+        id: backendResponse.id.toString(),
+        name: backendResponse.name,
+        email: backendResponse.email,
+        phone: backendResponse.phone,
+        address: backendResponse.address,
+        imageUrl: backendResponse.imageUrl,
+        role: backendResponse.role,
+        createdAt: new Date(backendResponse.createdAt),
+        updatedAt: new Date(backendResponse.updatedAt),
+      };
+
+      // Call the callback to update parent component
+      if (onUserCreated) {
+        onUserCreated(newUser);
+      }
+
       // Reset form after successful creation
       reset();
       setSelectedPermissions([]);
@@ -91,6 +120,11 @@ export function CreateUserForm() {
         title: "Success",
         description: "User created successfully!",
       });
+
+      // Call success callback to navigate back
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error: any) {
       console.error("Error creating user:", error);
       toast({
@@ -133,10 +167,10 @@ export function CreateUserForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           {/* Columna izquierda */}
           <div>
-            <div className="mb-2">
+            {/*   <div className="mb-2">
               <div className="text-gray-800 text-sm">ID: 0000</div>
               <div className="border-b border-gray-200 mt-1" />
-            </div>
+            </div> */}
             <label className="block text-sm font-medium mb-1 mt-4">
               Name *
             </label>
