@@ -18,6 +18,17 @@ export interface UserRole {
   color?: string;
 }
 
+export interface Permission {
+  id: number;
+  name: string;
+  description: string | null;
+  action: string;
+  active: boolean;
+  serviceAssociated: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UserRequest {
   id: string;
   userId: string;

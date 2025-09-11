@@ -11,22 +11,14 @@ interface CreateUserFormValues {
   phone: string;
   address: string;
   role: number;
-  permissions: string[];
+  permissions: number[];
   profileImage?: File;
 }
-
-const allPermissions = [
-  "Permission 1",
-  "Permission 2",
-  "Permission 3",
-  "Permission 4",
-  "Permission 5",
-];
 
 export function CreateUserForm() {
   const { register, handleSubmit, setValue, watch } =
     useForm<CreateUserFormValues>();
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [selectedRole, setSelectedRole] = useState<number | undefined>(
     undefined
   );
@@ -126,7 +118,6 @@ export function CreateUserForm() {
               Custom Permissions
             </label>
             <MultiSelect
-              options={allPermissions}
               value={selectedPermissions}
               onChange={setSelectedPermissions}
               placeholder="Select permissions..."

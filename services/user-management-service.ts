@@ -6,6 +6,7 @@ import type {
   ProjectUpdate,
   ChatMessage,
   CreateUserData,
+  Permission,
 } from "@/types/user-management";
 import Axios from "axios";
 import { endpoints } from "@/lib/services/endpoints";
@@ -228,57 +229,6 @@ export class UserManagementService {
     }
   }
 
-  private static normalizeUserResponse(user: any): User {
-    return Array.isArray(user) ? (user[0] as User) : (user as User);
-  }
-
-  static async patchUserWithForm(
-    id: string,
-    values: {
-      name?: string;
-      address?: string;
-      password?: string;
-      profileImage?: File | null;
-    },
-    options?: {
-      passwordPlaceholder?: string;
-      includeName?: boolean;
-      includeAddress?: boolean;
-    }
-  ): Promise<User> {
-    const includeName = options?.includeName ?? false;
-    const includeAddress = options?.includeAddress ?? false;
-    const passwordPlaceholder = options?.passwordPlaceholder;
-
-    const payload: {
-      name?: string;
-      address?: string;
-      password?: string;
-      imageUrl?: File;
-    } = {};
-
-    if (includeName && values.name !== undefined) {
-      payload.name = values.name;
-    }
-    if (includeAddress && values.address !== undefined) {
-      payload.address = values.address;
-    }
-    if (
-      values.password !== undefined &&
-      values.password !== null &&
-      values.password !== "" &&
-      values.password !== passwordPlaceholder
-    ) {
-      payload.password = values.password;
-    }
-    if (values.profileImage) {
-      payload.imageUrl = values.profileImage;
-    }
-
-    const raw = await this.patchUser(id, payload);
-    return this.normalizeUserResponse(raw);
-  }
-
   static async deleteUser(id: string): Promise<boolean> {
     try {
       const response = await Axios.delete(
@@ -340,6 +290,38 @@ export class UserManagementService {
         throw new Error(error.response.data.message);
       } else {
         throw new Error("Error fetching roles. Please try again.");
+      }
+    }
+  }
+
+  static async getPermissions(): Promise<Permission[]> {
+    try {
+      const response = await Axios.get(endpoints.user.getPermissions, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching permissions");
+      }
+
+      // Filtrar solo permisos activos
+      const permissions: Permission[] = response.data.data.filter(
+        (permission: Permission) => permission.active
+      );
+
+      return permissions;
+    } catch (error: any) {
+      console.error("Error fetching permissions:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error fetching permissions. Please try again.");
       }
     }
   }

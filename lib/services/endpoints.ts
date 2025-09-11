@@ -42,6 +42,7 @@ export const endpoints = {
     updateUser: `${API}/user`,
     deleteUser: (id: number) => `${API}/user?id=${id}`,
     getRoles: `${API}/role`,
+    getPermissions: `${API}/permission`,
   },
   estimate: {
     getEstimates: `${API}/estimate`,
