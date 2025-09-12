@@ -11,49 +11,23 @@ import { BillingManagementService } from "@/services/billing-management-service"
 import type { BillingRecord } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
+import { Cost } from "@/types/billing-management"
+import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create"
 
-export function CostPage() {
-  // Datos mockup para costos
-  const mockupCosts = [
-    {
-      id: 1,
-      name: "Materiales de Diseño",
-      type: "Material",
-      value: 1500.00,
-      description: "Materiales para diseño gráfico y web",
-      status: "processing",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 2,
-      name: "Licencias Software",
-      type: "Software",
-      value: 2500.00,
-      description: "Licencias anuales de software de diseño",
-      status: "finished",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 3,
-      name: "Hosting y Dominio",
-      type: "Servicio",
-      value: 800.00,
-      description: "Hosting anual y renovación de dominio",
-      status: "development",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
+interface CostPageProps {
+  costs: Cost[];
+  estimateId: number;
+  onBack?: () => void;
+}
 
-  const [billingRecords, setBillingRecords] = useState(mockupCosts)
-  const [billingToDelete, setBillingToDelete] = useState<typeof mockupCosts[0] | null>(null)
+export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
+  const [billingRecords, setBillingRecords] = useState(costs)
+  const [billingToDelete, setBillingToDelete] = useState<typeof costs[0] | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [showCreateBilling, setShowCreateBilling] = useState(false)
+  const [showCreateCost, setShowCreateCost] = useState(false)
   const [selectedBillingId, setSelectedBillingId] = useState<number>()
-  const [showBillingDetail, setShowBillingDetail] = useState(false)
+  const [showCostDetail, setShowCostDetail] = useState(false)
 
   useEffect(() => {
     loadBillingRecords()
@@ -61,38 +35,38 @@ export function CostPage() {
 
   const loadBillingRecords = () => {
     // Filtrar los datos mockup según searchTerm y statusFilter
-    const filteredData = mockupCosts.filter(cost => 
+    const filteredData = costs.filter(cost => 
       cost.name ||
       cost.type
     );
     setBillingRecords(filteredData);
   }
 
-  const handleDeleteBilling = (cost: typeof mockupCosts[0]) => {
+  const handleDeleteBilling = (cost: typeof costs[0]) => {
     // Simular eliminación filtrando el costo del array
     setBillingRecords(prev => prev.filter(item => item.id !== cost.id));
     setBillingToDelete(null);
-  }
+  } 
 
-  const handleViewBilling = (cost: typeof mockupCosts[0]) => {
+  const handleViewCost = (cost: typeof costs[0]) => {
     console.log("View cost:", cost)
     setSelectedBillingId(cost.id)
-    setShowBillingDetail(true)
+    setShowCostDetail(true)
   }
 
-  const handleCreateBilling = () => {
+  const handleCreateCost = () => {
     console.log("Create new billing record")
-    setShowCreateBilling(true)
+    setShowCreateCost(true)
   }
 
   const handleBackToList = () => {
-    setShowBillingDetail(false)
-    setShowCreateBilling(false)
+    setShowCostDetail(false)
+    setShowCreateCost(false)
   }
 
   const handleSaveSuccess = () => {
-    setShowBillingDetail(false)
-    setShowCreateBilling(false)
+    setShowCostDetail(false)
+    setShowCreateCost(false)
     loadBillingRecords()
   }
 
@@ -104,9 +78,9 @@ export function CostPage() {
   }
 
   const handlers = {
-    onCreate: handleCreateBilling,
-    onView: handleViewBilling,
-    onDelete: (cost: typeof mockupCosts[0]) => setBillingToDelete(cost),
+    onCreate: handleCreateCost,
+    onView: handleViewCost,
+    onDelete: (cost: typeof costs[0]) => setBillingToDelete(cost),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
   }
@@ -116,6 +90,22 @@ export function CostPage() {
       style: "currency",
       currency: "USD",
     }).format(amount)
+  }
+
+  // if (showCostDetail) {
+  //   return (
+  //     <div className="">
+  //       <CostDetailFormCreate />
+  //     </div>
+  //   )
+  // }
+
+  if (showCreateCost) {
+    return (
+      <div className="">
+        <CostDetailFormCreate estimateId={estimateId} />
+      </div>
+    )
   }
 
   // if (showBillingDetail) {
@@ -156,35 +146,34 @@ export function CostPage() {
   //   )
   // }
 
-  
+  ""
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 overflow-auto">
-        <div className="p-6 h-full w-full">
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
             <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
             <p className="font-bold text-[#393939] text-5xl">
-              Total: {formatCurrency(billingRecords.reduce((sum, cost) => sum + cost.value, 0))}
             </p>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "costs-page",
-                "Add Cost",
+                `Add Cost | Total: ${formatCurrency(billingRecords.reduce((sum, cost) => sum + cost.value, 0))}`,
                 "Description",
                 "All Costs",
                 "Description",
-                ["Cost ID", "Name", "Type", "Status", "Value", "Actions"],
+                ["Cost ID", "Name", "Type", "Value", "Actions"],
                 billingRecords,
                 handlers
               )}
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       <DeleteConfirmDialog
         open={!!billingToDelete}
