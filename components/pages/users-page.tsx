@@ -68,6 +68,23 @@ export function UsersPage() {
     setShowCreatePage(false);
   };
 
+  const handleUserUpdated = (updatedUser: User) => {
+    // Update the user in the current list
+    setUsers((prevUsers) => {
+      console.log("📝 handleUserUpdated called with:", updatedUser);
+      console.log("📋 Current users before update:", users);
+      const userIndex = prevUsers.findIndex(
+        (user) => String(user.id) === String(updatedUser.id)
+      );
+      if (userIndex !== -1) {
+        const newUsers = [...prevUsers]; //TODO: Validar si lo hago asi o volver a hacer la peticion
+        newUsers[userIndex] = updatedUser;
+        return newUsers;
+      }
+      return prevUsers;
+    });
+  };
+
   useEffect(() => {
     loadUsers();
   }, [searchTerm, roleFilter]);
@@ -83,7 +100,10 @@ export function UsersPage() {
               setSelectedUser(null);
             }}
           >
-            <UserSettings user={selectedUser} />
+            <UserSettings
+              user={selectedUser}
+              onUserUpdated={handleUserUpdated}
+            />
           </DetailTabs>
         </div>
       </div>

@@ -43,6 +43,13 @@ export function MultiSelect({
     }
   };
 
+  // Load permissions immediately if we have values
+  useEffect(() => {
+    if (value && value.length > 0 && !hasLoaded && !isLoading) {
+      loadPermissions();
+    }
+  }, [value, hasLoaded, isLoading, loadPermissions]);
+
   // Cierra el dropdown si se hace click fuera
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -159,7 +166,10 @@ export function MultiSelect({
               >
                 <div className="font-medium">{permission.name}</div>
                 {permission.description && (
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div
+                    key={`desc-${permission.id}`}
+                    className="text-xs text-gray-500 mt-1"
+                  >
                     {permission.description}
                   </div>
                 )}

@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 interface EditableFieldProps {
-  fieldName: "email" | "password" | "name" | "address" | "profileImage";
+  fieldName:
+    | "email"
+    | "password"
+    | "name"
+    | "phone"
+    | "address"
+    | "profileImage";
   label: string;
   type?: string;
   isLoading?: boolean;

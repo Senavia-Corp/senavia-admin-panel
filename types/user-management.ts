@@ -6,6 +6,7 @@ export interface User {
   address: string;
   imageUrl?: string;
   role: UserRole;
+  permissions?: Permission[];
   createdAt: Date;
   updatedAt: Date;
 }

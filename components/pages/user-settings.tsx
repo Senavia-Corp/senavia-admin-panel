@@ -1,27 +1,42 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { User } from "@/types/user-management";
 import { UserManagementService } from "@/services/user-management-service";
 import { useToast } from "@/hooks/use-toast";
 import EditableField from "@/components/atoms/editable-field";
+import { RoleDropdown } from "@/components/atoms/role-dropdown";
+import { MultiSelect } from "@/components/atoms/multiselect";
 
 // Using User as base for form values; add only the extra fields we need
 
 interface UserSettingsProps {
   user?: User | null;
+  onUserUpdated?: (updatedUser: User) => void;
 }
 
-export default function UserSettings({ user }: UserSettingsProps) {
+export default function UserSettings({
+  user,
+  onUserUpdated,
+}: UserSettingsProps) {
   const { toast } = useToast();
   const formMethods = useForm<
-    User & { password: string; profileImage: File | null }
+    User & {
+      password: string;
+      profileImage: File | null;
+      roleId: number;
+      permissionIds: number[];
+    }
   >({
     defaultValues: {
       email: user?.email || "email@example.com",
       password: "••••••••••••",
       name: user?.name || "User name",
+      phone: user?.phone || "No phone provided",
       address: user?.address || "No address provided",
       profileImage: null,
+      roleId: user?.role?.id || 0,
+      permissionIds:
+        user?.permissions?.map((p: any) => p.permission?.id || p.id) || [],
     },
   });
   const {
@@ -38,29 +53,81 @@ export default function UserSettings({ user }: UserSettingsProps) {
   const [userState, setUserState] = useState<User | null>(user ?? null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedRole, setSelectedRole] = useState<number | undefined>(
+    user?.role?.id
+  );
+  const [selectedPermissions, setSelectedPermissions] = useState<number[]>(
+    user?.permissions?.map((p: any) => p.permission?.id || p.id) || []
+  );
 
   const [isLoading, setIsLoading] = useState(false);
-  type EditableFieldName = "email" | "password" | "name" | "address";
+  type EditableFieldName = "password" | "name" | "phone" | "address";
   const [editingFields, setEditingFields] = useState<Set<EditableFieldName>>(
     new Set()
   );
 
+  // Update selected values when user prop changes
+  useEffect(() => {
+    if (user) {
+      const roleId = user.role?.id;
+      const permissionIds =
+        user.permissions?.map((p: any) => p.permission?.id || p.id) || [];
+
+      setSelectedRole(roleId);
+      setSelectedPermissions(permissionIds);
+      setUserState(user);
+
+      // Update form default values
+      reset({
+        email: user.email || "email@example.com",
+        password: "••••••••••••",
+        name: user.name || "User name",
+        phone: user.phone || "No phone provided",
+        address: user.address || "No address provided",
+        profileImage: null,
+        roleId: roleId || 0,
+        permissionIds: permissionIds,
+      });
+    }
+  }, [user, reset]);
+
   const onSubmit = async (
-    data: User & { password: string; profileImage: File | null }
+    data: User & {
+      password: string;
+      profileImage: File | null;
+      roleId: number;
+      permissionIds: number[];
+    }
   ) => {
     if (!userState?.id && !user?.id) return;
 
     setIsLoading(true);
     try {
-      // Build payload based on dirty fields
+      // Build payload based on dirty fields and changed values
       const updateData: any = {};
       if (dirtyFields.name) updateData.name = data.name;
+      if (dirtyFields.phone) updateData.phone = data.phone;
       if (dirtyFields.address) updateData.address = data.address;
       if (dirtyFields.password && data.password !== "••••••••••••") {
         updateData.password = data.password;
       }
       if (data.profileImage !== null) {
         updateData.imageUrl = data.profileImage;
+      }
+
+      // Check if role changed
+      if (selectedRole && selectedRole !== userState?.role?.id) {
+        updateData.roleId = selectedRole;
+      }
+
+      // Check if permissions changed
+      const originalPermissionIds =
+        userState?.permissions?.map((p: any) => p.permission?.id || p.id) || [];
+      if (
+        JSON.stringify(selectedPermissions.sort()) !==
+        JSON.stringify(originalPermissionIds.sort())
+      ) {
+        updateData.permissions = selectedPermissions;
       }
 
       const apiResult = await UserManagementService.patchUser(
@@ -73,14 +140,26 @@ export default function UserSettings({ user }: UserSettingsProps) {
       // Update original values with the response
       setUserState(updatedUser);
 
+      // Update selected values
+      setSelectedRole(updatedUser.role?.id);
+      setSelectedPermissions(
+        updatedUser.permissions?.map((p: any) => p.permission?.id || p.id) || []
+      );
+
       // Sync form with updated values
       reset(
         {
           email: updatedUser.email || "email@example.com",
           password: "••••••••••••",
           name: updatedUser.name || "User name",
+          phone: updatedUser.phone || "No phone provided",
           address: updatedUser.address || "No address provided",
           profileImage: null,
+          roleId: updatedUser.role?.id || 0,
+          permissionIds:
+            updatedUser.permissions?.map(
+              (p: any) => p.permission?.id || p.id
+            ) || [],
         },
         { keepDirty: false, keepTouched: false }
       );
@@ -100,8 +179,14 @@ export default function UserSettings({ user }: UserSettingsProps) {
         variant: "default",
       });
 
+      // Notify parent component about the update
+      if (onUserUpdated) {
+        onUserUpdated(updatedUser);
+      }
+
       console.log("User updated successfully:", updatedUser);
     } catch (error: any) {
+      console.log("🔍 Selected Permissions:", selectedPermissions);
       console.error("Error updating user:", error);
 
       // Show error toast
@@ -234,22 +319,61 @@ export default function UserSettings({ user }: UserSettingsProps) {
               </div>
             </section>
 
+            {/* Role and Permissions Section */}
+            <section className="mb-6 flex-shrink-0">
+              <h2 className="text-xl font-semibold text-gray-700 mb-3">
+                Role & Permissions
+              </h2>
+              <div className="space-y-3">
+                {/* Role */}
+                <div
+                  className={`bg-gray-50 rounded-lg px-7 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md ${
+                    isLoading ? "opacity-50 pointer-events-none" : ""
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800 mb-1">Role</p>
+                    <div className="w-full max-w-xs">
+                      <RoleDropdown
+                        value={selectedRole}
+                        onChange={setSelectedRole}
+                        placeholder="Select a role..."
+                        disabled={isLoading}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Permissions */}
+                <div
+                  className={`bg-gray-50 rounded-lg px-7 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md ${
+                    isLoading ? "opacity-50 pointer-events-none" : ""
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800 mb-1">
+                      Custom Permissions
+                    </p>
+                    <div className="w-full max-w-2xl">
+                      <MultiSelect
+                        value={selectedPermissions}
+                        onChange={setSelectedPermissions}
+                        placeholder="Select permissions..."
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Account Details Section */}
             <section>
               <h2 className="text-xl font-semibold text-gray-700 mb-3 flex-shrink-0">
                 Account Details
               </h2>
               <div className="space-y-3">
-                {/* Email */}
-                <EditableField
-                  fieldName="email"
-                  label="Email"
-                  type="email"
-                  isLoading={isLoading}
-                  isEditing={editingFields.has("email")}
-                  onToggle={() => toggleEditing("email")}
-                />
-
                 {/* Password */}
                 <EditableField
                   fieldName="password"
@@ -270,6 +394,16 @@ export default function UserSettings({ user }: UserSettingsProps) {
                   onToggle={() => toggleEditing("name")}
                 />
 
+                {/* Phone */}
+                <EditableField
+                  fieldName="phone"
+                  label="Phone"
+                  type="tel"
+                  isLoading={isLoading}
+                  isEditing={editingFields.has("phone")}
+                  onToggle={() => toggleEditing("phone")}
+                />
+
                 {/* Address */}
                 <EditableField
                   fieldName="address"
@@ -283,7 +417,17 @@ export default function UserSettings({ user }: UserSettingsProps) {
             </section>
 
             {/* Save Changes Button */}
-            {(isDirty || Boolean(selectedImageFile)) && (
+            {(isDirty ||
+              Boolean(selectedImageFile) ||
+              selectedRole !== userState?.role?.id ||
+              JSON.stringify(selectedPermissions.sort()) !==
+                JSON.stringify(
+                  (
+                    userState?.permissions?.map(
+                      (p: any) => p.permission?.id || p.id
+                    ) || []
+                  ).sort()
+                )) && (
               <div className="mt-6 flex justify-center">
                 <button
                   type="submit"

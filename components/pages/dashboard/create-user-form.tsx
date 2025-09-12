@@ -100,6 +100,10 @@ export function CreateUserForm({
         address: backendResponse.address,
         imageUrl: backendResponse.imageUrl,
         role: backendResponse.role,
+        permissions:
+          backendResponse.permissions?.map(
+            (userPerm: any) => userPerm.permission
+          ) || [],
         createdAt: new Date(backendResponse.createdAt),
         updatedAt: new Date(backendResponse.updatedAt),
       };

@@ -48,6 +48,13 @@ export function RoleDropdown({
     }
   };
 
+  // Load roles immediately if we have a value
+  useEffect(() => {
+    if (value && !hasLoaded && !isLoading) {
+      loadRoles();
+    }
+  }, [value, hasLoaded, isLoading, loadRoles]);
+
   // Filtrar roles basado en el término de búsqueda
   useEffect(() => {
     if (!searchTerm.trim()) {

@@ -126,6 +126,21 @@ export class UserManagementService {
 
       let users = response.data.data;
 
+      // Transform users data to match User interface
+      users = users.map((user: any) => ({
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        imageUrl: user.imageUrl,
+        role: user.role,
+        permissions:
+          user.permissions?.map((userPerm: any) => userPerm.permission) || [],
+        createdAt: new Date(user.createdAt || Date.now()),
+        updatedAt: new Date(user.updatedAt || Date.now()),
+      }));
+
       // Apply client-side filtering if needed
       if (search) {
         users = users.filter(
@@ -157,7 +172,41 @@ export class UserManagementService {
   }
 
   static async getUserById(id: string): Promise<User | null> {
-    return mockUsers.find((user) => user.id === id) || null;
+    try {
+      const response = await Axios.get(
+        `${endpoints.user.getUser(parseInt(id))}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching user");
+      }
+
+      const user = response.data.data;
+
+      // Transform user data to match User interface
+      return {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        imageUrl: user.imageUrl,
+        role: user.role,
+        permissions:
+          user.permissions?.map((userPerm: any) => userPerm.permission) || [],
+        createdAt: new Date(user.createdAt || Date.now()),
+        updatedAt: new Date(user.updatedAt || Date.now()),
+      };
+    } catch (error: any) {
+      console.error("Error fetching user by ID:", error);
+      return null;
+    }
   }
 
   static async createUser(userData: CreateUserData): Promise<User> {
