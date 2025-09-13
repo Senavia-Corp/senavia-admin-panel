@@ -68,7 +68,8 @@ export const endpoints = {
     getPlan: (id: number) => `${API}/plan?id=${id}`,
   },
   cost: {
-    createCost: `${API}/cost`
+    createCost: `${API}/cost`,
+    deleteCost:(id:number) => `${API}/cost?id=${id}`
   }
 };
 

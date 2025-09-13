@@ -13,6 +13,8 @@ import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { Cost } from "@/types/billing-management"
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create"
+import { BillingViewModel } from "./billing/BillingViewModel"
+import { toast } from "sonner"
 
 interface CostPageProps {
   costs: Cost[];
@@ -28,6 +30,7 @@ export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
   const [showCreateCost, setShowCreateCost] = useState(false)
   const [selectedBillingId, setSelectedBillingId] = useState<number>()
   const [showCostDetail, setShowCostDetail] = useState(false)
+  const {deleteCost} = BillingViewModel()
 
   useEffect(() => {
     loadBillingRecords()
@@ -42,11 +45,12 @@ export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
     setBillingRecords(filteredData);
   }
 
-  const handleDeleteBilling = (cost: typeof costs[0]) => {
-    // Simular eliminación filtrando el costo del array
-    setBillingRecords(prev => prev.filter(item => item.id !== cost.id));
-    setBillingToDelete(null);
-  } 
+  const handleDeleteBilling = async (costs: Cost) => {
+    try {
+      await deleteCost(costs.id)
+      toast.success("Costo eliminado" )
+    }catch (error){console.error("Error deleting cost", error)}
+  }
 
   const handleViewCost = (cost: typeof costs[0]) => {
     console.log("View cost:", cost)

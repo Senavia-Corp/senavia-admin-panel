@@ -155,6 +155,20 @@ export function BillingViewModel() {
         setLoading(false);
     }
 
+    const deleteCost = async (id: number) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const {response, status, errorLogs} = await fetchData<apiResponse<Cost>>(endpoints.cost.deleteCost(id), "delete");
+            if (status === 200 && response && response.success){
+                setLoading(false);
+            }else {setError(errorLogs?.message || response?.message || "Failed to delete Cost");}
+        } catch (error) {
+            setError("Error deleting cost")
+        }finally {setLoading(false)}
+
+    }
+
 
 
 
@@ -176,7 +190,8 @@ export function BillingViewModel() {
         plans,
         createBilling,
         PatchBilling,
-        createCost
+        createCost,
+        deleteCost
     }
     
 }
