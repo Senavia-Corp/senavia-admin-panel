@@ -34,11 +34,11 @@ export const endpoints = {
     deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
   },
   lead: {
-    getPosts: `${API}/lead`,
-    getPost: (id: number) => `${API}/lead?id=${id}`,
-    createPost: `${API}/lead`,
+    getLeads: `${API}/lead`,
+    getLead: (id: number) => `${API}/lead?id=${id}`,
+    createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
-    deletePost: (id: number) => `${API}/lead?id=${id}`,
+    deleteLead: (id: number) => `${API}/lead?id=${id}`,
   },
   project: {    
     getAll: `${API}/project`,
@@ -46,6 +46,29 @@ export const endpoints = {
     create: `${API}/project`,
     update: (id: number) => `${API}/project?id=${id}`,
     remove: (id: number) => `${API}/project?id=${id}`,
+  },
+  user: {
+    getUsers: `${API}/user`,
+    getUser: (id: number) => `${API}/user?id=${id}`,
+    createUser: `${API}/user`,
+    updateUser: `${API}/user`,
+    deleteUser: (id: number) => `${API}/user?id=${id}`,
+    getRoles: `${API}/role`,
+    getPermissions: `${API}/permission`,
+  },
+  auth: {
+    register: `${API}/auth/register`,
+  },
+  estimate: {
+    getEstimates: `${API}/estimate`,
+    getEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    createEstimate: `${API}/estimate`,
+    updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+  },
+  plan: {
+    getPlans: `${API}/plan`,
+    getPlan: (id: number) => `${API}/plan?id=${id}`,
   },
 };
 

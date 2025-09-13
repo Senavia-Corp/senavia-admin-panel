@@ -1,9 +1,10 @@
-import type React from "react"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/organisms/app-sidebar"
-import "./globals.css"
-import { Inter } from "next/font/google"
-import { Header } from "@/components/organisms/layout/header"
+import type React from "react";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/organisms/app-sidebar";
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { Header } from "@/components/organisms/layout/header";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,7 +15,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      
       <body className={`${inter.className}`}>
         <SidebarProvider>
           <div className="flex min-h-screen bg-gray-50 w-full">
@@ -23,11 +23,10 @@ export default function RootLayout({
               {/* Header dentro del área de contenido */}
               <Header />
               {/* Contenido principal */}
-              <div className="flex-1 overflow-auto">
-                {children}
-              </div>
+              <div className="flex-1 overflow-auto">{children}</div>
             </SidebarInset>
           </div>
+          <Toaster />
         </SidebarProvider>
       </body>
     </html>
