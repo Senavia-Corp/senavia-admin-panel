@@ -16,3 +16,10 @@ export interface Cost {
     value: number
     estimateId: number
   }
+
+  export interface PatchCost {
+    name: string,
+    description: string,
+    type: string,
+    value: number
+  }

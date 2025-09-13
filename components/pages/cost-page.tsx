@@ -1,20 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { BillingTable } from "@/components/organisms/billing-table"
-import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import { Button } from "@/components/ui/button"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Bell } from "lucide-react"
-import { BillingManagementService } from "@/services/billing-management-service"
-import type { BillingRecord } from "@/types/billing-management"
-import { GeneralTable } from "@/components/organisms/tables/general-table"
-import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
-import { Cost } from "@/types/billing-management"
-import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create"
-import { BillingViewModel } from "./billing/BillingViewModel"
-import { toast } from "sonner"
+import { useState, useEffect } from "react";
+import { BillingTable } from "@/components/organisms/billing-table";
+import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
+import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { Bell } from "lucide-react";
+import { BillingManagementService } from "@/services/billing-management-service";
+import type { BillingRecord } from "@/types/billing-management";
+import { GeneralTable } from "@/components/organisms/tables/general-table";
+import { BillingDetailForm } from "@/components/organisms/billing-detail-form";
+import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
+import { BillingViewModel } from "./billing/BillingViewModel";
+import { toast } from "sonner";
+import type { Cost } from "@/types/cost-management";
+import { CostDetailForm } from "../organisms/cost-detail-form";
 
 interface CostPageProps {
   costs: Cost[];
@@ -22,135 +23,123 @@ interface CostPageProps {
   onBack?: () => void;
 }
 
-export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
-  const [billingRecords, setBillingRecords] = useState(costs)
-  const [billingToDelete, setBillingToDelete] = useState<typeof costs[0] | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [showCreateCost, setShowCreateCost] = useState(false)
-  const [selectedBillingId, setSelectedBillingId] = useState<number>()
-  const [showCostDetail, setShowCostDetail] = useState(false)
-  const {deleteCost} = BillingViewModel()
+export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPageProps) {
+  const [costs, setCosts] = useState(initialCosts);
+  const [filteredCosts, setFilteredCosts] = useState(initialCosts);
+  const [billingToDelete, setBillingToDelete] = useState<typeof costs[0] | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [showCreateCost, setShowCreateCost] = useState(false);
+  const [selectedBillingId, setSelectedBillingId] = useState<number>();
+  const [showCostDetail, setShowCostDetail] = useState(false);
+  const {deleteCost} = BillingViewModel();
 
   useEffect(() => {
-    loadBillingRecords()
-  }, [searchTerm, statusFilter])
+    filterCosts();
+  }, [searchTerm, statusFilter, costs]);
 
-  const loadBillingRecords = () => {
-    // Filtrar los datos mockup según searchTerm y statusFilter
-    const filteredData = costs.filter(cost => 
-      cost.name ||
-      cost.type
-    );
-    setBillingRecords(filteredData);
-  }
+  const filterCosts = () => {
+    let filtered = costs;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(cost => 
+        cost.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cost.type.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  const handleDeleteBilling = async (costs: Cost) => {
+    if (statusFilter) {
+      filtered = filtered.filter(cost => cost.type === statusFilter);
+    }
+
+    setFilteredCosts(filtered);
+  };
+
+  const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
-      await deleteCost(costs.id)
-      toast.success("Costo eliminado" )
-    }catch (error){console.error("Error deleting cost", error)}
-  }
+      await deleteCost(costToDelete.id);
+      setCosts(prevCosts => prevCosts.filter(cost => cost.id !== costToDelete.id));
+      toast.success('Cost deleted successfully');
+    } catch (error) {
+      console.error("Error deleting cost", error);
+      toast.error('Failed to delete cost');
+    }
+  };
 
-  const handleViewCost = (cost: typeof costs[0]) => {
-    console.log("View cost:", cost)
-    setSelectedBillingId(cost.id)
-    setShowCostDetail(true)
-  }
+  const handleViewCost = (cost: (typeof costs)[0]) => {
+    setSelectedBillingId(cost.id);
+    setShowCostDetail(true);
+  };
+
+  const handleCostUpdate = (updatedCost: Cost) => {
+    setCosts(prevCosts => 
+      prevCosts.map(cost => 
+        cost.id === updatedCost.id ? updatedCost : cost
+      )
+    );
+  };
 
   const handleCreateCost = () => {
-    console.log("Create new billing record")
-    setShowCreateCost(true)
-  }
+    console.log("Create new billing record");
+    setShowCreateCost(true);
+  };
 
   const handleBackToList = () => {
-    setShowCostDetail(false)
-    setShowCreateCost(false)
-  }
+    setShowCostDetail(false);
+    setShowCreateCost(false);
+  };
 
   const handleSaveSuccess = () => {
-    setShowCostDetail(false)
-    setShowCreateCost(false)
-    loadBillingRecords()
-  }
+    setShowCostDetail(false);
+    setShowCreateCost(false);
+    filterCosts();
+  };
 
   const handleFilterChange = (filter: string) => {
-    const [type, value] = filter.split(":")
+    const [type, value] = filter.split(":");
     if (type === "status") {
-      setStatusFilter(value)
+      setStatusFilter(value);
     }
-  }
+  };
 
   const handlers = {
     onCreate: handleCreateCost,
     onView: handleViewCost,
-    onDelete: (cost: typeof costs[0]) => setBillingToDelete(cost),
+    onDelete: (cost: (typeof costs)[0]) => setBillingToDelete(cost),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
-  }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
-  // if (showCostDetail) {
-  //   return (
-  //     <div className="">
-  //       <CostDetailFormCreate />
-  //     </div>
-  //   )
-  // }
+  if (showCostDetail && selectedBillingId) {
+    return (
+      <div className="">
+        <CostDetailForm 
+          costId={selectedBillingId} 
+          cost={costs.find(cost => cost.id === selectedBillingId)!}
+          onBack={handleBackToList}
+          onUpdate={handleCostUpdate}
+        />
+      </div>
+    )
+  }
 
   if (showCreateCost) {
     return (
       <div className="">
         <CostDetailFormCreate estimateId={estimateId} />
       </div>
-    )
+    );
   }
 
-  // if (showBillingDetail) {
-  //   return (
-  //     <div className="">
-  //       <main className="">
-  //         <div className="px-6 py-6 h-full">
-  //           <BillingDetailForm
-  //             billingId={selectedBillingId || 0}
-  //             selectedBilling={mockupCosts.find(c => c.id === selectedBillingId) || null}
-  //             leads={[]}
-  //             lead={[]}
-  //             onBack={handleBackToList}
-  //             onSave={handleSaveSuccess}
-  //           />
-  //         </div>
-  //       </main>
-  //     </div>
-  //   )
-  // }
 
-  // if (showCreateBilling) {
-  //   return (
-  //     <div className="">
-  //       <main className="">
-  //         <div className="px-6 py-6 h-full">
-  //           <BillingDetailForm
-  //             billingId={0}
-  //             selectedBilling={null}
-  //             leads={[]}
-  //             lead={[]}
-  //             onBack={handleBackToList}
-  //             onSave={handleSaveSuccess}
-  //           />
-  //         </div>
-  //       </main>
-  //     </div>
-  //   )
-  // }
-
-  ""
+  ("");
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
@@ -159,19 +148,22 @@ export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
         <div className="h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
-            <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Costs</h1>
-            <p className="font-bold text-[#393939] text-5xl">
-            </p>
+              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">
+                Costs
+              </h1>
+              <p className="font-bold text-[#393939] text-5xl"></p>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "costs-page",
-                `Add Cost | Total: ${formatCurrency(billingRecords.reduce((sum, cost) => sum + cost.value, 0))}`,
+                `Add Cost | Total: ${formatCurrency(
+                  filteredCosts.reduce((sum, cost) => sum + cost.value, 0)
+                )}`,
                 "Description",
                 "All Costs",
                 "Description",
                 ["Cost ID", "Name", "Type", "Value", "Actions"],
-                billingRecords,
+                filteredCosts,
                 handlers
               )}
             </div>
@@ -182,10 +174,12 @@ export function CostPage({ costs, estimateId, onBack }: CostPageProps) {
       <DeleteConfirmDialog
         open={!!billingToDelete}
         onClose={() => setBillingToDelete(null)}
-        onConfirm={() => billingToDelete && handleDeleteBilling(billingToDelete)}
+        onConfirm={() =>
+          billingToDelete && handleDeleteBilling(billingToDelete)
+        }
         title="Delete Billing Record"
         description={`Are you sure you want to delete billing record "${billingToDelete?.id}"? This action cannot be undone.`}
       />
     </div>
-  )
+  );
 }

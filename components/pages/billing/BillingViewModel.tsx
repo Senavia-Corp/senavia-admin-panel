@@ -3,7 +3,8 @@ import { endpoints,useFetch } from "@/lib/services/endpoints";
 import { apiResponse, Billing,Billings, Cost, CreateBillingData } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
-import { CreateCostData } from "@/types/cost-management";
+import { CreateCostData,PatchCost } from "@/types/cost-management";
+import { toast } from "sonner"
 
 export function BillingViewModel() {
    const { fetchData } = useFetch();
@@ -161,12 +162,34 @@ export function BillingViewModel() {
             setError(null);
             const {response, status, errorLogs} = await fetchData<apiResponse<Cost>>(endpoints.cost.deleteCost(id), "delete");
             if (status === 200 && response && response.success){
-                setLoading(false);
-            }else {setError(errorLogs?.message || response?.message || "Failed to delete Cost");}
+                toast.success("Costo eliminado"); // No funciona
+            } else {
+                setError(errorLogs?.message || response?.message || "Failed to delete Cost");
+                return false;
+            }
         } catch (error) {
-            setError("Error deleting cost")
-        }finally {setLoading(false)}
+            setError("Error deleting cost");
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }
 
+    const updateCost = async (id:number, PatchCost: PatchCost) => {
+        try {
+            setLoading(true)
+            setError(null)
+            const {response, status, errorLogs} = await fetchData<apiResponse<PatchCost>>(endpoints.cost.updateCost(id), "patch", PatchCost);
+            if (status === 200){
+                console.log("Cost patched successfully") //Cambiar luego por un toast
+            } else {
+                setError(errorLogs?.message || response?.message || "Failed to delete Cost");
+                return false;
+            }
+        } catch (error) {
+            setError("error un updateCost BillingViewModel")
+            
+        }finally {(setLoading(false))}
     }
 
 
@@ -191,7 +214,8 @@ export function BillingViewModel() {
         createBilling,
         PatchBilling,
         createCost,
-        deleteCost
+        deleteCost,
+        updateCost
     }
     
 }

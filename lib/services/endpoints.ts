@@ -69,7 +69,8 @@ export const endpoints = {
   },
   cost: {
     createCost: `${API}/cost`,
-    deleteCost:(id:number) => `${API}/cost?id=${id}`
+    deleteCost:(id:number) => `${API}/cost?id=${id}`,
+    updateCost: (id:number) => `${API}/cost?id=${id}`
   }
 };
 

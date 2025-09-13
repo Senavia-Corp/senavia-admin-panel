@@ -47,9 +47,9 @@ export function CostDetailFormCreate({estimateId}: {estimateId: number}) {
           </h1>
         </div>
       </div>
-      <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
-        <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl mx-auto space-y-3 text-[#393939] text-base/4">
+      <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
+        <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto ">
+          <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-52">
             <p>Name</p>
             <Input
               placeholder="Name"
