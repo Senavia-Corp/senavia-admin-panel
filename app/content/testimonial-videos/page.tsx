@@ -1,5 +1,5 @@
-import { BlogsPage } from "@/components/pages/blogs-page"
+import { TestimonialVideosPage } from "@/components/pages/testimonial-videos-page";
 
-export default function Blogs() {
-  return <BlogsPage />
+export default function TestimonialVideos() {
+  return <TestimonialVideosPage />;
 }
