@@ -8,6 +8,18 @@ const API_LOCAL = "http://localhost:3000/api";
 const API = "http://localhost:3000/api";
 
 export const endpoints = {
+  service:{
+    getAll:`${API}/service`,
+  },
+
+  product:{
+    getAll:`${API}/product`,
+    getById: (id: number) => `${API}/product?id=${id}`,
+    delete:(id: number) => `${API}/product?id=${id}`,
+    create:`${API}/product`,
+    update: (id: number) => `${API}/product?id=${id}`
+  },
+
   blog: {
     getPosts: `${API}/blog`,
     getPost: (id: number) => `${API}/blog?id=${id}`,

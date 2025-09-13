@@ -133,7 +133,8 @@ export class ProjectManagementService {
     return true;
   }
 
-  static getProjectPhases(): ProjectPhase[] {
+/*  static getProjectPhases(): ProjectPhase[] {
     return ["Analysis", "Design", "Development", "Deployment"];
-  }
+  }*/
+ 
 }

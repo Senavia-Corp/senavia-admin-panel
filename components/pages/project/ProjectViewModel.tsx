@@ -37,7 +37,6 @@ export const ProjectViewModel = ({
   }, [isPaginated, offset, itemsPerPage]);
 
   const getAllProjects = async () => {
-    
     setLoading(true);
     setError(null);
     try {
@@ -48,7 +47,7 @@ export const ProjectViewModel = ({
         params.append("itemsPerPage", itemsPerPage.toString());
       const url = `${endpoints.project.getAll}${
         params.toString() ? `?${params.toString()}` : ""
-      }`;    
+      }`;
 
       if (isPaginated) {
         const { response, status, errorLogs } =
@@ -60,7 +59,7 @@ export const ProjectViewModel = ({
           const errorMessage =
             errorLogs?.message ||
             response?.message ||
-            `Failed to fetch blog posts (Status: ${status})`;
+            `Failed to fetch project (Status: ${status})`;
           setError(errorMessage);
           setProjects([]);
           setPageInfo(null);
@@ -75,7 +74,7 @@ export const ProjectViewModel = ({
           const errorMessage =
             errorLogs?.message ||
             response?.message ||
-            `Failed to fetch blog posts (Status: ${status})`;
+            `Failed to fetch Project  (Status: ${status})`;
           setError(errorMessage);
           setProjects([]);
         }
@@ -92,37 +91,58 @@ export const ProjectViewModel = ({
     }
   };
   // Nuevo: Obtener proyecto por ID
-  const getProjectById = async (id: number) => {    
-    setLoading(true);
-    setError(null);
-    try {
-      const url = endpoints.project.getById(id);
-      console.log("Soy url: "+url)
-      const { response, status, errorLogs } = await fetchData<
-        ApiResponse<Project>
-      >(url, "get");
-console.log("Respuesta completa:", response);
+  const getProjectById = async (id: number): Promise<Project | null> => {
+  setLoading(true);
+  setError(null);
+  try {
+    const url = endpoints.project.getById(id);
+    console.log("Soy url:", url);
 
-      if (status === 200 && response?.success) {
-        setSelectedProject(response.data[0]);
-      } else {
-        const errorMessage =
-          errorLogs?.message ||
-          response?.message ||
-          `Failed to fetch project with ID ${id} (Status: ${status})`;
-        setError(errorMessage);
-        setSelectedProject(null);
-      }
-    } catch (err: any) {
+    const { response, status, errorLogs } = await fetchData<ApiResponse<Project>>(url, "get");
+
+    console.log("Respuesta completa:", response);
+
+    if (status === 200 && response?.success) {
+      const project = Array.isArray(response.data)
+        ? response.data[0]
+        : response.data;
+
+      setSelectedProject(project);
+      return project; // 👈 devuelve el objeto también
+    } else {
       const errorMessage =
-        err.errorMessage || `An unexpected error occurred while fetching project with ID ${id}.`;
+        errorLogs?.message ||
+        response?.message ||
+        `Failed to fetch project with ID ${id} (Status: ${status})`;
+
       setError(errorMessage);
       setSelectedProject(null);
-    } finally {
-      setLoading(false);
+      return null;
     }
-  };
-  return { projects, loading, error, pageInfo,getProjectById, selectedProject  };
+  } catch (err: any) {
+    const errorMessage =
+      err.errorMessage ||
+      `An unexpected error occurred while fetching project with ID ${id}.`;
+
+    setError(errorMessage);
+    setSelectedProject(null);
+    return null;
+  } finally {
+    setLoading(false);
+  }
 };
+
+  return {
+    projects,
+    loading,
+    error,
+    pageInfo,
+    getProjectById,
+    selectedProject,
+  };
+};
+
+
+
 
 export default ProjectViewModel;

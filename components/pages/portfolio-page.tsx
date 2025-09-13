@@ -4,30 +4,85 @@ import { useState, useEffect } from "react";
 import { CreateBlogDialog } from "@/components/organisms/create-blog-dialog"; // cambiar por Project Editor
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Project } from "./project/project";
-import { BlogEditor } from "@/components/organisms/blog-editor"; // cambiar por Project Editor
+import type { Product } from "./product/product";
+
+import { ProductEditor } from "../organisms/product-editor";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
-import ProjectViewModel from "./project/ProjectViewModel";
+
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ProjectEditor } from "../organisms/project-editor";
+import type { Service, ServiceApiResponse } from "../pages/service/service";
+
+import ProductViewModel from "./product/ProductViewModel";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import ServiceViewModel from "../pages/service/ServiceViewModel";
 
 export function PortfolioPage() {
-  const [dataProjects, setDataProjects] = useState<Project[]>([]);
+  const [dataProducts, setDataProducts] = useState<Project[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [themeFilter, setThemeFilter] = useState("");
   const [showEditor, setShowEditor] = useState(false);
-  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
-  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [itemsPerPage, setitemsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
   const [allProjects, setAllProjects] = useState<any[]>([]);
-  const { projects, loading, pageInfo,selectedProject,getProjectById } = ProjectViewModel({
+  const {
+    services,
+    getAllServices,
+    error: serviceError,
+    loading: serviceLoading,
+  } = ServiceViewModel();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    siteUrl: "",
+    serviceId: 1,
+    imageUrl: null as File | null,
+  });
+  const {
+    products,
+    loading,
+    pageInfo,
+    productId,
+    getProductById,
+    deleteProduct,
+  } = ProductViewModel({
     isPaginated: true,
     offset,
     itemsPerPage,
   });
-  
+
+  const [newProject, setNewProject] = useState({
+    name: "",
+    resume: "",
+    description: "",
+    publicationDate: "",
+    startDate: "",
+    endDate: "",
+    imagePreviewUrl: null as File | null,
+    workTeam_id: "",
+    estimate_id: "",
+    userId: "",
+  });
+
+  useEffect(() => {
+    if (productId) {
+      console.log("selectedProject actualizado:", productId);
+    }
+  }, [productId]);
 
   /*useEffect(() => {
     loadProjects()
@@ -62,24 +117,71 @@ export function PortfolioPage() {
     }
   }*/
 
-  const handleViewProject = async(project: Project) => {
-    //setEditingProjectId(project.id);
-    console.log("soy id: "+project.id)
-    await getProjectById(project.id)
+  const handleDelete = async (id: number) => {
+    try {
+      const success = await deleteProduct(id);
+      if (success) {
+        console.log(`✅ Producto ${id} eliminado correctamente`);
+        setDataProducts((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        console.error(`❌ No se pudo eliminar el producto ${id}`);
+      }
+    } catch (error) {
+      console.error("Error eliminando producto:", error);
+    }
+  };
+
+  const handleViewProject = async (product: Product) => {
+    setEditingProductId(product.id);
+    const res = await getProductById(product.id);
+    console.log("soy respuesta: " + res?.name);
+    if (res) {
+      setFormData({
+        name: res.name,
+        description: res.description,
+        siteUrl: res.siteUrl,
+        serviceId: Number(res.serviceId),
+        imageUrl: null,
+      });
+    }
     //setShowEditor(true);
   };
 
   const handleCreateProject = () => {
-    setEditingProjectId(null);
+    setEditingProductId(null);
     setShowEditor(true);
   };
   const handleFilterChange = () => {};
   const handlers = {
     onCreate: handleCreateProject,
     onView: handleViewProject,
-    onDelete: (project: Project) => setProjectToDelete(project),
+    onDelete: (product: Product) => setProductToDelete(product),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
+  };
+  const [isLoading, setIsLoading] = useState(false);
+  const { saveProduct, error } = ProductViewModel();
+  const handleSave = async () => {
+    const form_data = new FormData();
+
+    form_data.append("name", formData.name);
+    form_data.append("description", formData.description);
+    form_data.append("siteUrl", formData.siteUrl);
+    form_data.append("serviceId", String(formData.serviceId));
+    if (formData.imageUrl instanceof File) {
+      form_data.append("imageUrl", formData.imageUrl);
+    }
+
+    setIsLoading(true);
+    if (productId) {
+      console.log("hola estoy funcionando");
+      const success = await saveProduct(form_data, productId.id);
+      if (success) {
+        console.log("✅ Producto guardado correctamente");
+      } else {
+        console.error("❌ Error guardando producto:", error);
+      }
+    }
   };
 
   if (showEditor) {
@@ -88,8 +190,8 @@ export function PortfolioPage() {
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="p-6 h-full">
-            <BlogEditor
-              blogId={editingProjectId ?? undefined}
+            <ProductEditor
+              productId={editingProductId ?? undefined}
               onBack={() => setShowEditor(false)}
               onSave={() => {
                 setShowEditor(false);
@@ -111,52 +213,128 @@ export function PortfolioPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
               Portfolio Posts
             </h1>
-<div className="flex flex-row gap-4 h-full w-full">
-            <div className="flex-1 min-h-0">
-              {GeneralTable(
-                "portfolio-page",
-                "Add post",
-                "Description",
-                "All Posts",
-                "Description",
-                ["Project ID", "Title", "Actions"],
-                projects,
-                handlers
-              )}              
-            </div>
-              
-            <div className="w-96 bg-white rounded-lg space-y-6 flex-shrink-0 p-4">
-               {/* Blog Title */}
-                        <div className="mb-6">
-                          <p className="text-sm text-gray-500 mt-1">Project Title</p>
-                          <Input
-                            value="hola"
-                          
-                            placeholder="Digite el titulo de su blog"
-                            className="text-2xl font-bold "
-                          />
+            <div className="flex flex-row gap-4 h-full w-full">
+              <div className="flex-1 min-h-0">
+                {GeneralTable(
+                  "portfolio-page",
+                  "Add Product",
+                  "Description",
+                  "All Products",
+                  "Description",
+                  ["Product ID", "Name", "Actions"],
+                  products,
+                  handlers
+                )}
+              </div>
 
-                          <Card className="bg-white">
-                                      <CardHeader>
-                                        <CardTitle className="text-lg">Description</CardTitle>
-                                      </CardHeader>
-                                      <CardContent>
-                                        <Textarea
-                                          value="valor"
-                                          onChange={(e) => {
-                                           
-                                          }}
-                                          placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
-                                          rows={4}
-                                          maxLength={200}
-                                        />
-                                        <div className="text-right text-sm text-gray-500 mt-2">
-                                          {"contenido"}/200
-                                        </div>
-                                      </CardContent>
-                                    </Card>
+              <div className="w-96 bg-white rounded-lg space-y-6 flex-shrink-0 p-4">
+                {/* Blog Title */}
+                <div className="mb-6">
+                  <p className="text-sm text-gray-500 mt-1">Product Name</p>
+                  <Input
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    value={formData.name ?? productId?.name ?? ""}
+                    placeholder="Digite el titulo de su blog"
+                    className="text-2xl font-bold "
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Site Url</p>
+                  <Input
+                    onChange={(e) =>
+                      setFormData({ ...formData, siteUrl: e.target.value })
+                    }
+                    value={formData.siteUrl ?? productId?.siteUrl ?? ""}
+                    placeholder="Digite el titulo de su blog"
+                    className="text-2xl font-bold "
+                  />
+                  {/* Service */}
+                  <Card className="bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Service</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={String(formData.serviceId)}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, serviceId:Number( value )})
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.map((s: Service) => (
+                            <SelectItem key={s.id} value={String(s.id)}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Textarea
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        value={
+                          formData.description ?? productId?.description ?? ""
+                        }
+                        placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                        rows={4}
+                        maxLength={200}
+                      />
+                      <div className="text-right text-sm text-gray-500 mt-2">
+                        {formData.description?.length ??
+                          productId?.description?.length ??
+                          0}
+                        /200
+                      </div>
+                    </CardContent>
+                  </Card>
+                  {/* Images */}
+                  <Card className="bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Image</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Main Image */}
+                      <div>
+                        <Label className="text-sm font-medium mb-2 block">
+                          Main Image
+                        </Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                          <p className="text-gray-500 mb-4">
+                            Drag and drop an image here or
+                          </p>
+                          {/* First Image */}
+                          <label className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block">
+                            Upload from my Computer
+                            <input type="file" className="hidden" />
+                          </label>
                         </div>
-            </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleSave}
+                      disabled={isLoading}
+                      className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block disabled:opacity-50"
+                    >
+                      {isLoading ? "Saving..." : "Update Product"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -177,6 +355,22 @@ export function PortfolioPage() {
         description={`Are you sure you want to delete "${blogToDelete?.title}"? This action cannot be undone.`}
       />*/}
       {/* Controles de paginación */}
+      <DeleteConfirmDialog
+        open={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={() => {
+          if (productToDelete) {
+            handleDelete(productToDelete.id).then(() => {
+              setProductToDelete(null);
+              // 🔄 refrescar proyectos
+              // getAllProjects(); <-- si lo expones desde ProjectViewModel
+            });
+          }
+        }}
+        title="Delete Project"
+        description={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
+      />
+
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => setOffset((prev) => Math.max(prev - itemsPerPage, 0))}
@@ -190,13 +384,16 @@ export function PortfolioPage() {
 
         <button
           onClick={() => {
-            if (!pageInfo || offset + itemsPerPage < pageInfo.totalBlogs) {
-              const lastItemId = projects[projects.length - 1].id;
+            console.log("deberia fun: " + pageInfo.totalProducts);
+            if (!pageInfo || offset + itemsPerPage < pageInfo.totalProducts) {
+              console.log("deberia fun2");
+              const lastItemId = products[products.length - 1].id;
               setOffset(lastItemId);
             }
           }}
           disabled={
-            loading || (pageInfo && offset + itemsPerPage >= pageInfo.total)
+            loading ||
+            (pageInfo && offset + itemsPerPage >= pageInfo.totalProducts)
           }
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
         >

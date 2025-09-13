@@ -18,7 +18,7 @@ import type { ProjectPhase } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectEditorProps {
-  projectId?: string;
+  projectId?: number;
   onBack: () => void;
   onSave: () => void;
 }
@@ -36,10 +36,7 @@ interface ProjectFormData {
   attendant: string;
 }
 
-export function ProjectEditor({
-  projectId,
-  onBack,
-  onSave,
+export function ProjectEditor({projectId,onBack,onSave,
 }: ProjectEditorProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
@@ -59,10 +56,9 @@ export function ProjectEditor({
     const loadProject = async () => {
       if (projectId) {
         try {
-          const project = await ProjectManagementService.getProjectById(
-            projectId
-          );
-          if (project) {
+          //const project = await ProjectManagementService.getProjectById(projectId);
+          const project=""
+          /*if (project) {
             setFormData({
               name: project.name,
               description: project.description,
@@ -75,7 +71,7 @@ export function ProjectEditor({
               estimatedValue: "",
               attendant: "",
             });
-          }
+          }*/
         } catch (error) {
           console.error("Error loading project:", error);
           toast({
@@ -106,7 +102,7 @@ export function ProjectEditor({
       };
 
       if (projectId) {
-        await ProjectManagementService.updateProject(projectId, projectData);
+        //await ProjectManagementService.updateProject(projectId, projectData);
         toast({
           title: "Success",
           description: "Project updated successfully",
@@ -131,7 +127,7 @@ export function ProjectEditor({
     }
   };
 
-  const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
+  //const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
 
   return (
     <div className="h-full w-screen max-w-none px-6">
@@ -233,11 +229,11 @@ export function ProjectEditor({
                   <SelectValue placeholder="Dropdown here" />
                 </SelectTrigger>
                 <SelectContent>
-                  {phases.map((phase) => (
+                  {/*phases.map((phase) => (
                     <SelectItem key={phase} value={phase}>
                       {phase}
                     </SelectItem>
-                  ))}
+                  ))*/}
                 </SelectContent>
               </Select>
             </div>

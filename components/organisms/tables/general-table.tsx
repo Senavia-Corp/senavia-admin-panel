@@ -148,7 +148,7 @@ export function GeneralTable(
         return (
           <PortfolioTableRow
             key={item.id}
-            project={item}
+            product={item}
             onView={() => onView?.(item)}
             onDelete={() => onDelete?.(item)}            
           />
