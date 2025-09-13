@@ -35,24 +35,28 @@ export function CostDetailFormCreate({
       };
       await createCost(costData);
       
+      // Crear objeto de costo local para la UI
+      const newCost: Cost = {
+        ...costData,
+        id: Date.now(), // ID temporal
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
       toast.success('Cost created successfully', {
         id: toastId,
         description: `The cost "${costData.name}" has been created.`
       });
 
-      // Crear objeto de costo local para actualizar la UI
-      const newCost: Cost = {
-        ...costData,
-        id: Date.now(), // ID temporal hasta que se recargue la página
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      // Notificar al componente padre del nuevo costo
+      // Notificar al componente padre y regresar
       onCreateSuccess?.(newCost);
-      onBack?.(); // Regresar a la lista después de crear exitosamente
+      onBack?.();
     } catch (error) {
       console.error('Error creating cost:', error);
+      toast.error('Failed to create cost', {
+        id: toastId,
+        description: error instanceof Error ? error.message : 'There was an error creating the cost. Please try again.'
+      });
     } finally {
       setLoadingPost(false);
     }

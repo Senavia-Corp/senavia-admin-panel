@@ -30,15 +30,18 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
         type: localCost.type,
         value: localCost.value,
       };
+
+      // Intentar actualizar en el servidor primero
       await updateCost(costId, costData);
       
-      // Actualizar el costo local con los nuevos datos
+      // Solo si la actualización en el servidor fue exitosa, actualizamos localmente
       const updatedCost: Cost = {
         ...cost,
         ...costData,
         updatedAt: new Date().toISOString()
       };
       
+      // Actualizar estado local y notificar al padre
       setLocalCost(updatedCost);
       onUpdate?.(updatedCost);
       
@@ -48,9 +51,11 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
       });
     } catch (error) {
       console.error('Error updating cost:', error);
+      // En caso de error, revertimos los cambios locales
+      setLocalCost(cost);
       toast.error('Failed to update cost', {
         id: toastId,
-        description: 'There was an error updating the cost. Please try again.'
+        description: error instanceof Error ? error.message : 'There was an error updating the cost. Please try again.'
       });
     } finally {
       setIsUpdating(false);
