@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ProjectEditor } from "../organisms/project-editor";
 import type { Service, ServiceApiResponse } from "../pages/service/service";
+import { ImageSelector } from "@/components/atoms/image-selector";
 
 import ProductViewModel from "./product/ProductViewModel";
 
@@ -38,6 +39,7 @@ export function PortfolioPage() {
   const [itemsPerPage, setitemsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
   const [allProjects, setAllProjects] = useState<any[]>([]);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const {
     services,
     getAllServices,
@@ -50,7 +52,7 @@ export function PortfolioPage() {
     description: "",
     siteUrl: "",
     serviceId: 1,
-    imageUrl: null as File | null,
+    imageUrl: null as File | string|null,
   });
   const {
     products,
@@ -116,6 +118,10 @@ export function PortfolioPage() {
       console.error("Error deleting blog:", error)
     }
   }*/
+  const handleImageChange = (file: File | null) => {
+    setProfileImage(file);
+    setFormData({...formData,imageUrl:file})
+  };
 
   const handleDelete = async (id: number) => {
     try {
@@ -141,7 +147,7 @@ export function PortfolioPage() {
         description: res.description,
         siteUrl: res.siteUrl,
         serviceId: Number(res.serviceId),
-        imageUrl: null,
+        imageUrl: res.imageUrl??null,
       });
     }
     //setShowEditor(true);
@@ -227,9 +233,9 @@ export function PortfolioPage() {
                 )}
               </div>
 
-              <div className="w-96 bg-white rounded-lg space-y-6 flex-shrink-0 p-4">
+              <div className="w-96 bg-white rounded-lg space-y-8 flex-shrink-0 p-6">
                 {/* Blog Title */}
-                <div className="mb-6">
+                <div className="space-y-4">
                   <p className="text-sm text-gray-500 mt-1">Product Name</p>
                   <Input
                     onChange={(e) =>
@@ -257,7 +263,7 @@ export function PortfolioPage() {
                       <Select
                         value={String(formData.serviceId)}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, serviceId:Number( value )})
+                          setFormData({ ...formData, serviceId: Number(value) })
                         }
                       >
                         <SelectTrigger>
@@ -300,6 +306,7 @@ export function PortfolioPage() {
                       </div>
                     </CardContent>
                   </Card>
+                 
                   {/* Images */}
                   <Card className="bg-white">
                     <CardHeader>
@@ -308,19 +315,23 @@ export function PortfolioPage() {
                     <CardContent className="space-y-4">
                       {/* Main Image */}
                       <div>
-                        <Label className="text-sm font-medium mb-2 block">
-                          Main Image
-                        </Label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                          <p className="text-gray-500 mb-4">
-                            Drag and drop an image here or
-                          </p>
-                          {/* First Image */}
-                          <label className="cursor-pointer rounded-full bg-[#99CC33] text-white font-bold text-xs py-2 px-4 inline-block">
-                            Upload from my Computer
-                            <input type="file" className="hidden" />
-                          </label>
-                        </div>
+                        <label className="block text-sm font-medium mb-1 mt-4">
+                    Profile Picture
+                  </label>
+                  <ImageSelector
+                    value={profileImage}
+                    onChange={handleImageChange}
+                    placeholder="No image selected"
+                    disabled={isLoading}
+                    previewSize="medium"
+                    uploadButtonText="Upload new image"
+                    showUploadButton={true}
+                    showRemoveButton={true}
+                    showPreview={true}
+                    showFileName={true}
+                  /> 
+
+                      
                       </div>
                     </CardContent>
                   </Card>
