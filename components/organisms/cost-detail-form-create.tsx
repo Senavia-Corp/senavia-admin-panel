@@ -7,19 +7,55 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CreateCostData } from "@/types/cost-management";
 
-export function CostDetailFormCreate({estimateId}: {estimateId: number}) {
+import { toast } from "sonner";
+import { Cost } from "@/types/cost-management";
+
+export function CostDetailFormCreate({
+  estimateId, 
+  onBack,
+  onCreateSuccess
+}: {
+  estimateId: number;
+  onBack?: () => void;
+  onCreateSuccess?: (newCost: Cost) => void;
+}) {
   const { createCost } = BillingViewModel();
+  const [loadingPost, setLoadingPost] = useState(false)
 
   const handleCreateCost = async () => {
-    const costData: CreateCostData = {
-      name: Name,
-      description: description,
-      type: type,
-      value: value,
-      estimateId: estimateId
-    };
-    await createCost(costData);
-    window.location.reload();
+    const toastId = toast.loading('Creating cost...');
+    try {
+      setLoadingPost(true);
+      const costData: CreateCostData = {
+        name: Name,
+        description: description,
+        type: type,
+        value: value,
+        estimateId: estimateId
+      };
+      await createCost(costData);
+      
+      toast.success('Cost created successfully', {
+        id: toastId,
+        description: `The cost "${costData.name}" has been created.`
+      });
+
+      // Crear objeto de costo local para actualizar la UI
+      const newCost: Cost = {
+        ...costData,
+        id: Date.now(), // ID temporal hasta que se recargue la página
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Notificar al componente padre del nuevo costo
+      onCreateSuccess?.(newCost);
+      onBack?.(); // Regresar a la lista después de crear exitosamente
+    } catch (error) {
+      console.error('Error creating cost:', error);
+    } finally {
+      setLoadingPost(false);
+    }
   };
 
   
@@ -39,6 +75,7 @@ export function CostDetailFormCreate({estimateId}: {estimateId: number}) {
             variant="ghost"
             size="sm"
             className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
+            onClick={onBack}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -95,8 +132,9 @@ export function CostDetailFormCreate({estimateId}: {estimateId: number}) {
             <Button
               className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={handleCreateCost}
+              disabled={loadingPost}
             >
-              Add Cost
+              {loadingPost ? 'Updating...' : 'Add Cost'}  
             </Button>
           </div>
         </div>

@@ -79,6 +79,10 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
     );
   };
 
+  const handleCostCreate = (newCost: Cost) => {
+    setCosts(prevCosts => [...prevCosts, newCost]);
+  };
+
   const handleCreateCost = () => {
     console.log("Create new billing record");
     setShowCreateCost(true);
@@ -133,7 +137,11 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
   if (showCreateCost) {
     return (
       <div className="">
-        <CostDetailFormCreate estimateId={estimateId} />
+        <CostDetailFormCreate 
+          estimateId={estimateId}
+          onBack={handleBackToList}
+          onCreateSuccess={handleCostCreate}
+        />
       </div>
     );
   }
