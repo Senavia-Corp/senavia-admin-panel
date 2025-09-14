@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
-import type { ProjectPhase } from "@/types/project-management";
+import type {
+  Project,
+  ProjectPhase,
+  PhaseName,
+} from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectEditorProps {
@@ -26,14 +30,14 @@ interface ProjectEditorProps {
 interface ProjectFormData {
   name: string;
   description: string;
+  expectedDuration: string;
   currentPhase: ProjectPhase;
   status: string;
   startDate: string;
   endDate: string;
-  estimateId: string;
-  workTeamId: string;
-  estimatedValue: string;
-  attendant: string;
+  imagePreviewUrl: string;
+  workTeam_id: number;
+  estimate_id: number;
 }
 
 export function ProjectEditor({
@@ -44,14 +48,14 @@ export function ProjectEditor({
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     description: "",
+    expectedDuration: "",
     currentPhase: "Analysis",
     status: "Active",
     startDate: "",
     endDate: "",
-    estimateId: "",
-    workTeamId: "",
-    estimatedValue: "",
-    attendant: "",
+    imagePreviewUrl: "",
+    workTeam_id: 0,
+    estimate_id: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,17 +67,17 @@ export function ProjectEditor({
             projectId
           );
           if (project) {
+            const currentPhase = getPhaseLabel(project);
             setFormData({
               name: project.name,
               description: project.description,
-              currentPhase: project.currentPhase,
-              status: project.status,
+              currentPhase: currentPhase as ProjectPhase,
+              status: "Active",
               startDate: project.startDate,
               endDate: project.endDate,
-              estimateId: project.estimateId || "",
-              workTeamId: project.workTeamId || "",
-              estimatedValue: "",
-              attendant: "",
+              imagePreviewUrl: project.imagePreviewUrl || "",
+              workTeam_id: project.workTeam_id?.id || 0,
+              estimate_id: project.estimate_id?.id || 0,
             });
           }
         } catch (error) {
@@ -93,16 +97,29 @@ export function ProjectEditor({
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Create the data object that matches CreateProjectData interface
+      // Create payload similar to backend expectations
+      const phaseEnum: Record<ProjectPhase, PhaseName> = {
+        Analysis: "ANALYSIS",
+        Design: "DESIGN",
+        Development: "DEVELOPMENT",
+        Deployment: "DEPLOY",
+      };
       const projectData = {
         name: formData.name,
         description: formData.description,
+        expectedDuration: formData.expectedDuration,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        currentPhase: formData.currentPhase,
-        estimateId: formData.estimateId || undefined,
-        workTeamId: formData.workTeamId || undefined,
-        status: formData.status,
+        imagePreviewUrl: formData.imagePreviewUrl,
+        phases: [
+          {
+            name: phaseEnum[formData.currentPhase],
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+          },
+        ],
+        workTeam_id: formData.workTeam_id,
+        estimate_id: formData.estimate_id,
       };
 
       if (projectId) {
@@ -131,7 +148,36 @@ export function ProjectEditor({
     }
   };
 
-  const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
+  const phases: ProjectPhase[] = [
+    "Analysis",
+    "Design",
+    "Development",
+    "Deployment",
+  ];
+
+  function getPhaseLabel(project: Project): ProjectPhase {
+    const lastPhase = (project.phases || [])
+      .slice()
+      .sort((a, b) => {
+        const aTime = new Date(a.startDate || "").getTime();
+        const bTime = new Date(b.startDate || "").getTime();
+        return aTime - bTime;
+      })
+      .pop();
+    const name = lastPhase?.name as PhaseName | undefined;
+    switch (name) {
+      case "ANALYSIS":
+        return "Analysis";
+      case "DESIGN":
+        return "Design";
+      case "DEVELOPMENT":
+        return "Development";
+      case "DEPLOY":
+        return "Deployment";
+      default:
+        return "Analysis";
+    }
+  }
 
   return (
     <div className="h-full w-screen max-w-none px-6">
@@ -166,9 +212,12 @@ export function ProjectEditor({
                 Estimated Id
               </Label>
               <Input
-                value={formData.estimatedValue}
+                value={formData.estimate_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, estimatedValue: e.target.value })
+                  setFormData({
+                    ...formData,
+                    estimate_id: parseInt(e.target.value),
+                  })
                 }
                 placeholder="estimate_Id"
                 className="mt-1"
@@ -179,15 +228,17 @@ export function ProjectEditor({
                 WorkTeam Id
               </Label>
               <Input
-                value={formData.workTeamId}
+                value={formData.workTeam_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, workTeamId: e.target.value })
+                  setFormData({
+                    ...formData,
+                    workTeam_id: parseInt(e.target.value),
+                  })
                 }
                 placeholder="work_team_Id"
                 className="mt-1"
               />
             </div>
-
 
             <div>
               <Label className="text-sm font-medium text-gray-700">Name</Label>
@@ -244,12 +295,12 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Attendant
+                Expected Duration
               </Label>
               <Input
-                value={formData.attendant}
+                value={formData.expectedDuration}
                 onChange={(e) =>
-                  setFormData({ ...formData, attendant: e.target.value })
+                  setFormData({ ...formData, expectedDuration: e.target.value })
                 }
                 placeholder="Attendant"
                 className="mt-1"

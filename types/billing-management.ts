@@ -21,7 +21,20 @@ export interface Billing {
   deadLineToPay: string
   invoiceDateCreated: string
   invoiceReference: string
+  Project: any[] // TODO: Definir interfaz específica para Project
+  costs: Cost[]
 }
+export interface Cost {
+  id: number
+  name: string
+  description: string
+  type: string
+  value: number
+  estimateId: number
+  createdAt: string
+  updatedAt: string
+}
+
 
 export interface Billings{
   id: number
