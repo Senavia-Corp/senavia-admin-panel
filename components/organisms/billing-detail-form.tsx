@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
-import { BillingStatus } from "@/types/billing-management";
+import { CardMokcup } from "@/components/atoms/card_mokcup";
 import {
   Select,
   SelectContent,
@@ -18,6 +18,9 @@ import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
+import { CostPage } from "@/components/pages/cost-page";
+import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -54,7 +57,10 @@ export function BillingDetailForm({
   console.log("leads recibidos:", leads);
   console.log("lead recibido:", lead);
   const [showDocument, setShowDocument] = useState(false);
-
+  const [showCosts, setShowCosts] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
+  const { PatchBilling } = BillingViewModel();
   // Estados para campos editables
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
@@ -102,6 +108,43 @@ export function BillingDetailForm({
     "Service not found",
   ];
 
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
+  };
+
+  const UpdateBilling = async () => {
+    const ID_estimate = selectedBilling?.id || 0;
+
+    const billingData: CreateBillingData = {
+      estimatedTime: estimatedTime,
+      description: description,
+      state: status,
+      totalValue: 0,
+      lead_id: Number(associatedLead),
+      plan_id: Number(associatedPlan),
+      deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
+      invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+      invoiceReference: "INV-2025-0456"
+    }
+
+    const result = await PatchBilling(ID_estimate, billingData);
+      window.location.reload();
+
+  }
+
+  if (showCosts) {
+    return (
+      <div className="">
+      <CostPage
+        costs={selectedBilling?.costs || []}
+        estimateId={selectedBilling?.id || 0}
+        onBack={() => setShowCosts(false)}
+      />
+      </div>
+    );
+  }
+
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
   // }
@@ -141,7 +184,6 @@ export function BillingDetailForm({
                 ? formatCurrency(parseFloat(selectedBilling.totalValue))
                 : "N/A"}
             </p>
-            <hr className="border-[#EBEDF2]" />
             <hr className="border-[#EBEDF2]" />
             <Label className=" text-[#393939] text-base/4 font-normal block">
               Estimated Time
@@ -223,8 +265,8 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>service</p>
             <Select
+              disabled={true}
               value={service || servicesID(lead[0]?.serviceId || 0)}
-              onValueChange={setService}
             >
               <SelectTrigger className="w-full h-7">
                 <SelectValue placeholder="Dropdown here" />
@@ -243,11 +285,20 @@ export function BillingDetailForm({
                   <h2 className="text-2xl font-normal">Costs Details</h2>
                   <p className="font-light text-base">Description</p>
                 </div>
-                <Button className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0">
+                <Button
+                  onClick={() => setShowCosts(true)}
+                  className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+                >
                   <Eye color="#04081E" />
                 </Button>
               </CardHeader>
             </Card>
+            <Button 
+                className={'rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80'}
+                onClick={UpdateBilling}
+            >
+              Update Billing
+            </Button>
           </div>
         </div>
       </div>
