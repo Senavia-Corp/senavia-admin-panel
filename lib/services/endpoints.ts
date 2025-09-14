@@ -8,6 +8,18 @@ const API_LOCAL = "http://localhost:3000/api";
 const API = "http://localhost:3000/api";
 
 export const endpoints = {
+  service: {
+    getAll: `${API}/service`,
+  },
+
+  product: {
+    getAll: `${API}/product`,
+    getById: (id: number) => `${API}/product?id=${id}`,
+    delete: (id: number) => `${API}/product?id=${id}`,
+    create: `${API}/product`,
+    update: (id: number) => `${API}/product?id=${id}`
+  },
+
   blog: {
     getPosts: `${API}/blog`,
     getPost: (id: number) => `${API}/blog?id=${id}`,
@@ -40,6 +52,11 @@ export const endpoints = {
     createPost: `${API}/project`,
     updatePost: (id: number) => `${API}/project?id=${id}`,
     deletePost: (id: number) => `${API}/project?id=${id}`,
+    getAll: `${API}/project`,
+    getById: (id: number) => `${API}/project?id=${id}`,
+    create: `${API}/project`,
+    update: (id: number) => `${API}/project?id=${id}`,
+    remove: (id: number) => `${API}/project?id=${id}`,
   },
   studycases: {
     getPosts: `${API}/studycase`,
@@ -74,8 +91,8 @@ export const endpoints = {
   },
   cost: {
     createCost: `${API}/cost`,
-    deleteCost:(id:number) => `${API}/cost?id=${id}`,
-    updateCost: (id:number) => `${API}/cost?id=${id}`
+    deleteCost: (id: number) => `${API}/cost?id=${id}`,
+    updateCost: (id: number) => `${API}/cost?id=${id}`
   }
 };
 

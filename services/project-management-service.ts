@@ -178,6 +178,10 @@ export class ProjectManagementService {
     }
   }
 
+/*  static getProjectPhases(): ProjectPhase[] {
+    return ["Analysis", "Design", "Development", "Deployment"];
+  }*/
+ 
   static async getProjectsByUser(
     userId: string | number,
     search?: string,

@@ -1,5 +1,5 @@
-import { BlogsPage } from "@/components/pages/blogs-page"
+import { PortfolioPage } from "@/components/pages/portfolio-page"
 
 export default function Blogs() {
-  return <BlogsPage />
+  return <PortfolioPage />
 }

@@ -22,7 +22,7 @@ import type {
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectEditorProps {
-  projectId?: string;
+  projectId?: number;
   onBack: () => void;
   onSave: () => void;
 }
@@ -40,10 +40,7 @@ interface ProjectFormData {
   estimate_id: number;
 }
 
-export function ProjectEditor({
-  projectId,
-  onBack,
-  onSave,
+export function ProjectEditor({projectId,onBack,onSave,
 }: ProjectEditorProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
@@ -63,11 +60,9 @@ export function ProjectEditor({
     const loadProject = async () => {
       if (projectId) {
         try {
-          const project = await ProjectManagementService.getProjectById(
-            projectId
-          );
-          if (project) {
-            const currentPhase = getPhaseLabel(project);
+          //const project = await ProjectManagementService.getProjectById(projectId);
+          const project=""
+          /*if (project) {
             setFormData({
               name: project.name,
               description: project.description,
@@ -79,7 +74,7 @@ export function ProjectEditor({
               workTeam_id: project.workTeam_id?.id || 0,
               estimate_id: project.estimate_id?.id || 0,
             });
-          }
+          }*/
         } catch (error) {
           console.error("Error loading project:", error);
           toast({
@@ -123,7 +118,7 @@ export function ProjectEditor({
       };
 
       if (projectId) {
-        await ProjectManagementService.updateProject(projectId, projectData);
+        //await ProjectManagementService.updateProject(projectId, projectData);
         toast({
           title: "Success",
           description: "Project updated successfully",
@@ -148,6 +143,7 @@ export function ProjectEditor({
     }
   };
 
+  //const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
   const phases: ProjectPhase[] = [
     "Analysis",
     "Design",
@@ -284,11 +280,11 @@ export function ProjectEditor({
                   <SelectValue placeholder="Dropdown here" />
                 </SelectTrigger>
                 <SelectContent>
-                  {phases.map((phase) => (
+                  {/*phases.map((phase) => (
                     <SelectItem key={phase} value={phase}>
                       {phase}
                     </SelectItem>
-                  ))}
+                  ))*/}
                 </SelectContent>
               </Select>
             </div>
