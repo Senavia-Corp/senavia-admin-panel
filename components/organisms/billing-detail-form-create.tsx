@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CardMokcup } from "@/components/atoms/card_mokcup";
 import { Card, CardHeader } from "../ui/card";
 import { DocumentPreviewBilling } from "./document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
@@ -19,6 +20,7 @@ import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import { CostPage } from "@/components/pages/cost-page";
 
 interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -65,6 +67,7 @@ export function BillingDetailCreateForm({
   const [associatedLead, setAssociatedLead] = useState("");
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState("");
+  const [showCosts, setShowCosts] = useState(false);
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
@@ -113,7 +116,6 @@ export function BillingDetailCreateForm({
 
   const isFormValid = () => {
     return (
-      totalValue !== "" &&
       estimatedTime !== "" &&
       description !== "" &&
       status !== "" &&
@@ -125,7 +127,7 @@ export function BillingDetailCreateForm({
 
   const handleCreateBilling = async () => {
     const billingData: CreateBillingData = {
-      totalValue: Number(totalValue),
+      totalValue: 0,
       estimatedTime: estimatedTime,
       description: description,
       state: status,
@@ -149,6 +151,7 @@ export function BillingDetailCreateForm({
           setShowPopup(false);
           onSave(billingData);
         }, 3000);
+
       } else {
         setPopupMessage({
           type: 'error',
@@ -158,6 +161,18 @@ export function BillingDetailCreateForm({
         setTimeout(() => setShowPopup(false), 3000);
       }
   };
+
+  if (showCosts) {
+    return (
+      <div className="">
+        <CostPage
+          costs={selectedBilling?.costs || []}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowCosts(false)}
+        />
+      </div>
+    );
+  }
 
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
@@ -189,18 +204,7 @@ export function BillingDetailCreateForm({
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">
-              <p>
-                Total $:
-              </p>
-              <Input
-                type="number"
-                className="w-full h-7"
-                value={totalValue}
-                onChange={(e) => setTotalValue(e.target.value)}
-                placeholder="Enter total value"
-              />
-            <hr className="border-[#EBEDF2]" />
+          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">                                     
               <p>
                 Estimated Time:
               </p>
@@ -279,23 +283,6 @@ export function BillingDetailCreateForm({
               </Select>
             </p>
             <hr className="border-[#EBEDF2]" />
-            <p>service</p>
-            <Select
-              value={service || servicesID(lead[0]?.serviceId || 0)}
-              onValueChange={setService}
-            >
-              <SelectTrigger className="w-full h-7">
-                <SelectValue placeholder="Dropdown here" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map((serviceOption) => (
-                  <SelectItem key={serviceOption} value={serviceOption}>
-                    {serviceOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <hr className="border-[#EBEDF2]" />
             <p>Deadline to pay</p>
             <Input
               type="date"
@@ -303,17 +290,7 @@ export function BillingDetailCreateForm({
               value={deadlineToPay}
               onChange={(e) => setDeadlineToPay(e.target.value)}
             />
-            <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
-              <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
-                <div>
-                  <h2 className="text-2xl font-normal">Costs Details</h2>
-                  <p className="font-light text-base">Description</p>
-                </div>
-                <Button className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0">
-                  <Eye color="#04081E" />
-                </Button>
-              </CardHeader>
-            </Card>
+
              <Button 
                 className={`rounded-full text-3xl items-center py-2 px-4 ${
                   isFormValid() 
@@ -327,21 +304,11 @@ export function BillingDetailCreateForm({
           </div>
         </div>
       </div>
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="fixed inset-0 bg-black opacity-50"></div>
-          <div className={`bg-white rounded-lg p-8 z-10 text-center ${
-            popupMessage.type === 'success' ? 'border-2 border-[#99CC33]' : 'border-2 border-red-500'
-          }`}>
-            <h3 className={`text-2xl font-bold mb-4 ${
-              popupMessage.type === 'success' ? 'text-[#04081E]' : 'text-red-500'
-            }`}>
-              {popupMessage.type === 'success' ? '¡Success!' : '¡Error!'}
-            </h3>
-            <p className="text-lg text-[#393939]">{popupMessage.message}</p>
-          </div>
-        </div>
-      )}
+      <CardMokcup
+        type={popupMessage.type === 'success' ? 'success' : 'error'}
+        message={popupMessage.message}
+        isOpen={showPopup}
+      />
     </div>
   );
 }

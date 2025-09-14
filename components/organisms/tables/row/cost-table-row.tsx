@@ -1,6 +1,6 @@
 "use client"
 
-import { StatusBadge } from "@/components/atoms/status-badge"
+import { StatusBadge } from "@/components/atoms/cost-type-badge"
 import { ActionButton } from "@/components/atoms/action-button"
 
 interface Cost {
@@ -37,10 +37,7 @@ export function CostTableRow({ cost, onView, onDelete }: CostTableRowProps) {
         {cost.name}
       </td>
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {cost.type}
-      </td>
-      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        <StatusBadge status={cost.status} />
+        <StatusBadge status={cost.type} />
       </td>
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
         {formatCurrency(cost.value)}

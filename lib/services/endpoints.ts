@@ -8,15 +8,15 @@ const API_LOCAL = "http://localhost:3000/api";
 const API = "http://localhost:3000/api";
 
 export const endpoints = {
-  service:{
-    getAll:`${API}/service`,
+  service: {
+    getAll: `${API}/service`,
   },
 
-  product:{
-    getAll:`${API}/product`,
+  product: {
+    getAll: `${API}/product`,
     getById: (id: number) => `${API}/product?id=${id}`,
-    delete:(id: number) => `${API}/product?id=${id}`,
-    create:`${API}/product`,
+    delete: (id: number) => `${API}/product?id=${id}`,
+    create: `${API}/product`,
     update: (id: number) => `${API}/product?id=${id}`
   },
 
@@ -34,18 +34,37 @@ export const endpoints = {
     deleteTicket: (id: number) => `${API}/ticket?id=${id}`,
   },
   lead: {
+    getPosts: `${API}/lead`,
+    getPost: (id: number) => `${API}/lead?id=${id}`,
+    getPostsByUser: (userId: string | number) => `${API}/lead?userId=${userId}`,
+    createPost: `${API}/lead`,
     getLeads: `${API}/lead`,
     getLead: (id: number) => `${API}/lead?id=${id}`,
     createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
     deleteLead: (id: number) => `${API}/lead?id=${id}`,
   },
-  project: {    
+  project: {
+    getPosts: `${API}/project`,
+    getPost: (id: number) => `${API}/project?id=${id}`,
+    getPostsByUser: (userId: string | number) =>
+      `${API}/project?userId=${userId}`,
+    createPost: `${API}/project`,
+    updatePost: (id: number) => `${API}/project?id=${id}`,
+    deletePost: (id: number) => `${API}/project?id=${id}`,
     getAll: `${API}/project`,
     getById: (id: number) => `${API}/project?id=${id}`,
     create: `${API}/project`,
     update: (id: number) => `${API}/project?id=${id}`,
     remove: (id: number) => `${API}/project?id=${id}`,
+  },
+  studycases: {
+    getPosts: `${API}/studycase`,
+    getPost: (id: string | number) => `${API}/studycase?id=${id}`,
+    createPost: `${API}/studycase`,
+    updatePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    deletePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    upload: `${API}/studycase/upload`,
   },
   user: {
     getUsers: `${API}/user`,
@@ -70,6 +89,11 @@ export const endpoints = {
     getPlans: `${API}/plan`,
     getPlan: (id: number) => `${API}/plan?id=${id}`,
   },
+  cost: {
+    createCost: `${API}/cost`,
+    deleteCost: (id: number) => `${API}/cost?id=${id}`,
+    updateCost: (id: number) => `${API}/cost?id=${id}`
+  }
 };
 
 // Header configurations
