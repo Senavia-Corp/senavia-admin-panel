@@ -9,9 +9,10 @@ import type { User } from "@/types/user-management";
 import DashboardPage from "./dashboard/dashboard-page";
 import { CreateUserForm } from "./dashboard/create-user-form";
 import UserSettings from "./user-settings";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function UsersPage() {
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showCreatePage, setShowCreatePage] = useState(false);
@@ -54,6 +55,36 @@ export function UsersPage() {
     if (type === "role") setRoleFilter(value === "all" ? "" : value);
   };
 
+  const handleUserCreated = (newUser: User) => {
+    // Add the new user to the current list
+    setUsers((prevUsers) => [newUser, ...prevUsers]);
+    // Show success message (already handled in CreateUserForm)
+    // Optionally reload the full list to ensure consistency
+    // loadUsers();
+  };
+
+  const handleCreateSuccess = () => {
+    // Navigate back to the users list
+    setShowCreatePage(false);
+  };
+
+  const handleUserUpdated = (updatedUser: User) => {
+    // Update the user in the current list
+    setUsers((prevUsers) => {
+      console.log("📝 handleUserUpdated called with:", updatedUser);
+      console.log("📋 Current users before update:", users);
+      const userIndex = prevUsers.findIndex(
+        (user) => String(user.id) === String(updatedUser.id)
+      );
+      if (userIndex !== -1) {
+        const newUsers = [...prevUsers]; //TODO: Validar si lo hago asi o volver a hacer la peticion
+        newUsers[userIndex] = updatedUser;
+        return newUsers;
+      }
+      return prevUsers;
+    });
+  };
+
   useEffect(() => {
     loadUsers();
   }, [searchTerm, roleFilter]);
@@ -69,7 +100,10 @@ export function UsersPage() {
               setSelectedUser(null);
             }}
           >
-            <UserSettings user={selectedUser} />
+            <UserSettings
+              user={selectedUser}
+              onUserUpdated={handleUserUpdated}
+            />
           </DetailTabs>
         </div>
       </div>
@@ -84,7 +118,10 @@ export function UsersPage() {
             title="User Details"
             onBack={() => setShowCreatePage(false)}
           >
-            <CreateUserForm />
+            <CreateUserForm
+              onUserCreated={handleUserCreated}
+              onSuccess={handleCreateSuccess}
+            />
           </DetailTabs>
         </div>
       </div>
