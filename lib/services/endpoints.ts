@@ -17,7 +17,7 @@ export const endpoints = {
     getById: (id: number) => `${API}/product?id=${id}`,
     delete: (id: number) => `${API}/product?id=${id}`,
     create: `${API}/product`,
-    update: (id: number) => `${API}/product?id=${id}`
+    update: (id: number) => `${API}/product?id=${id}`,
   },
 
   blog: {
@@ -76,7 +76,7 @@ export const endpoints = {
     getPermissions: `${API}/permission`,
   },
   auth: {
-    register: `${API}/auth/register`,
+    register: `${API}/auth/register-simple`,
   },
   estimate: {
     getEstimates: `${API}/estimate`,
@@ -92,8 +92,8 @@ export const endpoints = {
   cost: {
     createCost: `${API}/cost`,
     deleteCost: (id: number) => `${API}/cost?id=${id}`,
-    updateCost: (id: number) => `${API}/cost?id=${id}`
-  }
+    updateCost: (id: number) => `${API}/cost?id=${id}`,
+  },
 };
 
 // Header configurations
