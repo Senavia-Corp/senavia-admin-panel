@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { Cost, PatchCost } from "@/types/cost-management";
 import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
   costId: number;
@@ -19,9 +20,9 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
   const { updateCost } = BillingViewModel();
   const [isUpdating, setIsUpdating] = useState(false);
   const [localCost, setLocalCost] = useState(cost);
-
+  const { toast } = useToast();
   const handleUpdateCost = async () => {
-    const toastId = toast.loading('Updating cost...');
+  
     try {
       setIsUpdating(true);
       const costData: PatchCost = {
@@ -45,17 +46,17 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
       setLocalCost(updatedCost);
       onUpdate?.(updatedCost);
       
-      toast.success('Cost updated successfully', {
-        id: toastId,
+      toast({
+        title: 'Cost updated successfully',
         description: `The cost "${costData.name}" has been updated.`
       });
     } catch (error) {
       console.error('Error updating cost:', error);
       // En caso de error, revertimos los cambios locales
       setLocalCost(cost);
-      toast.error('Failed to update cost', {
-        id: toastId,
-        description: error instanceof Error ? error.message : 'There was an error updating the cost. Please try again.'
+      toast({
+        title: 'Failed to update cost',
+        description: 'The cost has not been updated.'
       });
     } finally {
       setIsUpdating(false);
@@ -127,11 +128,24 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
             <hr className="border-[#EBEDF2]" />
             <p>Value</p>
             <Input
-              placeholder="Value"
+              placeholder="$0"
               className="w-full h-7"
-              value={localCost.value}
-              onChange={(e) => handleFieldChange('value', Number(e.target.value))}
-              type="number"
+              type="text"
+              value={localCost.value ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(localCost.value) : ''}
+              onChange={(e) => {
+                // Eliminar todo excepto números
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                if (rawValue === '') {
+                  handleFieldChange('value', 0);
+                  return;
+                }
+                handleFieldChange('value', parseInt(rawValue));
+              }}
             />
             <hr className="border-[#EBEDF2]" />
             <Button

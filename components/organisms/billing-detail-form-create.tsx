@@ -2,7 +2,6 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import {
@@ -13,14 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CardMokcup } from "@/components/atoms/card_mokcup";
-import { Card, CardHeader } from "../ui/card";
-import { DocumentPreviewBilling } from "./document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CostPage } from "@/components/pages/cost-page";
+import { useToast } from "@/hooks/use-toast";
 
 interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -68,6 +66,9 @@ export function BillingDetailCreateForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState("");
   const [showCosts, setShowCosts] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const { toast } = useToast();
+
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
@@ -126,40 +127,34 @@ export function BillingDetailCreateForm({
   };
 
   const handleCreateBilling = async () => {
-    const billingData: CreateBillingData = {
-      totalValue: 0,
-      estimatedTime: estimatedTime,
-      description: description,
-      state: status,
-      lead_id: Number(associatedLead),
-      plan_id: Number(associatedPlan),
-      deadLineToPay: deadlineToPay,
-      invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-      invoiceReference: invoiceReference
-    };
-    
-      const result = await createBilling(billingData);
+    try {
+      setIsCreating(true);
+      const billingData: CreateBillingData = {
+        totalValue: 0,
+        estimatedTime: estimatedTime,
+        description: description,
+        state: status,
+        lead_id: Number(associatedLead),
+        plan_id: Number(associatedPlan),
+        deadLineToPay: deadlineToPay,
+        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+        invoiceReference: invoiceReference
+      };
+        await createBilling(billingData);
+          toast({
+            title: 'Billing created successfully',
+          description: 'The billing has been created successfully.'
+        })
+    } catch (error) {
+      console.log('An error has occured ' + error)
+      toast({
+        title: 'Failed to create billing',
+        description: 'The billing has not been created.'
+      })
+    }finally {
+      setIsCreating(false);
       
-      // Verificamos si hay datos en la respuesta
-      if (result && result.data) {
-        setPopupMessage({
-          type: 'success',
-          message: 'Estimate created successfully!'
-        });
-        setShowPopup(true);
-        setTimeout(() => {
-          setShowPopup(false);
-          onSave(billingData);
-        }, 3000);
-
-      } else {
-        setPopupMessage({
-          type: 'error',
-          message: error || 'Failed to create estimate'
-        });
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 3000);
-      }
+    }
   };
 
   if (showCosts) {
@@ -290,16 +285,15 @@ export function BillingDetailCreateForm({
               value={deadlineToPay}
               onChange={(e) => setDeadlineToPay(e.target.value)}
             />
-
              <Button 
                 className={`rounded-full text-3xl items-center py-2 px-4 ${
-                  isFormValid() 
+                  isFormValid() && !isCreating
                     ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80" 
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
                 onClick={handleCreateBilling}
-                disabled={!isFormValid()}>
-              Create Billing
+                disabled={!isFormValid() || isCreating}>
+              {isCreating ? 'Creating...' : 'Create Billing'}
             </Button>
           </div>
         </div>

@@ -6,9 +6,8 @@ import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CreateCostData } from "@/types/cost-management";
-
-import { toast } from "sonner";
 import { Cost } from "@/types/cost-management";
+import { useToast } from "@/hooks/use-toast";
 
 export function CostDetailFormCreate({
   estimateId, 
@@ -21,9 +20,8 @@ export function CostDetailFormCreate({
 }) {
   const { createCost } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
-
+  const { toast } = useToast();
   const handleCreateCost = async () => {
-    const toastId = toast.loading('Creating cost...');
     try {
       setLoadingPost(true);
       const costData: CreateCostData = {
@@ -38,14 +36,15 @@ export function CostDetailFormCreate({
       // Crear objeto de costo local para la UI
       const newCost: Cost = {
         ...costData,
-        id: Date.now(), // ID temporal
+        // Puedes generar un número aleatorio para el ID así:
+        id: Math.floor(Math.random() * 10000), // ID temporal aleatorio entre 0 y 9999
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
-      toast.success('Cost created successfully', {
-        id: toastId,
-        description: `The cost "${costData.name}" has been created.`
+      toast({
+        title: 'Cost created successfully',
+        description: 'The cost has been created successfully.'
       });
 
       // Notificar al componente padre y regresar
@@ -53,9 +52,9 @@ export function CostDetailFormCreate({
       onBack?.();
     } catch (error) {
       console.error('Error creating cost:', error);
-      toast.error('Failed to create cost', {
-        id: toastId,
-        description: error instanceof Error ? error.message : 'There was an error creating the cost. Please try again.'
+      toast({
+        title: 'Failed to create cost',
+        description: 'The cost has not been created.'
       });
     } finally {
       setLoadingPost(false);
@@ -126,11 +125,24 @@ export function CostDetailFormCreate({
             <hr className="border-[#EBEDF2]" />
             <p>Value</p>
             <Input
-              placeholder="Value"
+              placeholder="$0"
               className="w-full h-7"
-              value={value}
-              onChange={(e) => setValue(Number(e.target.value))}
-              type="number"
+              type="text"
+              value={value ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value) : ''}
+              onChange={(e) => {
+                // Eliminar todo excepto números
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                if (rawValue === '') {
+                  setValue(0);
+                  return;
+                }
+                setValue(parseInt(rawValue));
+              }}
             />
             <hr className="border-[#EBEDF2]" />
             <Button

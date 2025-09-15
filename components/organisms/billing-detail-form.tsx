@@ -2,9 +2,7 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
-import { CardMokcup } from "@/components/atoms/card_mokcup";
 import {
   Select,
   SelectContent,
@@ -21,6 +19,7 @@ import { Plans } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
+import { useToast } from "@/hooks/use-toast";
 
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -58,16 +57,17 @@ export function BillingDetailForm({
   console.log("lead recibido:", lead);
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
   const { PatchBilling } = BillingViewModel();
-  // Estados para campos editables
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
   const [associatedLead, setAssociatedLead] = useState("");
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
+  const{toast} = useToast();
+
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
@@ -78,6 +78,18 @@ export function BillingDetailForm({
       setAssociatedPlan(selectedBilling.plan_id?.toString() || "");
       setService(""); // No hay service en estos datos
     }
+
+    setLocalEstimateData({
+      totalValue: Number(selectedBilling?.totalValue) || 0, 
+      estimatedTime: selectedBilling?.estimatedTime?.toString() || "",
+      description: selectedBilling?.description || "",
+      state: selectedBilling?.state || "",
+      lead_id: selectedBilling?.lead_id || 0,
+      plan_id: selectedBilling?.plan_id || 0,
+      deadLineToPay: selectedBilling?.deadLineToPay || "",
+      invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
+      invoiceReference: selectedBilling?.invoiceReference || "",
+    });
   }, []);
 
   const formatCurrency = (amount: number) => {
@@ -114,24 +126,33 @@ export function BillingDetailForm({
   };
 
   const UpdateBilling = async () => {
-    const ID_estimate = selectedBilling?.id || 0;
-
-    const billingData: CreateBillingData = {
-      estimatedTime: estimatedTime,
-      description: description,
-      state: status,
-      totalValue: 0,
-      lead_id: Number(associatedLead),
-      plan_id: Number(associatedPlan),
-      deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
-      invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-      invoiceReference: "INV-2025-0456"
+    try {
+      setIsUpdating(true);
+      const ID_estimate = selectedBilling?.id || 0;
+      const billingData: CreateBillingData = {
+        ...localEstimateData!,
+        state: status,
+        totalValue: localEstimateData?.totalValue || 0,
+        deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
+        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+        invoiceReference: "INV-2025-0456",
+      };
+      await PatchBilling(ID_estimate, billingData);
+      setLocalEstimateData(billingData);
+      toast({
+        title: 'Billing updated successfully',
+        description: 'The billing has been updated successfully.'
+      });
+    } catch (error) {
+      console.log('An error has occured ' + error);
+      toast({
+        title: 'Failed to update billing',
+        description: 'The billing has not been updated.'
+      });
+    } finally {
+      setIsUpdating(false);
     }
-
-    const result = await PatchBilling(ID_estimate, billingData);
-      window.location.reload();
-
-  }
+  };
 
   if (showCosts) {
     return (
@@ -180,8 +201,8 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>
               Total:{" "}
-              {selectedBilling?.totalValue
-                ? formatCurrency(parseFloat(selectedBilling.totalValue))
+              {localEstimateData?.totalValue
+                ? formatCurrency(localEstimateData.totalValue)
                 : "N/A"}
             </p>
             <hr className="border-[#EBEDF2]" />
@@ -189,8 +210,11 @@ export function BillingDetailForm({
               Estimated Time
               <input
                 id="Estimated Time"
-                value={estimatedTime}
-                onChange={(e) => setEstimatedTime(e.target.value)}
+                value={localEstimateData?.estimatedTime || ""}
+                onChange={(e) => {
+                  setEstimatedTime(e.target.value);
+                  setLocalEstimateData(prev => prev ? {...prev, estimatedTime: e.target.value} : null);
+                }}
                 placeholder="Enter estimated time"
                 className="w-full h-7 pl-2 text-[#A2ADC5] border rounded-md mt-3"
               />
@@ -205,20 +229,26 @@ export function BillingDetailForm({
             <div className="relative">
               <Textarea
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={localEstimateData?.description || ""}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setLocalEstimateData(prev => prev ? {...prev, description: e.target.value} : null);
+                }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
                 maxLength={200}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                {description.length}/200
+                {localEstimateData?.description?.length || 0}/200
               </div>
             </div>
             <hr className="border-[#EBEDF2]" />
             <p>State</p>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={localEstimateData?.state || ""} onValueChange={(value) => {
+                  setStatus(value);
+                  setLocalEstimateData(prev => prev ? {...prev, state: value} : null);
+                }}>
               <SelectTrigger className="w-full h-7 ">
                 <SelectValue placeholder="Dropdown here" />
               </SelectTrigger>
@@ -233,7 +263,10 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>
               Associated Lead
-              <Select value={associatedLead} onValueChange={setAssociatedLead}>
+              <Select value={localEstimateData?.lead_id?.toString() || ""} onValueChange={(value) => {
+                  setAssociatedLead(value);
+                  setLocalEstimateData(prev => prev ? {...prev, lead_id: Number(value)} : null);
+                }}>
                 <SelectTrigger className="w-full h-7 mt-3">
                   <SelectValue placeholder="Dropdown here" />
                 </SelectTrigger>
@@ -249,7 +282,10 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>
               Associated Plan ID
-              <Select value={associatedPlan} onValueChange={setAssociatedPlan}>
+              <Select value={localEstimateData?.plan_id?.toString() || ""} onValueChange={(value) => {
+                  setAssociatedPlan(value);
+                  setLocalEstimateData(prev => prev ? {...prev, plan_id: Number(value)} : null);
+                }}>
                 <SelectTrigger className="w-full h-7 mt-3">
                   <SelectValue placeholder="Select a plan" />
                 </SelectTrigger>
@@ -266,7 +302,7 @@ export function BillingDetailForm({
             <p>service</p>
             <Select
               disabled={true}
-              value={service || servicesID(lead[0]?.serviceId || 0)}
+              value={servicesID(localEstimateData?.lead_id || 0)}
             >
               <SelectTrigger className="w-full h-7">
                 <SelectValue placeholder="Dropdown here" />
@@ -296,8 +332,8 @@ export function BillingDetailForm({
             <Button 
                 className={'rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80'}
                 onClick={UpdateBilling}
-            >
-              Update Billing
+                disabled={isUpdating}>
+              {isUpdating ? 'Updating...' : 'Update Billing'}
             </Button>
           </div>
         </div>
