@@ -19,6 +19,7 @@ import { Plans } from "@/types/plan";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CostPage } from "@/components/pages/cost-page";
 import { useToast } from "@/hooks/use-toast";
+import { CostDetailFormCreate } from "./cost-detail-form-create";
 
 interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -68,6 +69,15 @@ export function BillingDetailCreateForm({
   const [showCosts, setShowCosts] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  type ApiResponse = {
+    success: boolean;
+    data: Billing[];
+  } | {
+    success: boolean;
+    error: string;
+  };
+  const [newEstimate, setNewEstimate] = useState<Billing | null>(null);
+  const [createFisrtCost, setCreateFisrtCost] = useState(false);
 
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
@@ -126,35 +136,48 @@ export function BillingDetailCreateForm({
     );
   };
 
-  const handleCreateBilling = async () => {
-    try {
+    const handleCreateBilling = async () => {
       setIsCreating(true);
-      const billingData: CreateBillingData = {
-        totalValue: 0,
-        estimatedTime: estimatedTime,
-        description: description,
-        state: status,
-        lead_id: Number(associatedLead),
-        plan_id: Number(associatedPlan),
-        deadLineToPay: deadlineToPay,
-        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-        invoiceReference: invoiceReference
-      };
-        await createBilling(billingData);
+      try {
+        const billingData: CreateBillingData = {
+          totalValue: 0,
+          estimatedTime: estimatedTime,
+          description: description,
+          state: status,
+          lead_id: Number(associatedLead),
+          plan_id: Number(associatedPlan),
+          deadLineToPay: deadlineToPay,
+          invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+          invoiceReference: invoiceReference
+        };
+        const response = await createBilling(billingData) as ApiResponse;
+        
+        if (response.success && 'data' in response && response.data.length > 0) {
+          const newBilling = response.data[0];
+          setNewEstimate(newBilling);
           toast({
             title: 'Billing created successfully',
-          description: 'The billing has been created successfully.'
-        })
-    } catch (error) {
-      console.log('An error has occured ' + error)
-      toast({
-        title: 'Failed to create billing',
-        description: 'The billing has not been created.'
-      })
-    }finally {
-      setIsCreating(false);
-      
-    }
+            description: 'The billing has been created successfully.'
+          });
+          if (newBilling && newBilling.id) {
+            setCreateFisrtCost(true);
+            console.log('Created billing with ID:', newBilling.id);
+          }
+        } else if ('error' in response) {
+          toast({
+            title: 'Failed to create billing',
+            description: response.error || 'The billing has not been created.'
+          });
+        }
+      } catch (error) {
+        console.error('An error has occurred:', error);
+        toast({
+          title: 'Failed to create billing',
+          description: error instanceof Error ? error.message : 'The billing has not been created.'
+        });
+      } finally {
+        setIsCreating(false);
+      }
   };
 
   if (showCosts) {
@@ -168,6 +191,20 @@ export function BillingDetailCreateForm({
       </div>
     );
   }
+
+  if (createFisrtCost) {
+    return (
+      <div className="">
+          <CostDetailFormCreate 
+            estimateId={newEstimate?.id || 0} 
+            onBack={() => setCreateFisrtCost(false)} 
+            onCreateSuccess={() => { setCreateFisrtCost(false); onBack?.(); }} 
+            fisrtCost={true} 
+          />
+        </div>
+    );
+  }
+
 
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />

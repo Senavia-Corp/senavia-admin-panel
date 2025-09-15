@@ -61,9 +61,10 @@ export function BillingViewModel() {
             );
 
             if (status === 201 && response?.success) {
-                setBilling(response.data);
+                const billingData = Array.isArray(response.data) ? response.data : [response.data];
+                setBilling(billingData);
                 setSuccessMessage("Estimate created successfully!");
-                return { success: true, data: response.data };
+                return { success: true, data: billingData };
             } else {
                 throw new Error(errorLogs?.message || response?.message || "Failed to create billing");
             }
