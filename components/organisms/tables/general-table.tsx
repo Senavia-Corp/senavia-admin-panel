@@ -26,6 +26,8 @@ import {
 import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
 import { FilterProject } from "@/components/organisms/tables/filter/filter-project";
 import { PortfolioTableRow } from "./row/portfolio-table-row";
+import { EmptyState } from "@/components/atoms/empty-state";
+import { ErrorState } from "@/components/atoms/error-state";
 
 {
   /* HANDLERS */
@@ -48,7 +50,16 @@ export function GeneralTable(
   SubTitleDescription: string,
   TableTitle: string[],
   data: any[],
-  handlers: GeneralTableHandlers
+  handlers: GeneralTableHandlers,
+  options?: {
+    isLoading?: boolean;
+    hasError?: boolean;
+    onRetry?: () => void;
+    emptyStateTitle?: string;
+    emptyStateDescription?: string;
+    skeletonComponent?: React.ComponentType;
+    skeletonCount?: number;
+  }
 ) {
   const {
     onCreate,
@@ -60,123 +71,135 @@ export function GeneralTable(
     onEdit,
   } = handlers;
 
-  const tableRows = data.filter(item => item && item.id).map((item) => {
-    switch (Page.toLowerCase()) {
-      case "roles-page":
-        return (
-          <RoleTableRow
-            key={item.id}
-            role={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "permissions-page":
-        return (
-          <PermissionTableRow
-            key={item.id}
-            permission={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "billing-page":
-        return (
-          <BillingTableRow
-            key={item.id}
-            billing={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "users-page":
-        return (
-          <UserTableRow
-            key={item.id}
-            user={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onEdit={onEdit ? () => onEdit(item) : undefined}
-          />
-        );
-      case "contracts-page":
-        return (
-          <ContractTableRow
-            key={item.id}
-            contract={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onEdit={onEdit ? () => onEdit(item) : undefined}
-          />
-        );
-      case "blogs-page":
-        return (
-          <BlogTableRow
-            key={item.id}
-            blog={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "testimonial-videos-page":
-        return (
-          <TestimonialVideoTableRow
-            key={item.id}
-            item={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "leads-page":
-        return (
-          <LeadTableRow
-            key={item.id}
-            lead={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "projects-page":
-        return (
-          <ProjectTableRow
-            key={item.id}
-            project={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onViewTasks={() => onViewTasks?.(item)}
-          />
-        );
-      case "tickets-page":
-        return (
-          <SupportTableRow
-            key={item.id}
-            ticket={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "portfolio-page":
-        return (
-          <PortfolioTableRow
-            key={item.id}
-            product={item}
-            onView={() => onView?.(item)}
-            onDelete={() => onDelete?.(item)}            
-          />
-        );
-      case "costs-page":
-        return (
-          <CostTableRow
-            key={item.id}
-            cost={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      default:
-        return null;
-    }
-  });
+  const {
+    isLoading = false,
+    hasError = false,
+    onRetry,
+    emptyStateTitle = "No data available",
+    emptyStateDescription = "No records found to display.",
+    skeletonComponent: SkeletonComponent,
+    skeletonCount = 5,
+  } = options || {};
+
+  const tableRows = data
+    .filter((item) => item && item.id)
+    .map((item) => {
+      switch (Page.toLowerCase()) {
+        case "roles-page":
+          return (
+            <RoleTableRow
+              key={item.id}
+              role={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "permissions-page":
+          return (
+            <PermissionTableRow
+              key={item.id}
+              permission={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "billing-page":
+          return (
+            <BillingTableRow
+              key={item.id}
+              billing={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "users-page":
+          return (
+            <UserTableRow
+              key={item.id}
+              user={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onEdit={onEdit ? () => onEdit(item) : undefined}
+            />
+          );
+        case "contracts-page":
+          return (
+            <ContractTableRow
+              key={item.id}
+              contract={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onEdit={onEdit ? () => onEdit(item) : undefined}
+            />
+          );
+        case "blogs-page":
+          return (
+            <BlogTableRow
+              key={item.id}
+              blog={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "testimonial-videos-page":
+          return (
+            <TestimonialVideoTableRow
+              key={item.id}
+              item={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "leads-page":
+          return (
+            <LeadTableRow
+              key={item.id}
+              lead={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "projects-page":
+          return (
+            <ProjectTableRow
+              key={item.id}
+              project={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onViewTasks={() => onViewTasks?.(item)}
+            />
+          );
+        case "tickets-page":
+          return (
+            <SupportTableRow
+              key={item.id}
+              ticket={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "portfolio-page":
+          return (
+            <PortfolioTableRow
+              key={item.id}
+              product={item}
+              onView={() => onView?.(item)}
+              onDelete={() => onDelete?.(item)}
+            />
+          );
+        case "costs-page":
+          return (
+            <CostTableRow
+              key={item.id}
+              cost={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        default:
+          return null;
+      }
+    });
 
   const filterComponent = (() => {
     switch (Page.toLowerCase()) {
@@ -195,7 +218,7 @@ export function GeneralTable(
       case "projects-page":
         return <FilterProject onFilter={onFilter} />;
       case "costs-page":
-        // return <FilterCost onFilter={onFilter} />;
+      // return <FilterCost onFilter={onFilter} />;
       default:
         return null;
     }
@@ -262,7 +285,40 @@ export function GeneralTable(
               </thead>
               <tbody className="bg-white relative z-0">
                 {/* PAGES AND CORRESPONDING ROWS */}
-                {tableRows}
+                {isLoading ? (
+                  SkeletonComponent ? (
+                    Array.from({ length: skeletonCount }).map((_, index) => (
+                      <SkeletonComponent key={index} />
+                    ))
+                  ) : (
+                    // For other pages, show a simple loading message
+                    <tr>
+                      <td
+                        colSpan={TableTitle.length}
+                        className="text-center py-8 text-gray-500"
+                      >
+                        Loading...
+                      </td>
+                    </tr>
+                  )
+                ) : hasError ? (
+                  <tr>
+                    <td colSpan={TableTitle.length} className="p-0">
+                      <ErrorState onRetry={onRetry} />
+                    </td>
+                  </tr>
+                ) : data.length === 0 ? (
+                  <tr>
+                    <td colSpan={TableTitle.length} className="p-0">
+                      <EmptyState
+                        title={emptyStateTitle}
+                        description={emptyStateDescription}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  tableRows
+                )}
               </tbody>
             </table>
           </div>

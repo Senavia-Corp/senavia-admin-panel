@@ -10,6 +10,7 @@ import { ContractDetails } from "../organisms/contracs/contract-details";
 import EditContractForm from "../organisms/contracs/edit-contract-form";
 import { CreateContractForm } from "../organisms/contracs/create-contract-form";
 import { useToast } from "@/hooks/use-toast";
+import { ContractTableRowSkeleton } from "../atoms/contract-table-row-skeleton";
 
 export function ContractsPage() {
   const { toast } = useToast();
@@ -24,6 +25,8 @@ export function ContractsPage() {
   );
   const [showEditPage, setShowEditPage] = useState(false);
   const [showCreatePage, setShowCreatePage] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     loadContracts();
@@ -31,15 +34,20 @@ export function ContractsPage() {
 
   const loadContracts = async () => {
     try {
+      setIsLoading(true);
+      setHasError(false);
       const contractsData = await ContractManagementService.getContracts();
       setContracts(contractsData);
     } catch (error) {
       console.error("Error loading contracts:", error);
+      setHasError(true);
       toast({
         title: "Error",
         description: "Failed to load contracts. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,7 +188,17 @@ export function ContractsPage() {
                 "View and manage all contracts in the system",
                 ["Contract ID", "Title", "Client", "Status", "Actions"],
                 contracts,
-                handlers
+                handlers,
+                {
+                  isLoading,
+                  hasError,
+                  onRetry: loadContracts,
+                  emptyStateTitle: "No contracts registered",
+                  emptyStateDescription:
+                    "No contracts have been created in the system yet. Click the '+' button to create the first contract.",
+                  skeletonComponent: ContractTableRowSkeleton,
+                  skeletonCount: 5,
+                }
               )}
             </div>
           </div>
