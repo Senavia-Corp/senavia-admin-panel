@@ -99,6 +99,7 @@ export const endpoints = {
   },
   contract: {
     getAllContracts: `${API}/contract`,
+    deleteContract: (id: number) => `${API}/contract?id=${id}`,
   },
 };
 

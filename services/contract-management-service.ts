@@ -60,8 +60,32 @@ export class ContractManagementService {
   }
 
   static async deleteContract(id: string): Promise<boolean> {
-    // Not implemented against backend yet
-    throw new Error("deleteContract not implemented against the backend yet.");
+    try {
+      const response = await Axios.delete(
+        endpoints.contract.deleteContract(Number(id)),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error deleting contract");
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error("Error deleting contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to delete contract. Please try again."
+      );
+    }
   }
 
   static getContractStatuses(): ContractStatus[] {
