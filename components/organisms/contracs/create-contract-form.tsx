@@ -62,7 +62,7 @@ export function CreateContractForm({
   };
 
   const handleCreate = async (data: CreateContractData) => {
-    /*  try {
+    try {
       const backendResponse = await ContractManagementService.createContract(
         data
       );
@@ -80,10 +80,7 @@ export function CreateContractForm({
           error.message || "Failed to create contract. Please try again.",
         variant: "destructive",
       });
-    } */
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    console.log("data", data);
+    }
   };
 
   return (

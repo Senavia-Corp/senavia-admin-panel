@@ -83,6 +83,8 @@ export function ContractsPage() {
   const handleCreateSuccess = () => {
     // Navigate back to the contracts list
     setShowCreatePage(false);
+    // Reload contracts to ensure data is up to date
+    loadContracts();
   };
 
   const handleFilterChange = (filter: string) => {

@@ -47,8 +47,33 @@ export class ContractManagementService {
   static async createContract(
     contractData: CreateContractData
   ): Promise<Contract> {
-    // Not implemented against backend yet
-    throw new Error("createContract not implemented against the backend yet.");
+    try {
+      const response = await Axios.post(
+        endpoints.contract.createContract,
+        contractData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error creating contract");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error creating contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to create contract. Please try again."
+      );
+    }
   }
 
   static async updateContract(
