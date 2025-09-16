@@ -7,8 +7,11 @@ import { ContractManagementService } from "@/services/contract-management-servic
 import type { Contract } from "@/types/contract-management";
 import { DetailTabs } from "../molecules/detail-tabs";
 import { ContractDetails } from "../organisms/contracs/contract-details";
+import { CreateContractForm } from "../organisms/contracs/create-contract-form";
+import { useToast } from "@/hooks/use-toast";
 
 export function ContractsPage() {
+  const { toast } = useToast();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(
     null
@@ -19,6 +22,7 @@ export function ContractsPage() {
     null
   );
   const [showEditPage, setShowEditPage] = useState(false);
+  const [showCreatePage, setShowCreatePage] = useState(false);
 
   useEffect(() => {
     loadContracts();
@@ -33,6 +37,11 @@ export function ContractsPage() {
       setContracts(contractsData);
     } catch (error) {
       console.error("Error loading contracts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load contracts. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -41,8 +50,14 @@ export function ContractsPage() {
       await ContractManagementService.deleteContract(contract.id);
       setContractToDelete(null);
       loadContracts();
+      toast({ title: "Success", description: "Contract deleted successfully" });
     } catch (error) {
       console.error("Error deleting contract:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete contract. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -51,8 +66,17 @@ export function ContractsPage() {
   };
 
   const handleCreateContract = () => {
-    console.log("Create new contract");
-    // TODO: Implement contract creation
+    setShowCreatePage(true);
+  };
+
+  const handleContractCreated = (newContract: Contract) => {
+    // Add the new contract to the current list
+    setContracts((prevContracts) => [newContract, ...prevContracts]);
+  };
+
+  const handleCreateSuccess = () => {
+    // Navigate back to the contracts list
+    setShowCreatePage(false);
   };
 
   const handleFilterChange = (filter: string) => {
@@ -61,6 +85,24 @@ export function ContractsPage() {
       setStatusFilter(value === "all" ? "" : value);
     }
   };
+
+  if (showCreatePage) {
+    return (
+      <div className="min-h-screen w-full bg-white">
+        <div className="p-6">
+          <DetailTabs
+            title="Create Contract"
+            onBack={() => setShowCreatePage(false)}
+          >
+            <CreateContractForm
+              onContractCreated={handleContractCreated}
+              onSuccess={handleCreateSuccess}
+            />
+          </DetailTabs>
+        </div>
+      </div>
+    );
+  }
 
   if (selectedContract) {
     return (

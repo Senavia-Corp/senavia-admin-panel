@@ -94,6 +94,9 @@ export const endpoints = {
     deleteCost: (id: number) => `${API}/cost?id=${id}`,
     updateCost: (id: number) => `${API}/cost?id=${id}`,
   },
+  clause: {
+    getClauses: `${API}/clause`,
+  },
 };
 
 // Header configurations
