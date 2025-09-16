@@ -139,12 +139,12 @@ export function ContractForm({
               State *
             </label>
             <Controller
-              name="status"
+              name="state"
               control={control}
               render={({ field }) => (
                 <select
                   className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${
-                    errors.status ? "border-red-500" : "border-gray-300"
+                    errors.state ? "border-red-500" : "border-gray-300"
                   } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   disabled={isSubmitting}
                   value={field.value || ""}
@@ -161,9 +161,9 @@ export function ContractForm({
                 </select>
               )}
             />
-            {errors.status && (
+            {errors.state && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.status.message as string}
+                {errors.state.message as string}
               </p>
             )}
 
@@ -200,14 +200,14 @@ export function ContractForm({
             <input
               type="date"
               className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${
-                errors.deadlineToSign ? "border-red-500" : "border-gray-300"
+                errors.signedDate ? "border-red-500" : "border-gray-300"
               } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               disabled={isSubmitting}
-              {...register("deadlineToSign")}
+              {...register("signedDate")}
             />
-            {errors.deadlineToSign && (
+            {errors.signedDate && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.deadlineToSign.message as string}
+                {errors.signedDate.message as string}
               </p>
             )}
 
@@ -217,17 +217,17 @@ export function ContractForm({
               control={control}
               render={({ field }) => (
                 <GenericDropdown
-                  value={field.value}
+                  value={(field.value ?? undefined) as number | undefined}
                   onChange={(value) => {
                     field.onChange(value);
                     const selectedUser = userOptions.find(
                       (u) => u.id === value
                     );
                     if (selectedUser) {
-                      setValue("clientEmail", selectedUser.subtitle || "");
-                      setValue("clientName", selectedUser.name || "");
-                      setValue("clientAddress", selectedUser.address || "");
-                      setValue("clientPhone", selectedUser.phone || "");
+                      setValue("companyEmail", selectedUser.subtitle || "");
+                      setValue("recipientName", selectedUser.name || "");
+                      setValue("companyAdd", selectedUser.address || "");
+                      setValue("companyPhone", selectedUser.phone || "");
                     }
                   }}
                   placeholder="Select a user..."
@@ -237,6 +237,7 @@ export function ContractForm({
                   isLoading={isUsersLoading}
                   error={usersError}
                   loadOptions={userLoadOptions}
+                  hasError={Boolean(errors.userId)}
                   searchFields={["name", "subtitle"]}
                   displayField="name"
                   subtitleField="subtitle"
@@ -266,6 +267,7 @@ export function ContractForm({
                   isLoading={isLeadsLoading}
                   error={leadsError}
                   loadOptions={leadLoadOptions}
+                  hasError={Boolean(errors.leadId)}
                   searchFields={["name", "subtitle"]}
                   displayField="name"
                   subtitleField="subtitle"
@@ -291,15 +293,15 @@ export function ContractForm({
             <input
               type="email"
               className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.clientEmail ? "border-red-500" : "border-input"
+                errors.companyEmail ? "border-red-500" : "border-input"
               } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client email"
               disabled={isSubmitting}
-              {...register("clientEmail")}
+              {...register("companyEmail")}
             />
-            {errors.clientEmail && (
+            {errors.companyEmail && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.clientEmail.message as string}
+                {errors.companyEmail.message as string}
               </p>
             )}
 
@@ -309,15 +311,15 @@ export function ContractForm({
             <input
               type="text"
               className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.clientAddress ? "border-red-500" : "border-input"
+                errors.companyAdd ? "border-red-500" : "border-input"
               } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client address"
               disabled={isSubmitting}
-              {...register("clientAddress")}
+              {...register("companyAdd")}
             />
-            {errors.clientAddress && (
+            {errors.companyAdd && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.clientAddress.message as string}
+                {errors.companyAdd.message as string}
               </p>
             )}
 
@@ -328,15 +330,15 @@ export function ContractForm({
               type="tel"
               inputMode="tel"
               className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.clientPhone ? "border-red-500" : "border-input"
+                errors.companyPhone ? "border-red-500" : "border-input"
               } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client phone"
               disabled={isSubmitting}
-              {...register("clientPhone")}
+              {...register("companyPhone")}
             />
-            {errors.clientPhone && (
+            {errors.companyPhone && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.clientPhone.message as string}
+                {errors.companyPhone.message as string}
               </p>
             )}
 
@@ -376,15 +378,15 @@ export function ContractForm({
             <input
               type="text"
               className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.clientName ? "border-red-500" : "border-input"
+                errors.recipientName ? "border-red-500" : "border-input"
               } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client name"
               disabled={isSubmitting}
-              {...register("clientName")}
+              {...register("recipientName")}
             />
-            {errors.clientName && (
+            {errors.recipientName && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.clientName.message as string}
+                {errors.recipientName.message as string}
               </p>
             )}
 
@@ -397,7 +399,7 @@ export function ContractForm({
                 isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
               disabled={isSubmitting}
-              {...register("clientSignDate")}
+              {...register("recipientSignDate")}
             />
           </div>
         </div>

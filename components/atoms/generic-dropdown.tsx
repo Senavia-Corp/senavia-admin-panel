@@ -21,6 +21,7 @@ interface GenericDropdownProps {
   displayField?: string; // Field to display as main text (default: 'name')
   subtitleField?: string; // Field to display as subtitle (default: 'subtitle')
   loadOptions?: () => Promise<DropdownOption[]>; // Lazy loader, similar a ClauseMultiSelect
+  hasError?: boolean; // highlight input when form error
 }
 
 export function GenericDropdown({
@@ -36,6 +37,7 @@ export function GenericDropdown({
   displayField = "name",
   subtitleField = "subtitle",
   loadOptions,
+  hasError = false,
 }: GenericDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState<DropdownOption[]>([]);
@@ -172,7 +174,9 @@ export function GenericDropdown({
                 : "hover:border-gray-400"
             }
             ${
-              isOpen
+              hasError
+                ? "border-red-500 ring-1 ring-red-500"
+                : isOpen
                 ? "border-blue-500 ring-1 ring-blue-500"
                 : "border-gray-300"
             }

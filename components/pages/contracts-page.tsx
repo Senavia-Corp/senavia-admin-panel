@@ -31,10 +31,7 @@ export function ContractsPage() {
 
   const loadContracts = async () => {
     try {
-      const contractsData = await ContractManagementService.getContracts(
-        searchTerm,
-        statusFilter
-      );
+      const contractsData = await ContractManagementService.getContracts();
       setContracts(contractsData);
     } catch (error) {
       console.error("Error loading contracts:", error);
@@ -48,7 +45,7 @@ export function ContractsPage() {
 
   const handleDeleteContract = async (contract: Contract) => {
     try {
-      await ContractManagementService.deleteContract(contract.id);
+      await ContractManagementService.deleteContract(String(contract.id));
       setContractToDelete(null);
       loadContracts();
       toast({ title: "Success", description: "Contract deleted successfully" });
@@ -181,14 +178,7 @@ export function ContractsPage() {
                 "Create new contracts and agreements with clients",
                 "All Contracts",
                 "View and manage all contracts in the system",
-                [
-                  "Contract ID",
-                  "Title",
-                  "Client",
-                  "Status",
-                  "Value",
-                  "Actions",
-                ],
+                ["Contract ID", "Title", "Client", "Status", "Actions"],
                 contracts,
                 handlers
               )}

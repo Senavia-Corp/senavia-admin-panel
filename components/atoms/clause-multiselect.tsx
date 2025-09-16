@@ -1,7 +1,14 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { ContractManagementService } from "@/services/contract-management-service";
-import type { ContractClause } from "@/types/contract-management";
+// Clause type from API response
+type Clause = {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 interface ClauseMultiSelectProps {
   value: number[];
@@ -18,7 +25,7 @@ export function ClauseMultiSelect({
 }: ClauseMultiSelectProps) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [clauses, setClauses] = useState<ContractClause[]>([]);
+  const [clauses, setClauses] = useState<Clause[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);

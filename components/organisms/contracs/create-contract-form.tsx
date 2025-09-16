@@ -27,18 +27,18 @@ export function CreateContractForm({
   const initialValues: CreateContractFormValues = {
     title: "",
     content: "",
-    status: undefined as unknown as ContractStatus,
+    state: undefined as unknown as ContractStatus,
     clauses: [],
-    deadlineToSign: "",
+    signedDate: "",
     userId: undefined as unknown as number,
     leadId: undefined as unknown as number,
-    clientEmail: "",
-    clientAddress: "",
-    clientPhone: "",
+    companyEmail: "",
+    companyAdd: "",
+    companyPhone: "",
     ownerName: "",
     ownerSignDate: "",
-    clientName: "",
-    clientSignDate: "",
+    recipientName: "",
+    recipientSignDate: "",
   };
 
   const loadUserOptions = async () => {

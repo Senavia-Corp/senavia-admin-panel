@@ -27,18 +27,18 @@ export function EditContractForm({
   const initialValues: CreateContractFormValues = {
     title: contract.title,
     content: contract.content,
-    status: contract.status,
-    clauses: contract.clauses?.map((c) => c.id) ?? [],
-    deadlineToSign: contract.deadlineToSign,
-    userId: contract.userId,
+    state: contract.state,
+    clauses: contract.clauses?.map((c) => c.clauseId) ?? [],
+    signedDate: contract.signedDate || "",
+    userId: contract.userId ?? undefined,
     leadId: contract.leadId,
-    clientEmail: contract.clientEmail,
-    clientAddress: contract.clientAddress,
-    clientPhone: contract.clientPhone,
+    companyEmail: contract.companyEmail,
+    companyAdd: contract.companyAdd,
+    companyPhone: contract.companyPhone,
     ownerName: contract.ownerName,
-    ownerSignDate: contract.ownerSignDate,
-    clientName: contract.clientName,
-    clientSignDate: contract.clientSignDate,
+    ownerSignDate: contract.ownerSignDate || "",
+    recipientName: contract.recipientName,
+    recipientSignDate: contract.recipientSignDate || "",
   };
 
   const loadUserOptions = async () => {
@@ -65,7 +65,7 @@ export function EditContractForm({
     try {
       // Map back to Partial<Contract>; clauses will be mapped by service if needed
       const updated = await ContractManagementService.updateContract(
-        contract.id,
+        String(contract.id),
         values as unknown as Partial<Contract>
       );
       if (!updated) throw new Error("Contract not found");

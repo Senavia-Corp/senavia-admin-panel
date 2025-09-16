@@ -97,6 +97,9 @@ export const endpoints = {
   clause: {
     getClauses: `${API}/clause`,
   },
+  contract: {
+    getAllContracts: `${API}/contract`,
+  },
 };
 
 // Header configurations

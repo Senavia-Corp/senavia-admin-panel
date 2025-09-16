@@ -1,24 +1,3 @@
-export interface Contract {
-  id: string;
-  title: string;
-  content: string;
-  status: ContractStatus;
-  clauses: ContractClause[];
-  deadlineToSign: string;
-  userId?: number;
-  leadId: number;
-  // Sign Information
-  clientEmail: string;
-  clientAddress: string;
-  clientPhone: string;
-  ownerName: string;
-  ownerSignDate?: string;
-  clientName: string;
-  clientSignDate?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export type ContractStatus =
   | "DRAFT"
   | "SENT"
@@ -27,29 +6,73 @@ export type ContractStatus =
   | "EXPIRED"
   | "TERMINATED";
 
-export interface ContractClause {
+export interface ContractClauseLink {
+  contractId: number;
+  clauseId: number;
+  clause: {
+    id: number;
+    title: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+export interface LeadSummary {
+  id: number;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  description: string;
+  state: string;
+  endDate: string;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  serviceId: number;
+  startDate: string;
+  workTeamId: number;
+  clientAddress: string;
+}
+
+export interface Contract {
   id: number;
   title: string;
-  description: string;
+  state: ContractStatus;
+  signedDate: string | null;
+  companyEmail: string;
+  companyAdd: string;
+  companyPhone: string;
+  content: string;
+  ownerName: string;
+  ownerSignDate: string | null;
+  recipientName: string;
+  recipientSignDate: string | null;
+  contractUrl?: string | null;
+  userId: number | null;
+  leadId: number;
+  createdAt: string;
+  updatedAt: string;
+  user: any | null;
+  lead: LeadSummary | null;
+  clauses: ContractClauseLink[];
 }
 
 export interface CreateContractData {
   title: string;
   content: string;
-  status: ContractStatus;
+  state: ContractStatus;
   clauses: number[];
-  deadlineToSign: string;
-  userId?: number;
+  signedDate: string; // UI label: Deadline to Sign
+  userId?: number | null;
   leadId: number;
-  // Sign Information
-  clientEmail: string;
-  clientAddress: string;
-  clientPhone: string;
+  companyEmail: string;
+  companyAdd: string;
+  companyPhone: string;
   ownerName: string;
-  ownerSignDate?: string;
-  clientName: string;
-  clientSignDate?: string;
+  ownerSignDate?: string | null;
+  recipientName: string;
+  recipientSignDate?: string | null;
 }
 
-// Reuse the same shape for the form values to avoid duplication
 export type CreateContractFormValues = CreateContractData;
