@@ -12,10 +12,11 @@ interface DropdownOption {
   address?: string;
 }
 
-export function useUserDropdownData() {
+export function useUserDropdownData(autoLoad: boolean = true) {
   const [users, setUsers] = useState<DropdownOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const loadUsers = async () => {
     if (isLoading) return;
@@ -33,6 +34,7 @@ export function useUserDropdownData() {
         address: user.address,
       }));
       setUsers(userOptions);
+      setHasLoaded(true);
     } catch (err) {
       setError("Error loading users");
       console.error("Error fetching users:", err);
@@ -42,21 +44,25 @@ export function useUserDropdownData() {
   };
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    if (autoLoad) {
+      loadUsers();
+    }
+  }, [autoLoad]);
 
   return {
     options: users,
     isLoading,
     error,
     refetch: loadUsers,
+    hasLoaded,
   };
 }
 
-export function useLeadDropdownData() {
+export function useLeadDropdownData(autoLoad: boolean = true) {
   const [leads, setLeads] = useState<DropdownOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const loadLeads = async () => {
     if (isLoading) return;
@@ -72,6 +78,7 @@ export function useLeadDropdownData() {
         subtitle: lead.description,
       }));
       setLeads(leadOptions);
+      setHasLoaded(true);
     } catch (err) {
       setError("Error loading leads");
       console.error("Error fetching leads:", err);
@@ -81,13 +88,16 @@ export function useLeadDropdownData() {
   };
 
   useEffect(() => {
-    loadLeads();
-  }, []);
+    if (autoLoad) {
+      loadLeads();
+    }
+  }, [autoLoad]);
 
   return {
     options: leads,
     isLoading,
     error,
     refetch: loadLeads,
+    hasLoaded,
   };
 }

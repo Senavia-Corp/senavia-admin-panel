@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { ContractManagementService } from "@/services/contract-management-service";
 import type { ContractClause } from "@/types/contract-management";
@@ -22,10 +22,11 @@ export function ClauseMultiSelect({
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [autoLoaded, setAutoLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Función para cargar cláusulas desde el servicio de contratos
-  const loadClauses = async () => {
+  const loadClauses = useCallback(async () => {
     if (hasLoaded || isLoading) return;
 
     setIsLoading(true);
@@ -43,14 +44,16 @@ export function ClauseMultiSelect({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [hasLoaded, isLoading]);
 
   // Load clauses immediately if we have values
   useEffect(() => {
-    if (value && value.length > 0 && !hasLoaded && !isLoading) {
-      loadClauses();
+    // Auto-load once if there are preselected values
+    if (!autoLoaded && value && value.length > 0 && !hasLoaded && !isLoading) {
+      setAutoLoaded(true);
+      void loadClauses();
     }
-  }, [value, hasLoaded, isLoading, loadClauses]);
+  }, [autoLoaded, value, hasLoaded, isLoading, loadClauses]);
 
   // Cierra el dropdown si se hace click fuera
   React.useEffect(() => {
@@ -81,7 +84,7 @@ export function ClauseMultiSelect({
         onClick={() => {
           if (disabled) return;
           if (!open) {
-            loadClauses();
+            void loadClauses();
           }
           setOpen(true);
         }}
@@ -120,7 +123,7 @@ export function ClauseMultiSelect({
           onFocus={() => {
             if (disabled) return;
             if (!open) {
-              loadClauses();
+              void loadClauses();
             }
             setOpen(true);
           }}

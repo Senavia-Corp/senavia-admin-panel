@@ -14,12 +14,13 @@ interface GenericDropdownProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  options: DropdownOption[];
+  options?: DropdownOption[];
   isLoading?: boolean;
   error?: string | null;
   searchFields?: string[]; // Fields to search in (default: ['name'])
   displayField?: string; // Field to display as main text (default: 'name')
   subtitleField?: string; // Field to display as subtitle (default: 'subtitle')
+  loadOptions?: () => Promise<DropdownOption[]>; // Lazy loader, similar a ClauseMultiSelect
 }
 
 export function GenericDropdown({
@@ -34,27 +35,55 @@ export function GenericDropdown({
   searchFields = ["name"],
   displayField = "name",
   subtitleField = "subtitle",
+  loadOptions,
 }: GenericDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState<DropdownOption[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [internalOptions, setInternalOptions] = useState<DropdownOption[]>([]);
+  const [internalLoading, setInternalLoading] = useState(false);
+  const [internalError, setInternalError] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [autoLoaded, setAutoLoaded] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load options immediately if we have a value
-  useEffect(() => {
-    if (value && !hasLoaded && !isLoading) {
+  const effectiveOptions = loadOptions ? internalOptions : options;
+  const effectiveLoading = loadOptions ? internalLoading : isLoading;
+  const effectiveError = loadOptions ? internalError : error;
+
+  const tryLoadOptions = async () => {
+    if (!loadOptions) return;
+    if (internalLoading) return;
+    setInternalLoading(true);
+    setInternalError(null);
+    try {
+      const fetched = await loadOptions();
+      setInternalOptions(fetched || []);
       setHasLoaded(true);
+    } catch (e) {
+      setInternalError("Error loading options");
+    } finally {
+      setInternalLoading(false);
     }
-  }, [value, hasLoaded, isLoading]);
+  };
+
+  // Auto-flag when there is a preselected value; do not fetch here to avoid unwanted retries
+  useEffect(() => {
+    if (!autoLoaded && value && !hasLoaded) {
+      setAutoLoaded(true);
+      if (loadOptions) {
+        void tryLoadOptions();
+      }
+    }
+  }, [autoLoaded, value, hasLoaded, loadOptions]);
 
   // Filter options based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredOptions(options);
+      setFilteredOptions(effectiveOptions);
     } else {
-      const filtered = options.filter((option) =>
+      const filtered = effectiveOptions.filter((option) =>
         searchFields.some((field) =>
           option[field]
             ?.toString()
@@ -64,7 +93,7 @@ export function GenericDropdown({
       );
       setFilteredOptions(filtered);
     }
-  }, [searchTerm, options, searchFields]);
+  }, [searchTerm, effectiveOptions, searchFields]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -85,7 +114,7 @@ export function GenericDropdown({
   }, []);
 
   // Find the selected option
-  const selectedOption = options.find((option) => option.id === value);
+  const selectedOption = effectiveOptions.find((option) => option.id === value);
 
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,6 +130,11 @@ export function GenericDropdown({
   const handleInputFocus = () => {
     if (!isOpen) {
       setIsOpen(true);
+      if (loadOptions) {
+        if (!hasLoaded || internalError) {
+          void tryLoadOptions();
+        }
+      }
     }
   };
 
@@ -155,13 +189,15 @@ export function GenericDropdown({
       {/* Dropdown menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-          {isLoading ? (
+          {effectiveLoading ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
               <span className="text-sm text-gray-500">Loading options...</span>
             </div>
-          ) : error ? (
-            <div className="px-3 py-2 text-sm text-red-600">{error}</div>
+          ) : effectiveError ? (
+            <div className="px-3 py-2 text-sm text-red-600">
+              {effectiveError}
+            </div>
           ) : filteredOptions.length === 0 ? (
             <div className="px-3 py-2 text-sm text-gray-500">
               {searchTerm

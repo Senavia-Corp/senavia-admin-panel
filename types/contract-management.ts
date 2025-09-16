@@ -5,16 +5,16 @@ export interface Contract {
   status: ContractStatus;
   clauses: ContractClause[];
   deadlineToSign: string;
-  userId: number;
+  userId?: number;
   leadId: number;
   // Sign Information
   clientEmail: string;
   clientAddress: string;
   clientPhone: string;
   ownerName: string;
-  ownerSignDate: string;
+  ownerSignDate?: string;
   clientName: string;
-  clientSignDate: string;
+  clientSignDate?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,16 +39,16 @@ export interface CreateContractData {
   status: ContractStatus;
   clauses: number[];
   deadlineToSign: string;
-  userId: number;
+  userId?: number;
   leadId: number;
   // Sign Information
   clientEmail: string;
   clientAddress: string;
   clientPhone: string;
   ownerName: string;
-  ownerSignDate: string;
+  ownerSignDate?: string;
   clientName: string;
-  clientSignDate: string;
+  clientSignDate?: string;
 }
 
 // Reuse the same shape for the form values to avoid duplication

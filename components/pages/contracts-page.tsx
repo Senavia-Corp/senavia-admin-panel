@@ -7,6 +7,7 @@ import { ContractManagementService } from "@/services/contract-management-servic
 import type { Contract } from "@/types/contract-management";
 import { DetailTabs } from "../molecules/detail-tabs";
 import { ContractDetails } from "../organisms/contracs/contract-details";
+import EditContractForm from "../organisms/contracs/edit-contract-form";
 import { CreateContractForm } from "../organisms/contracs/create-contract-form";
 import { useToast } from "@/hooks/use-toast";
 
@@ -104,7 +105,7 @@ export function ContractsPage() {
     );
   }
 
-  if (selectedContract) {
+  if (selectedContract && !showEditPage) {
     return (
       <div className="min-h-screen w-full bg-white">
         <div className="p-6">
@@ -125,9 +126,22 @@ export function ContractsPage() {
         <div className="p-6">
           <DetailTabs
             title="Edit Contract"
-            onBack={() => setShowEditPage(false)}
+            onBack={() => {
+              setShowEditPage(false);
+              setSelectedContract(null);
+            }}
           >
-            <ContractDetails />
+            {selectedContract && (
+              <EditContractForm
+                contract={selectedContract}
+                onUpdated={(updated) => {
+                  // Update list optimistically
+                  setContracts((prev) =>
+                    prev.map((c) => (c.id === updated.id ? updated : c))
+                  );
+                }}
+              />
+            )}
           </DetailTabs>
         </div>
       </div>
@@ -138,7 +152,10 @@ export function ContractsPage() {
   const handlers = {
     onCreate: handleCreateContract,
     onView: handleViewContract,
-    onEdit: () => setShowEditPage(true),
+    onEdit: (contract: Contract) => {
+      setSelectedContract(contract);
+      setShowEditPage(true);
+    },
     onDelete: setContractToDelete,
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,

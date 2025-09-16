@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import type {
   Contract,
-  ContractStatus,
   CreateContractFormValues,
   CreateContractData,
 } from "@/types/contract-management";
@@ -11,34 +10,35 @@ import ContractForm from "@/components/organisms/contracs/contract-form";
 import { UserManagementService } from "@/services/user-management-service";
 import { LeadManagementService } from "@/services/lead-management-service";
 
-interface CreateContractFormProps {
-  onContractCreated?: (contract: Contract) => void;
-  onSuccess?: () => void;
+interface EditContractFormProps {
+  contract: Contract;
+  onUpdated?: (contract: Contract) => void;
 }
 
-export function CreateContractForm({
-  onContractCreated,
-  onSuccess,
-}: CreateContractFormProps = {}) {
+export function EditContractForm({
+  contract,
+  onUpdated,
+}: EditContractFormProps) {
   const { toast } = useToast();
   // Dropdown data will be lazy-loaded by GenericDropdown via loadOptions
   const contractStatuses = ContractManagementService.getContractStatuses();
+  const [isDirty, setIsDirty] = useState(false);
 
   const initialValues: CreateContractFormValues = {
-    title: "",
-    content: "",
-    status: undefined as unknown as ContractStatus,
-    clauses: [],
-    deadlineToSign: "",
-    userId: undefined as unknown as number,
-    leadId: undefined as unknown as number,
-    clientEmail: "",
-    clientAddress: "",
-    clientPhone: "",
-    ownerName: "",
-    ownerSignDate: "",
-    clientName: "",
-    clientSignDate: "",
+    title: contract.title,
+    content: contract.content,
+    status: contract.status,
+    clauses: contract.clauses?.map((c) => c.id) ?? [],
+    deadlineToSign: contract.deadlineToSign,
+    userId: contract.userId,
+    leadId: contract.leadId,
+    clientEmail: contract.clientEmail,
+    clientAddress: contract.clientAddress,
+    clientPhone: contract.clientPhone,
+    ownerName: contract.ownerName,
+    ownerSignDate: contract.ownerSignDate,
+    clientName: contract.clientName,
+    clientSignDate: contract.clientSignDate,
   };
 
   const loadUserOptions = async () => {
@@ -61,29 +61,26 @@ export function CreateContractForm({
     }));
   };
 
-  const handleCreate = async (data: CreateContractData) => {
-    /*  try {
-      const backendResponse = await ContractManagementService.createContract(
-        data
+  const handleUpdate = async (values: CreateContractData) => {
+    try {
+      // Map back to Partial<Contract>; clauses will be mapped by service if needed
+      const updated = await ContractManagementService.updateContract(
+        contract.id,
+        values as unknown as Partial<Contract>
       );
-      onContractCreated?.(backendResponse);
+      if (!updated) throw new Error("Contract not found");
+      onUpdated?.(updated);
       toast({
         title: "Success",
-        description: "Contract created successfully!",
+        description: "Contract updated successfully!",
       });
-      onSuccess?.();
     } catch (error: any) {
-      console.error("Error creating contract:", error);
       toast({
         title: "Error",
-        description:
-          error.message || "Failed to create contract. Please try again.",
+        description: error.message || "Failed to update contract",
         variant: "destructive",
       });
-    } */
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    console.log("data", data);
+    }
   };
 
   return (
@@ -91,11 +88,11 @@ export function CreateContractForm({
       className={`w-full border-[20px] border-[#04081E] rounded-lg p-4 md:p-[60px] lg:p-[111px] bg-white `}
     >
       <ContractForm
-        mode="create"
+        mode="edit"
         initialValues={initialValues}
-        onSubmit={handleCreate}
-        submitLabel="Create Contract"
-        onDirtyChange={() => {}}
+        onSubmit={handleUpdate}
+        submitLabel={isDirty ? "Save Changes" : "Save Changes"}
+        onDirtyChange={setIsDirty}
         userOptions={[]}
         leadOptions={[]}
         isUsersLoading={false}
@@ -109,3 +106,5 @@ export function CreateContractForm({
     </div>
   );
 }
+
+export default EditContractForm;
