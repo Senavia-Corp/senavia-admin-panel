@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DropdownOption {
   id: number;
@@ -22,6 +23,7 @@ interface GenericDropdownProps {
   subtitleField?: string; // Field to display as subtitle (default: 'subtitle')
   loadOptions?: () => Promise<DropdownOption[]>; // Lazy loader, similar a ClauseMultiSelect
   hasError?: boolean; // highlight input when form error
+  errorLabel?: string; // Label used in error toast (e.g., "users", "leads")
 }
 
 export function GenericDropdown({
@@ -38,6 +40,7 @@ export function GenericDropdown({
   subtitleField = "subtitle",
   loadOptions,
   hasError = false,
+  errorLabel = "",
 }: GenericDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState<DropdownOption[]>([]);
@@ -49,6 +52,7 @@ export function GenericDropdown({
   const [autoLoaded, setAutoLoaded] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const effectiveOptions = loadOptions ? internalOptions : options;
   const effectiveLoading = loadOptions ? internalLoading : isLoading;
@@ -65,6 +69,12 @@ export function GenericDropdown({
       setHasLoaded(true);
     } catch (e) {
       setInternalError("Error loading options");
+      // Show toast on load error (in English)
+      toast({
+        title: "Error",
+        description: `Couldn't load data for ${errorLabel}. Please try again.`,
+        variant: "destructive",
+      });
     } finally {
       setInternalLoading(false);
     }

@@ -238,6 +238,7 @@ export function ContractForm({
                   searchFields={["name", "subtitle"]}
                   displayField="name"
                   subtitleField="subtitle"
+                  errorLabel="users"
                 />
               )}
             />
@@ -268,6 +269,7 @@ export function ContractForm({
                   searchFields={["name", "subtitle"]}
                   displayField="name"
                   subtitleField="subtitle"
+                  errorLabel="leads"
                 />
               )}
             />

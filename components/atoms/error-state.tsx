@@ -10,8 +10,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Error al cargar los datos",
-  description = "Hubo un problema al cargar la información. Por favor, inténtalo de nuevo.",
+  title = "Failed to load data",
+  description = "There was a problem loading the information. Please try again.",
   onRetry,
 }: ErrorStateProps) {
   return (
@@ -27,10 +27,10 @@ export function ErrorState({
         <Button
           onClick={onRetry}
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 text-black"
         >
           <RefreshCw className="h-4 w-4" />
-          Reintentar
+          Retry
         </Button>
       )}
     </div>

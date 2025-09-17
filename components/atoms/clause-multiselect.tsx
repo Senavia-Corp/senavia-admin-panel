@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { ContractManagementService } from "@/services/contract-management-service";
+import { useToast } from "@/hooks/use-toast";
 // Clause type from API response
 type Clause = {
   id: number;
@@ -23,6 +24,7 @@ export function ClauseMultiSelect({
   placeholder = "Select clauses...",
   disabled = false,
 }: ClauseMultiSelectProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [clauses, setClauses] = useState<Clause[]>([]);
@@ -42,12 +44,16 @@ export function ClauseMultiSelect({
     try {
       const fetchedClauses =
         await ContractManagementService.getContractClauses();
-      console.log("Fetched clauses:", fetchedClauses);
       setClauses(fetchedClauses);
       setHasLoaded(true);
     } catch (err) {
       setError("Error loading clauses");
       console.error("Error fetching clauses:", err);
+      toast({
+        title: "Error",
+        description: "Couldn't load data for clauses. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
