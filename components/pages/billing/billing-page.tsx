@@ -50,7 +50,9 @@ export function BillingPage() {
         )
       }
 
-      setBillingRecords(filteredData)
+      // Ordenar por ID de menor a mayor
+      const sortedData = filteredData.sort((a, b) => a.id - b.id);
+      setBillingRecords(sortedData)
     } catch (error) {
       console.error("Error loading billing records:", error)
     }
@@ -85,10 +87,10 @@ export function BillingPage() {
     setShowBillingDetail(true)
   }, [getLeadById])
 
-  const handleCreateBilling = () => {
+  const handleCreateBilling = useCallback(async () => {
     console.log("Create new billing record")
     setShowCreateBilling(true)
-  }
+  }, [])
 
   const handleBackToList = () => {
     setShowBillingDetail(false)

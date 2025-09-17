@@ -263,8 +263,8 @@ export function BillingDetailForm({
               </SelectContent>
             </Select>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Lead
+            <div className="space-y-2">
+              <Label>Associated Lead</Label>
               <MultiSelectBilling
                 value={associatedLeads}
                 onChange={(value) => {
@@ -277,7 +277,7 @@ export function BillingDetailForm({
                 placeholder="Select a lead..."
                 disabled={false}
               />
-            </p>
+            </div>
             <hr className="border-[#EBEDF2]" />
             <p>
               Associated Plan ID

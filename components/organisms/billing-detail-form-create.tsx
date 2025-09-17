@@ -1,4 +1,5 @@
 import { ArrowLeft, Eye } from "lucide-react";
+import { MultiSelectBilling } from "@/components/atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
@@ -95,7 +96,7 @@ export function BillingDetailCreateForm({
   const [deadlineToPay, setDeadlineToPay] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
-  const [associatedLead, setAssociatedLead] = useState("");
+  const [associatedLeads, setAssociatedLeads] = useState<number[]>([]);
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState("");
   const [showCosts, setShowCosts] = useState(false);
@@ -117,7 +118,7 @@ export function BillingDetailCreateForm({
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLead(selectedBilling.lead_id?.toString() || "");
+      setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
       setService(""); // No hay service en estos datos
     }
   }, [selectedBilling]); // Agregar selectedBilling como dependencia
@@ -137,7 +138,7 @@ export function BillingDetailCreateForm({
       estimatedTime !== "" &&
       description !== "" &&
       status !== "" &&
-      associatedLead !== "" &&
+      associatedLeads.length > 0 &&
       associatedPlan !== "" &&
       deadlineToPay !== ""
     );
@@ -151,7 +152,7 @@ export function BillingDetailCreateForm({
           estimatedTime: estimatedTime,
           description: description,
           state: status,
-          lead_id: Number(associatedLead),
+          lead_id: associatedLeads[0] || 0,
           plan_id: Number(associatedPlan),
           deadLineToPay: deadlineToPay,
           invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
@@ -290,21 +291,18 @@ export function BillingDetailCreateForm({
               </SelectContent>
             </Select>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Lead
-              <Select value={associatedLead} onValueChange={setAssociatedLead}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {leads.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id.toString()}>
-                      {lead.clientName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </p>
+            <div className="space-y-2">
+              <Label>Associated Lead</Label>
+              <MultiSelectBilling
+                value={associatedLeads}
+                onChange={(value) => {
+                  setAssociatedLeads(value);
+                }}
+                leads={leads}
+                placeholder="Select a lead..."
+                disabled={false}
+              />
+            </div>
             <hr className="border-[#EBEDF2]" />
             <p>
               Associated Plan ID
