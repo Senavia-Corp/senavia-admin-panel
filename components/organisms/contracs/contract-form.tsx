@@ -218,16 +218,13 @@ export function ContractForm({
               render={({ field }) => (
                 <GenericDropdown
                   value={(field.value ?? undefined) as number | undefined}
-                  onChange={(value) => {
+                  onChange={(value, selectedOption) => {
                     field.onChange(value);
-                    const selectedUser = userOptions.find(
-                      (u) => u.id === value
-                    );
-                    if (selectedUser) {
-                      setValue("companyEmail", selectedUser.subtitle || "");
-                      setValue("recipientName", selectedUser.name || "");
-                      setValue("companyAdd", selectedUser.address || "");
-                      setValue("companyPhone", selectedUser.phone || "");
+                    if (selectedOption) {
+                      setValue("companyEmail", selectedOption.subtitle || "");
+                      setValue("recipientName", selectedOption.name || "");
+                      setValue("companyAdd", selectedOption.address || "");
+                      setValue("companyPhone", selectedOption.phone || "");
                     }
                   }}
                   placeholder="Select a user..."

@@ -48,9 +48,21 @@ export class ContractManagementService {
     contractData: CreateContractData
   ): Promise<Contract> {
     try {
+      // Transform the data to match backend parameter names me toco hacer esto para que el backend lo entienda
+      const backendData = {
+        ...contractData,
+        user_id: contractData.userId,
+        lead_id: contractData.leadId,
+      };
+      //no es lo mas optimo toca cambiar los nombres de los campos en el backend
+
+      // Remove the original camelCase properties
+      delete (backendData as any).userId;
+      delete (backendData as any).leadId;
+
       const response = await Axios.post(
         endpoints.contract.createContract,
-        contractData,
+        backendData,
         {
           headers: {
             "Content-Type": "application/json",

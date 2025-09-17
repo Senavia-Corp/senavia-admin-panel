@@ -10,7 +10,7 @@ interface DropdownOption {
 
 interface GenericDropdownProps {
   value?: number;
-  onChange: (value: number) => void;
+  onChange: (value: number, option?: DropdownOption) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -148,8 +148,8 @@ export function GenericDropdown({
     return selectedOption ? selectedOption[displayField] : "";
   };
 
-  const handleSelectOption = (optionId: number) => {
-    onChange(optionId);
+  const handleSelectOption = (selectedOption: DropdownOption) => {
+    onChange(selectedOption.id, selectedOption);
     setIsOpen(false);
     setSearchTerm(""); // Clear search when selecting
   };
@@ -214,7 +214,7 @@ export function GenericDropdown({
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => handleSelectOption(option.id)}
+                  onClick={() => handleSelectOption(option)}
                   className={`
                     w-full text-left px-3 py-2 text-sm hover:bg-gray-100
                     flex items-center justify-between

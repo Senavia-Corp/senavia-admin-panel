@@ -62,6 +62,7 @@ export function CreateContractForm({
   };
 
   const handleCreate = async (data: CreateContractData) => {
+    console.log(data);
     try {
       const backendResponse = await ContractManagementService.createContract(
         data
