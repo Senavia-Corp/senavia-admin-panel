@@ -109,7 +109,8 @@ export function BillingViewModel() {
             if (status === 200 && response && response.success) {
                 await getBillings(); // Recargar la lista después de eliminar
                 return true;
-            } else {
+            }
+             else {
                 setError(errorLogs?.message || response?.message || "Failed to delete billing");
                 return false;
             }

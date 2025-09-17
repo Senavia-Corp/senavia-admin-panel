@@ -30,6 +30,7 @@ interface BillingDetailCreateFormProps {
   onSave: (billingData: CreateBillingData) => void;
 }
 
+// Mover la función fuera del componente para evitar recreaciones
 const servicesID = (service_ID: number) => {
   if (service_ID === 1) {
     return "Digital Marketing Service";
@@ -41,6 +42,34 @@ const servicesID = (service_ID: number) => {
     return "Service not found";
   }
 };
+
+// Constantes fuera del componente
+const statuses: BillingStatus[] = [
+  "CREATED",
+  "PROCESSING",
+  "IN_REVIEW",
+  "REJECTED",
+  "ACCEPTED",
+  "INVOICE",
+  "PAID",
+];
+
+const services: string[] = [
+  "Digital Marketing Service",
+  "Web Design",
+  "Web Development Service",
+  "Service not found",
+];
+
+const invoiceReference = "INV-2025-0456";
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
+
 export function BillingDetailCreateForm({
   selectedBilling,
   leads,
@@ -49,9 +78,12 @@ export function BillingDetailCreateForm({
   onBack,
   onSave,
 }: BillingDetailCreateFormProps) {
-  console.log("selectedBilling recibido:", selectedBilling);
-  console.log("leads recibidos:", leads);
-  console.log("lead recibido:", lead);
+  // Movemos los console.log dentro de un useEffect para que solo se ejecuten una vez al montar el componente
+  useEffect(() => {
+    console.log("selectedBilling recibido:", selectedBilling);
+    console.log("leads recibidos:", leads);
+    console.log("lead recibido:", lead);
+  }, []);
   const [showDocument, setShowDocument] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
@@ -88,42 +120,17 @@ export function BillingDetailCreateForm({
       setAssociatedLead(selectedBilling.lead_id?.toString() || "");
       setService(""); // No hay service en estos datos
     }
-  }, []);
+  }, [selectedBilling]); // Agregar selectedBilling como dependencia
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   const handleDocumentPreview = () => {
     setShowDocument(true);
   };
 
-  const statuses: BillingStatus[] = [
-    "CREATED",
-    "PROCESSING",
-    "IN_REVIEW",
-    "REJECTED",
-    "ACCEPTED",
-    "INVOICE",
-    "PAID",
-  ];
-
-  const services: string[] = [
-    "Digital Marketing Service",
-    "Web Design",
-    "Web Development Service",
-    "Service not found",
-  ];
-
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
   };
-
-  const invoiceReference = "INV-2025-0456";
 
   const isFormValid = () => {
     return (

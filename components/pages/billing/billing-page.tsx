@@ -1,11 +1,12 @@
 "use client"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
 import type { BillingRecord, Billings, Billing } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { BillingViewModel } from "./BillingViewModel"
 import { BillingDetailCreateForm } from "@/components/organisms/billing-detail-form-create"
+import { useToast } from "@/hooks/use-toast";
 
 export function BillingPage() {
   const [billingRecords, setBillingRecords] = useState<Billings[]>([])
@@ -17,12 +18,13 @@ export function BillingPage() {
   const [showBillingDetail, setShowBillingDetail] = useState(false)
   const { billings, getBillings, getLeads, leads, getLeadById, lead, deleteBilling, getPlans, plans } = BillingViewModel()
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     getBillings()
     getLeads()
     getPlans()
-  }, [searchTerm, statusFilter])
+  }, []) // Solo se ejecuta al montar el componente
 
   useEffect(() => {
     if (billings.length > 0) {
@@ -30,7 +32,7 @@ export function BillingPage() {
     }
   }, [billings, searchTerm, statusFilter])
 
-  const loadBillingRecords = async () => {
+  const loadBillingRecords = React.useCallback(async () => {
     try {
       let filteredData = [...billings]
       
@@ -49,32 +51,39 @@ export function BillingPage() {
       }
 
       setBillingRecords(filteredData)
-      console.log("Filtered billing records:", filteredData)
     } catch (error) {
       console.error("Error loading billing records:", error)
     }
-  }
+  }, [billings, searchTerm, statusFilter]) // Solo se recrea cuando estas dependencias cambien
 
-  const handleDeleteBilling = async (billing: Billings) => {
+  const handleDeleteBilling = useCallback(async (billing: Billings) => {
     try {
-      await deleteBilling(billing.id)
-      setBillingToDelete(null)
-      getBillings() // Recargar datos del ViewModel
+      const res =await deleteBilling(billing.id)
+      if (res) {
+        toast({
+          title: "Success",
+          description: "Estimate deleted successfully",
+        })
+        setBillingToDelete(null)
+        getBillings() // Recargar datos del ViewModel
+      }
+      else {
+        toast({
+          title: "Error deleting estimate record",
+          description: "Failed to delete billing record. The estimate may have projects associated with it."
+        })
+      }
     } catch (error) {
-      console.error("Error deleting billing record:", error)
+      console.error("Error deleting billing:", error);
     }
-  }
+  }, [deleteBilling, getBillings])
 
-  
-
-  const handleViewBilling = (billing: Billing) => {
-    getLeadById(billing.lead_id)
-    console.log("Lead:", lead)
-    console.log("View billing:", billing)
+  const handleViewBilling = useCallback(async (billing: Billing) => {
+    await getLeadById(billing.lead_id)
     setSelectedBillingId(billing.id)
     setSelectedBilling(billing)
     setShowBillingDetail(true)
-  } 
+  }, [getLeadById])
 
   const handleCreateBilling = () => {
     console.log("Create new billing record")
@@ -99,13 +108,13 @@ export function BillingPage() {
     }
   }
 
-  const handlers = {
+  const handlers = React.useMemo(() => ({
     onCreate: handleCreateBilling,
     onView: handleViewBilling,
     onDelete: (billing: Billings) => setBillingToDelete(billing),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
-  }
+  }), [handleCreateBilling, handleViewBilling, handleFilterChange])
 
   if (showBillingDetail) {
     return (

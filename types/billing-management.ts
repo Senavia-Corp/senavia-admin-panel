@@ -12,10 +12,13 @@ export interface BillingRecord {
 
 export interface Billing {
   id: number
+  title: string
   estimatedTime: number
   description: string
   state: string
   totalValue: string
+  percentagePaid: number
+  remainingPercentage: number
   lead_id: number
   plan_id: number
   deadLineToPay: string
@@ -24,6 +27,7 @@ export interface Billing {
   Project: any[] // TODO: Definir interfaz específica para Project
   costs: Cost[]
 }
+
 export interface Cost {
   id: number
   name: string

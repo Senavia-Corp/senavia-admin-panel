@@ -1,4 +1,5 @@
 import { ArrowLeft, Eye } from "lucide-react";
+import { MultiSelectBilling } from "../atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
@@ -51,17 +52,14 @@ export function BillingDetailForm({
   onBack,
   onSave,
 }: BillingDetailFormProps) {
-  console.log("selectedBilling recibido:", selectedBilling);
-  console.log("billingId recibido:", billingId);
-  console.log("leads recibidos:", leads);
-  console.log("lead recibido:", lead);
+
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const { PatchBilling } = BillingViewModel();
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
-  const [associatedLead, setAssociatedLead] = useState("");
+  const [associatedLeads, setAssociatedLeads] = useState<number[]>([]);
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -69,12 +67,16 @@ export function BillingDetailForm({
   const{toast} = useToast();
 
   useEffect(() => {
+    console.log("selectedBilling recibido:", selectedBilling);
+    console.log("billingId recibido:", billingId);
+    console.log("leads recibidos:", leads);
+    console.log("lead recibido:", lead);
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLead(selectedBilling.lead_id?.toString() || "");
+      setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
       setAssociatedPlan(selectedBilling.plan_id?.toString() || "");
       setService(""); // No hay service en estos datos
     }
@@ -263,21 +265,18 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>
               Associated Lead
-              <Select value={localEstimateData?.lead_id?.toString() || ""} onValueChange={(value) => {
-                  setAssociatedLead(value);
-                  setLocalEstimateData(prev => prev ? {...prev, lead_id: Number(value)} : null);
-                }}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {leads.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id.toString()}>
-                      {lead.clientName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelectBilling
+                value={associatedLeads}
+                onChange={(value) => {
+                  setAssociatedLeads(value);
+                  // Tomamos el primer lead seleccionado como el lead principal
+                  const primaryLeadId = value[0];
+                  setLocalEstimateData(prev => prev ? {...prev, lead_id: primaryLeadId || 0} : null);
+                }}
+                leads={leads}
+                placeholder="Select a lead..."
+                disabled={false}
+              />
             </p>
             <hr className="border-[#EBEDF2]" />
             <p>
