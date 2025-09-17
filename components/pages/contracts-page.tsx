@@ -75,14 +75,11 @@ export function ContractsPage() {
     setShowCreatePage(true);
   };
 
-  const handleContractCreated = (newContract: Contract) => {
-    // Add the new contract to the current list
-    setContracts((prevContracts) => [newContract, ...prevContracts]);
-  };
-
-  const handleCreateSuccess = () => {
+  const handleFormSuccess = () => {
     // Navigate back to the contracts list
     setShowCreatePage(false);
+    setShowEditPage(false);
+    setSelectedContract(null);
     // Reload contracts to ensure data is up to date
     loadContracts();
   };
@@ -102,10 +99,7 @@ export function ContractsPage() {
             title="Create Contract"
             onBack={() => setShowCreatePage(false)}
           >
-            <CreateContractForm
-              onContractCreated={handleContractCreated}
-              onSuccess={handleCreateSuccess}
-            />
+            <CreateContractForm onSuccess={handleFormSuccess} />
           </DetailTabs>
         </div>
       </div>
@@ -141,12 +135,7 @@ export function ContractsPage() {
             {selectedContract && (
               <EditContractForm
                 contract={selectedContract}
-                onUpdated={(updated) => {
-                  // Update list optimistically
-                  setContracts((prev) =>
-                    prev.map((c) => (c.id === updated.id ? updated : c))
-                  );
-                }}
+                onSuccess={handleFormSuccess}
               />
             )}
           </DetailTabs>

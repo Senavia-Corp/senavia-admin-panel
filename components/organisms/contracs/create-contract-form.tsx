@@ -12,12 +12,10 @@ import { UserManagementService } from "@/services/user-management-service";
 import { LeadManagementService } from "@/services/lead-management-service";
 
 interface CreateContractFormProps {
-  onContractCreated?: (contract: Contract) => void;
   onSuccess?: () => void;
 }
 
 export function CreateContractForm({
-  onContractCreated,
   onSuccess,
 }: CreateContractFormProps = {}) {
   const { toast } = useToast();
@@ -62,12 +60,8 @@ export function CreateContractForm({
   };
 
   const handleCreate = async (data: CreateContractData) => {
-    console.log(data);
     try {
-      const backendResponse = await ContractManagementService.createContract(
-        data
-      );
-      onContractCreated?.(backendResponse);
+      await ContractManagementService.createContract(data);
       toast({
         title: "Success",
         description: "Contract created successfully!",

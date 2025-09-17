@@ -90,10 +90,49 @@ export class ContractManagementService {
 
   static async updateContract(
     id: string,
-    updates: Partial<Contract>
-  ): Promise<Contract | null> {
-    // Not implemented against backend yet
-    throw new Error("updateContract not implemented against the backend yet.");
+    updates: Partial<CreateContractData>
+  ): Promise<Contract> {
+    try {
+      // Transform the data to match backend parameter names
+      const backendData: any = { ...updates };
+
+      // Transform userId and leadId if they exist
+      if (updates.userId !== undefined) {
+        backendData.user_id = updates.userId;
+        delete backendData.userId;
+      }
+
+      if (updates.leadId !== undefined) {
+        backendData.lead_id = updates.leadId;
+        delete backendData.leadId;
+      }
+
+      const response = await Axios.patch(
+        endpoints.contract.updateContract(Number(id)),
+        backendData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error updating contract");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error updating contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to update contract. Please try again."
+      );
+    }
   }
 
   static async deleteContract(id: string): Promise<boolean> {

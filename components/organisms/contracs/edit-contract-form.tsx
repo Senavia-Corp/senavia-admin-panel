@@ -12,12 +12,12 @@ import { LeadManagementService } from "@/services/lead-management-service";
 
 interface EditContractFormProps {
   contract: Contract;
-  onUpdated?: (contract: Contract) => void;
+  onSuccess?: () => void;
 }
 
 export function EditContractForm({
   contract,
-  onUpdated,
+  onSuccess,
 }: EditContractFormProps) {
   const { toast } = useToast();
   // Dropdown data will be lazy-loaded by GenericDropdown via loadOptions
@@ -63,17 +63,15 @@ export function EditContractForm({
 
   const handleUpdate = async (values: CreateContractData) => {
     try {
-      // Map back to Partial<Contract>; clauses will be mapped by service if needed
-      const updated = await ContractManagementService.updateContract(
+      await ContractManagementService.updateContract(
         String(contract.id),
-        values as unknown as Partial<Contract>
+        values
       );
-      if (!updated) throw new Error("Contract not found");
-      onUpdated?.(updated);
       toast({
         title: "Success",
         description: "Contract updated successfully!",
       });
+      onSuccess?.();
     } catch (error: any) {
       toast({
         title: "Error",
