@@ -59,6 +59,7 @@ export interface Contract {
 }
 
 export interface CreateContractData {
+  id?: number | null;
   title: string;
   content: string;
   state: ContractStatus;

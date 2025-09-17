@@ -99,6 +99,12 @@ export function ContractForm({
               General Information
             </h3>
 
+            {mode === "edit" && (
+              <label className="block text-sm font-medium mb-2 mt-4">
+                Contract ID : {initialValues.id}
+              </label>
+            )}
+
             <label className="block text-sm font-medium mb-2 mt-4">
               Title *
             </label>

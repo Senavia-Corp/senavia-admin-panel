@@ -25,6 +25,7 @@ export function EditContractForm({
   const [isDirty, setIsDirty] = useState(false);
 
   const initialValues: CreateContractFormValues = {
+    id: contract.id,
     title: contract.title,
     content: contract.content,
     state: contract.state,
