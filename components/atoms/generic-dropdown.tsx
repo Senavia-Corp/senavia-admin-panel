@@ -50,6 +50,8 @@ export function GenericDropdown({
   const [internalError, setInternalError] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [autoLoaded, setAutoLoaded] = useState(false);
+  // Use ref to avoid triggering re-renders for the one-time skeleton
+  const initialSkeletonShownRef = useRef<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -77,6 +79,10 @@ export function GenericDropdown({
       });
     } finally {
       setInternalLoading(false);
+      // Mark the initial skeleton as handled once the first load attempt completes
+      if (!initialSkeletonShownRef.current) {
+        initialSkeletonShownRef.current = true;
+      }
     }
   };
 
@@ -164,35 +170,50 @@ export function GenericDropdown({
     setSearchTerm(""); // Clear search when selecting
   };
 
+  const shouldShowInitialSkeleton = Boolean(
+    loadOptions &&
+      value &&
+      internalLoading &&
+      !initialSkeletonShownRef.current &&
+      autoLoaded
+  );
+
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
       {/* Search Input */}
       <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={getInputValue()}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={`
-            w-full h-10 border rounded-md px-3 py-2 pr-10 text-sm bg-white
-            ${
-              disabled
-                ? "bg-gray-100 cursor-not-allowed"
-                : "hover:border-gray-400"
-            }
-            ${
-              hasError
-                ? "border-red-500 ring-1 ring-red-500"
-                : isOpen
-                ? "border-blue-500 ring-1 ring-blue-500"
-                : "border-gray-300"
-            }
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-          `}
-        />
+        {shouldShowInitialSkeleton ? (
+          <div
+            className="w-full h-10 rounded-md bg-gray-200 animate-pulse"
+            aria-hidden="true"
+          />
+        ) : (
+          <input
+            ref={inputRef}
+            type="text"
+            value={getInputValue()}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={`
+              w-full h-10 border rounded-md px-3 py-2 pr-10 text-sm bg-white
+              ${
+                disabled
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : "hover:border-gray-400"
+              }
+              ${
+                hasError
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : isOpen
+                  ? "border-blue-500 ring-1 ring-blue-500"
+                  : "border-gray-300"
+              }
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            `}
+          />
+        )}
         <ChevronDown
           className={`absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-transform pointer-events-none ${
             isOpen ? "rotate-180" : ""

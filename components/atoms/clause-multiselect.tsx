@@ -33,6 +33,8 @@ export function ClauseMultiSelect({
   const [error, setError] = useState<string | null>(null);
   const [autoLoaded, setAutoLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // One-time skeleton to indicate initial auto-load when there are preset values
+  const initialSkeletonShownRef = useRef<boolean>(false);
 
   // Función para cargar cláusulas desde el servicio de contratos
   const loadClauses = useCallback(async () => {
@@ -56,6 +58,9 @@ export function ClauseMultiSelect({
       });
     } finally {
       setIsLoading(false);
+      if (!initialSkeletonShownRef.current) {
+        initialSkeletonShownRef.current = true;
+      }
     }
   }, [hasLoaded, isLoading]);
 
@@ -88,6 +93,14 @@ export function ClauseMultiSelect({
       clause.title?.toLowerCase().includes(inputValue.toLowerCase())
   );
 
+  const shouldShowInitialSkeleton = Boolean(
+    value &&
+      value.length > 0 &&
+      isLoading &&
+      !initialSkeletonShownRef.current &&
+      autoLoaded
+  );
+
   return (
     <div ref={containerRef} className="relative w-full">
       <div
@@ -102,57 +115,66 @@ export function ClauseMultiSelect({
           setOpen(true);
         }}
       >
-        {value.map((clauseId) => {
-          const clause = clauses.find((c) => c.id === clauseId);
-          return (
-            <span
-              key={clauseId}
-              className="flex items-center bg-[#A6B3CC] text-white rounded-full px-3 py-1 text-sm mr-1 mb-1"
-            >
-              {clause?.title || `ID: ${clauseId}`}
-              <div className="ml-2 text-white flex items-center border border-white px-1 rounded-full hover:bg-red-500 text-black">
-                <button
-                  type="button"
-                  className="text-xs"
-                  disabled={disabled}
-                  onClick={(e) => {
-                    if (disabled) return;
-                    e.stopPropagation();
-                    onChange(value.filter((v) => v !== clauseId));
-                  }}
+        {shouldShowInitialSkeleton ? (
+          <div
+            className="w-full h-10 rounded-md bg-gray-200 animate-pulse"
+            aria-hidden="true"
+          />
+        ) : (
+          <>
+            {value.map((clauseId) => {
+              const clause = clauses.find((c) => c.id === clauseId);
+              return (
+                <span
+                  key={clauseId}
+                  className="flex items-center bg-[#A6B3CC] text-white rounded-full px-3 py-1 text-sm mr-1 mb-1"
                 >
-                  ×
-                </button>
-              </div>
-            </span>
-          );
-        })}
-        <input
-          className="flex-1 min-w-[120px] border-none outline-none bg-transparent text-gray-700 text-sm"
-          placeholder={placeholder}
-          value={inputValue}
-          disabled={disabled}
-          onChange={(e) => setInputValue(e.target.value)}
-          onFocus={() => {
-            if (disabled) return;
-            if (!open) {
-              void loadClauses();
-            }
-            setOpen(true);
-          }}
-        />
-        <button
-          type="button"
-          className="ml-2 text-gray-400 hover:text-gray-700 flex items-center"
-          tabIndex={-1}
-          disabled={disabled}
-          onClick={() => {
-            if (disabled) return;
-            setOpen((o) => !o);
-          }}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </button>
+                  {clause?.title || `ID: ${clauseId}`}
+                  <div className="ml-2 text-white flex items-center border border-white px-1 rounded-full hover:bg-red-500 text-black">
+                    <button
+                      type="button"
+                      className="text-xs"
+                      disabled={disabled}
+                      onClick={(e) => {
+                        if (disabled) return;
+                        e.stopPropagation();
+                        onChange(value.filter((v) => v !== clauseId));
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </span>
+              );
+            })}
+            <input
+              className="flex-1 min-w-[120px] border-none outline-none bg-transparent text-gray-700 text-sm"
+              placeholder={placeholder}
+              value={inputValue}
+              disabled={disabled}
+              onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => {
+                if (disabled) return;
+                if (!open) {
+                  void loadClauses();
+                }
+                setOpen(true);
+              }}
+            />
+            <button
+              type="button"
+              className="ml-2 text-gray-400 hover:text-gray-700 flex items-center"
+              tabIndex={-1}
+              disabled={disabled}
+              onClick={() => {
+                if (disabled) return;
+                setOpen((o) => !o);
+              }}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
       {open && !disabled && (
         <div className="absolute left-0 right-0 mt-1 bg-white border rounded shadow z-10 max-h-40 overflow-auto">
