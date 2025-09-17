@@ -28,13 +28,28 @@ export function BillingPage() {
     if (billings.length > 0) {
       loadBillingRecords()
     }
-  }, [billings])
+  }, [billings, searchTerm, statusFilter])
 
   const loadBillingRecords = async () => {
     try {
-      const billingData = billings
-      setBillingRecords(billingData)
-      console.log("Billing records:", billingData)
+      let filteredData = [...billings]
+      
+      // Aplicar filtro de búsqueda
+      if (searchTerm) {
+        filteredData = filteredData.filter(billing => 
+          billing.id.toString().includes(searchTerm)
+        )
+      }
+
+      // Aplicar filtro de estado
+      if (statusFilter && statusFilter !== "all") {
+        filteredData = filteredData.filter(billing => 
+          billing.state.toLowerCase() === statusFilter.toLowerCase()
+        )
+      }
+
+      setBillingRecords(filteredData)
+      console.log("Filtered billing records:", filteredData)
     } catch (error) {
       console.error("Error loading billing records:", error)
     }
