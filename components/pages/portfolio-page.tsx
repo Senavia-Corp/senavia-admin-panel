@@ -29,7 +29,7 @@ import {
 import ServiceViewModel from "../pages/service/ServiceViewModel";
 
 export function PortfolioPage() {
-  const [dataProducts, setDataProducts] = useState<Project[]>([]);
+  const [dataProducts, setDataProducts] = useState<Product[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [themeFilter, setThemeFilter] = useState("");
@@ -40,12 +40,9 @@ export function PortfolioPage() {
   const [offset, setOffset] = useState(0);
   const [allProjects, setAllProjects] = useState<any[]>([]);
   const [profileImage, setProfileImage] = useState<File | null>(null);
-  const {
-    services,
-    getAllServices,
-    error: serviceError,
-    loading: serviceLoading,
-  } = ServiceViewModel();
+  const {services,getAllServices,error: serviceError,
+         loading: serviceLoading,
+         } = ServiceViewModel();
 
   const [formData, setFormData] = useState({
     name: "",

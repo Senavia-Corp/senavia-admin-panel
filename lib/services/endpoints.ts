@@ -11,13 +11,20 @@ export const endpoints = {
   service: {
     getAll: `${API}/service`,
   },
+  clause: {
+    getAll: `${API}/clause`,
+    getById: (id: number) => `${API}/clause?id=${id}`,
+    create: `${API}/clause`,
+    update: (id: number) => `${API}/clause?id=${id}`,
+     delete: (id: number) => `${API}/clause?id=${id}`,
+  },
 
   product: {
     getAll: `${API}/product`,
     getById: (id: number) => `${API}/product?id=${id}`,
     delete: (id: number) => `${API}/product?id=${id}`,
     create: `${API}/product`,
-    update: (id: number) => `${API}/product?id=${id}`
+    update: (id: number) => `${API}/product?id=${id}`,
   },
 
   blog: {
@@ -92,8 +99,8 @@ export const endpoints = {
   cost: {
     createCost: `${API}/cost`,
     deleteCost: (id: number) => `${API}/cost?id=${id}`,
-    updateCost: (id: number) => `${API}/cost?id=${id}`
-  }
+    updateCost: (id: number) => `${API}/cost?id=${id}`,
+  },
 };
 
 // Header configurations

@@ -16,6 +16,7 @@ import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
 import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-row";
 import { CostTableRow } from "@/components/organisms/tables/row/cost-table-row";
+import { ClauseTableRow } from "./row/clause-table-row";
 import {
   FilterBilling,
   FilterPermission,
@@ -60,123 +61,134 @@ export function GeneralTable(
     onEdit,
   } = handlers;
 
-  const tableRows = data.filter(item => item && item.id).map((item) => {
-    switch (Page.toLowerCase()) {
-      case "roles-page":
-        return (
-          <RoleTableRow
-            key={item.id}
-            role={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "permissions-page":
-        return (
-          <PermissionTableRow
-            key={item.id}
-            permission={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "billing-page":
-        return (
-          <BillingTableRow
-            key={item.id}
-            billing={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "users-page":
-        return (
-          <UserTableRow
-            key={item.id}
-            user={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onEdit={onEdit ? () => onEdit(item) : undefined}
-          />
-        );
-      case "contracts-page":
-        return (
-          <ContractTableRow
-            key={item.id}
-            contract={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onEdit={onEdit ? () => onEdit(item) : undefined}
-          />
-        );
-      case "blogs-page":
-        return (
-          <BlogTableRow
-            key={item.id}
-            blog={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "testimonial-videos-page":
-        return (
-          <TestimonialVideoTableRow
-            key={item.id}
-            item={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "leads-page":
-        return (
-          <LeadTableRow
-            key={item.id}
-            lead={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "projects-page":
-        return (
-          <ProjectTableRow
-            key={item.id}
-            project={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-            onViewTasks={() => onViewTasks?.(item)}
-          />
-        );
-      case "tickets-page":
-        return (
-          <SupportTableRow
-            key={item.id}
-            ticket={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      case "portfolio-page":
-        return (
-          <PortfolioTableRow
-            key={item.id}
-            product={item}
-            onView={() => onView?.(item)}
-            onDelete={() => onDelete?.(item)}            
-          />
-        );
-      case "costs-page":
-        return (
-          <CostTableRow
-            key={item.id}
-            cost={item}
-            onView={() => onView(item)}
-            onDelete={() => onDelete(item)}
-          />
-        );
-      default:
-        return null;
-    }
-  });
+  const tableRows = data
+    .filter((item) => item && item.id)
+    .map((item) => {
+      switch (Page.toLowerCase()) {
+        case "roles-page":
+          return (
+            <RoleTableRow
+              key={item.id}
+              role={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "permissions-page":
+          return (
+            <PermissionTableRow
+              key={item.id}
+              permission={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "billing-page":
+          return (
+            <BillingTableRow
+              key={item.id}
+              billing={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "users-page":
+          return (
+            <UserTableRow
+              key={item.id}
+              user={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onEdit={onEdit ? () => onEdit(item) : undefined}
+            />
+          );
+        case "contracts-page":
+          return (
+            <ContractTableRow
+              key={item.id}
+              contract={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onEdit={onEdit ? () => onEdit(item) : undefined}
+            />
+          );
+        case "blogs-page":
+          return (
+            <BlogTableRow
+              key={item.id}
+              blog={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "testimonial-videos-page":
+          return (
+            <TestimonialVideoTableRow
+              key={item.id}
+              item={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "leads-page":
+          return (
+            <LeadTableRow
+              key={item.id}
+              lead={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "projects-page":
+          return (
+            <ProjectTableRow
+              key={item.id}
+              project={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+              onViewTasks={() => onViewTasks?.(item)}
+            />
+          );
+        case "tickets-page":
+          return (
+            <SupportTableRow
+              key={item.id}
+              ticket={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "portfolio-page":
+          return (
+            <PortfolioTableRow
+              key={item.id}
+              product={item}
+              onView={() => onView?.(item)}
+              onDelete={() => onDelete?.(item)}
+            />
+          );
+        case "clause-page":
+          return (
+            <ClauseTableRow
+              key={item.id}
+              clause={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "costs-page":
+          return (
+            <CostTableRow
+              key={item.id}
+              cost={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        default:
+          return null;
+      }
+    });
 
   const filterComponent = (() => {
     switch (Page.toLowerCase()) {
@@ -195,7 +207,7 @@ export function GeneralTable(
       case "projects-page":
         return <FilterProject onFilter={onFilter} />;
       case "costs-page":
-        // return <FilterCost onFilter={onFilter} />;
+      // return <FilterCost onFilter={onFilter} />;
       default:
         return null;
     }

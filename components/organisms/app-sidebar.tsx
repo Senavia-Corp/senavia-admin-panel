@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Users,
@@ -11,8 +11,8 @@ import {
   Settings,
   BarChart3,
   ChevronDown,
-} from "lucide-react"
-import Link from "next/link"
+} from "lucide-react";
+import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
@@ -27,9 +27,13 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const navigationItems = [
   {
@@ -72,7 +76,8 @@ const navigationItems = [
     url: "/leads",
     icon: Target,
   },
-]
+  { title: "Clause", url: "/clause", icon: Target },
+];
 
 export function AppSidebar() {
   return (
@@ -102,7 +107,9 @@ export function AppSidebar() {
                             className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                           >
                             <item.icon className="h-5 w-5 flex-shrink-0" />
-                            <span className="group-data-[collapsible=icon]:sr-only">{item.title}</span>
+                            <span className="group-data-[collapsible=icon]:sr-only">
+                              {item.title}
+                            </span>
                             <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -115,7 +122,9 @@ export function AppSidebar() {
                             </SidebarMenuSubItem>
                             <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                <Link href="/content/testimonial-videos">Testimonial Videos</Link>
+                                <Link href="/content/testimonial-videos">
+                                  Testimonial Videos
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                             <SidebarMenuSubItem>
@@ -127,7 +136,7 @@ export function AppSidebar() {
                         </CollapsibleContent>
                       </SidebarMenuItem>
                     </Collapsible>
-                  )
+                  );
                 }
 
                 if (item.title === "Manage Users") {
@@ -140,7 +149,9 @@ export function AppSidebar() {
                             className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                           >
                             <item.icon className="h-5 w-5 flex-shrink-0" />
-                            <span className="group-data-[collapsible=icon]:sr-only">{item.title}</span>
+                            <span className="group-data-[collapsible=icon]:sr-only">
+                              {item.title}
+                            </span>
                             <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -158,14 +169,16 @@ export function AppSidebar() {
                             </SidebarMenuSubItem>
                             <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                <Link href="/users/permissions">Permissions</Link>
+                                <Link href="/users/permissions">
+                                  Permissions
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           </SidebarMenuSub>
                         </CollapsibleContent>
                       </SidebarMenuItem>
                     </Collapsible>
-                  )
+                  );
                 }
 
                 return (
@@ -176,11 +189,13 @@ export function AppSidebar() {
                         className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                       >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        <span className="group-data-[collapsible=icon]:sr-only">{item.title}</span>
+                        <span className="group-data-[collapsible=icon]:sr-only">
+                          {item.title}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -190,11 +205,13 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-2">
         <Button className="w-full bg-gray-800 text-white hover:bg-gray-700 rounded-full group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:p-0">
           <Settings className="h-4 w-4 group-data-[collapsible=icon]:mr-0 mr-2" />
-          <span className="group-data-[collapsible=icon]:sr-only">Settings</span>
+          <span className="group-data-[collapsible=icon]:sr-only">
+            Settings
+          </span>
         </Button>
       </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
