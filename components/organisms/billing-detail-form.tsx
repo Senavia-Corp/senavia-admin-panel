@@ -18,6 +18,8 @@ import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
+import { PaymentPage } from "@/components/pages/payment-page";
+import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +58,28 @@ export function BillingDetailForm({
 }: BillingDetailFormProps) {
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
+  const [payments, setPayments] = useState<any[]>([]);
   const { PatchBilling } = BillingViewModel();
+
+  // Cargar pagos cuando se monta el componente
+  useEffect(() => {
+    const loadPayments = async () => {
+      if (selectedBilling?.id) {
+        try {
+          const paymentsData =
+            await PaymentManagementService.getPaymentsByEstimateId(
+              selectedBilling.id
+            );
+          setPayments(paymentsData);
+        } catch (error) {
+          console.error("Error loading payments:", error);
+        }
+      }
+    };
+
+    loadPayments();
+  }, [selectedBilling?.id]);
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -173,6 +196,18 @@ export function BillingDetailForm({
           costs={selectedBilling?.costs || []}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
+        />
+      </div>
+    );
+  }
+
+  if (showPayments) {
+    return (
+      <div className="">
+        <PaymentPage
+          payments={payments}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowPayments(false)}
         />
       </div>
     );
@@ -424,6 +459,21 @@ export function BillingDetailForm({
                 </div>
                 <Button
                   onClick={() => setShowCosts(true)}
+                  className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+                >
+                  <Eye color="#04081E" />
+                </Button>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
+              <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
+                <div>
+                  <h2 className="text-2xl font-normal">Payments Details</h2>
+                  <p className="font-light text-base">Description</p>
+                </div>
+                <Button
+                  onClick={() => setShowPayments(true)}
                   className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
                 >
                   <Eye color="#04081E" />
