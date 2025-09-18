@@ -299,7 +299,7 @@ export function BillingDetailForm({
                 disabled={false}
               />
               {associatedLeads.length > 0 ? (
-              <Card className="w-96 text-base">
+              <Card className="w-auto text-base">
                 <CardHeader>
                   <CardTitle className="text-base">{leads.find(lead => lead.id === associatedLeads[0])?.clientName}</CardTitle>
                   <CardDescription>
@@ -311,7 +311,7 @@ export function BillingDetailForm({
                 </CardHeader>
               </Card>
             ) : (
-              <Card className="w-96 text-center text-base">
+              <Card className="w-auto text-center text-base">
                 <CardHeader>
                   <CardTitle className="text-base">Select a lead</CardTitle>
                 </CardHeader>
@@ -329,7 +329,7 @@ export function BillingDetailForm({
                   setLocalEstimateData(prev => prev ? {...prev, plan_id: value[0] || 0} : null);
                 }}/>
                 {associatedPlan.length > 0 ? (
-                  <Card className="w-96 text-base">
+                  <Card className="w-auto text-base">
                     <CardHeader>
                       <CardTitle className="text-base">{plans.find(plan => plan.id === associatedPlan[0])?.name}</CardTitle>
                       <CardDescription>
@@ -343,7 +343,7 @@ export function BillingDetailForm({
                     </CardHeader>
                   </Card>
                 ) : (
-                  <Card className="w-72">
+                  <Card className="w-auto">
                     <CardHeader>
                       <CardTitle className="text-base">Select a plan</CardTitle>
                     </CardHeader>

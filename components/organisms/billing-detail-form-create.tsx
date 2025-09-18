@@ -91,6 +91,7 @@ export function BillingDetailCreateForm({
   const { createBilling, error, successMessage } = BillingViewModel();
 
   // Estados para campos editables
+  const [title, setTitle] = useState("");
   const [totalValue, setTotalValue] = useState(selectedBilling?.totalValue?.toString() || "");
   const [estimatedTime, setEstimatedTime] = useState("");
   const [deadlineToPay, setDeadlineToPay] = useState("");
@@ -135,6 +136,7 @@ export function BillingDetailCreateForm({
 
   const isFormValid = () => {
     return (
+      title !== "" &&
       estimatedTime !== "" &&
       description !== "" &&
       status !== "" &&
@@ -148,6 +150,7 @@ export function BillingDetailCreateForm({
       setIsCreating(true);
       try {
         const billingData: CreateBillingData = {
+          title: title,
           totalValue: 0,
           estimatedTime: estimatedTime,
           description: description,
@@ -156,7 +159,9 @@ export function BillingDetailCreateForm({
           plan_id: Number(associatedPlan),
           deadLineToPay: deadlineToPay,
           invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-          invoiceReference: invoiceReference
+          invoiceReference: invoiceReference,
+          percentagePaid: 0,
+          remainingPercentage: 100,
         };
         const response = await createBilling(billingData) as ApiResponse;
         
@@ -245,6 +250,14 @@ export function BillingDetailCreateForm({
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
           <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">                                     
+            <p>Title</p>
+            <Input
+              type="text"
+              className="w-full h-7"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter title"
+            />
               <p>
                 Estimated Time:
               </p>
