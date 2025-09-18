@@ -114,7 +114,7 @@ export function ContractsPage() {
             title="Contract Details"
             onBack={() => setSelectedContract(null)}
           >
-            <ContractDetails />
+            <ContractDetails contract={selectedContract} />
           </DetailTabs>
         </div>
       </div>

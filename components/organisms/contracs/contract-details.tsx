@@ -1,11 +1,11 @@
 import React from "react";
+import { Contract } from "@/types/contract-management";
+import { ContractPDFView } from "./contract-pdf-view";
 
-export function ContractDetails() {
-  console.log("Render de ContractDetails");
+interface ContractDetailsProps {
+  contract: Contract;
+}
 
-  return (
-    <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
-      Contract Details
-    </h2>
-  );
+export function ContractDetails({ contract }: ContractDetailsProps) {
+  return <ContractPDFView contract={contract} />;
 }
