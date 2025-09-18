@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardHeader } from "../ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { DocumentPreviewBilling } from "./document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
@@ -21,6 +21,7 @@ import { CostPage } from "@/components/pages/cost-page";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
+import { MultiSelectPlan } from "../atoms/multiselect-plan";
 
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -61,7 +62,7 @@ export function BillingDetailForm({
   const [status, setStatus] = useState("");
   const [associatedLeads, setAssociatedLeads] = useState<number[]>([]);
   const [service, setService] = useState("");
-  const [associatedPlan, setAssociatedPlan] = useState("");
+  const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
   const{toast} = useToast();
@@ -77,7 +78,7 @@ export function BillingDetailForm({
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
       setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
-      setAssociatedPlan(selectedBilling.plan_id?.toString() || "");
+      setAssociatedPlan(selectedBilling.plan_id ? [selectedBilling.plan_id] : []);
       setService(""); // No hay service en estos datos
     }
 
@@ -277,25 +278,37 @@ export function BillingDetailForm({
                 placeholder="Select a lead..."
                 disabled={false}
               />
+              {associatedLeads.length > 0 ? (
+              <Card className="w-96 text-center">
+                <CardHeader>
+                  <CardTitle>{leads.find(lead => lead.id === associatedLeads[0])?.clientName}</CardTitle>
+                  <CardDescription>
+                    <p className="font-bold  text-base text-center">
+                      {leads.find(lead => lead.id === associatedLeads[0])?.service?.name}
+                    </p>
+                    <p className="font-bold text-center">Description</p>
+                    <p>{leads.find(lead => lead.id === associatedLeads[0])?.description}</p>
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ) : (
+              <Card className="w-72">
+                <CardHeader>
+                  <CardTitle>Select a lead</CardTitle>
+                </CardHeader>
+              </Card>
+            )}
             </div>
             <hr className="border-[#EBEDF2]" />
             <p>
-              Associated Plan ID
-              <Select value={localEstimateData?.plan_id?.toString() || ""} onValueChange={(value) => {
+              Associated Plan
+               <MultiSelectPlan
+                plans={plans}
+                value={associatedPlan}
+                onChange={(value) => {
                   setAssociatedPlan(value);
-                  setLocalEstimateData(prev => prev ? {...prev, plan_id: Number(value)} : null);
-                }}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {plans?.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.id.toString()}>
-                      Plan ID: {plan.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  setLocalEstimateData(prev => prev ? {...prev, plan_id: value[0] || 0} : null);
+                }}/>
             </p>
             <hr className="border-[#EBEDF2]" />
             <p>service</p>
