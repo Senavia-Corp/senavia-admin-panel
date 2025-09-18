@@ -54,7 +54,6 @@ export function BillingDetailForm({
   onBack,
   onSave,
 }: BillingDetailFormProps) {
-
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const { PatchBilling } = BillingViewModel();
@@ -65,8 +64,9 @@ export function BillingDetailForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
-  const{toast} = useToast();
+  const [localEstimateData, setLocalEstimateData] =
+    useState<CreateBillingData | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     console.log("selectedBilling recibido:", selectedBilling);
@@ -79,14 +79,18 @@ export function BillingDetailForm({
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
-      setAssociatedPlan(selectedBilling.plan_id ? [selectedBilling.plan_id] : []);
+      setAssociatedLeads(
+        selectedBilling.lead_id ? [selectedBilling.lead_id] : []
+      );
+      setAssociatedPlan(
+        selectedBilling.plan_id ? [selectedBilling.plan_id] : []
+      );
       setService(""); // No hay service en estos datos
     }
 
     setLocalEstimateData({
       title: selectedBilling?.title || "",
-      totalValue: Number(selectedBilling?.totalValue) || 0, 
+      totalValue: Number(selectedBilling?.totalValue) || 0,
       estimatedTime: selectedBilling?.estimatedTime?.toString() || "",
       description: selectedBilling?.description || "",
       state: selectedBilling?.state || "",
@@ -130,7 +134,7 @@ export function BillingDetailForm({
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
+    return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
   };
 
   const UpdateBilling = async () => {
@@ -148,14 +152,14 @@ export function BillingDetailForm({
       await PatchBilling(ID_estimate, billingData);
       setLocalEstimateData(billingData);
       toast({
-        title: 'Billing updated successfully',
-        description: 'The billing has been updated successfully.'
+        title: "Billing updated successfully",
+        description: "The billing has been updated successfully.",
       });
     } catch (error) {
-      console.log('An error has occured ' + error);
+      console.log("An error has occured " + error);
       toast({
-        title: 'Failed to update billing',
-        description: 'The billing has not been updated.'
+        title: "Failed to update billing",
+        description: "The billing has not been updated.",
       });
     } finally {
       setIsUpdating(false);
@@ -165,11 +169,11 @@ export function BillingDetailForm({
   if (showCosts) {
     return (
       <div className="">
-      <CostPage
-        costs={selectedBilling?.costs || []}
-        estimateId={selectedBilling?.id || 0}
-        onBack={() => setShowCosts(false)}
-      />
+        <CostPage
+          costs={selectedBilling?.costs || []}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowCosts(false)}
+        />
       </div>
     );
   }
@@ -218,7 +222,9 @@ export function BillingDetailForm({
             <Input
               value={localEstimateData?.title || ""}
               onChange={(e) => {
-                setLocalEstimateData(prev => prev ? {...prev, title: e.target.value} : null);
+                setLocalEstimateData((prev) =>
+                  prev ? { ...prev, title: e.target.value } : null
+                );
               }}
               placeholder="Enter title"
             />
@@ -230,7 +236,9 @@ export function BillingDetailForm({
                 value={localEstimateData?.estimatedTime || ""}
                 onChange={(e) => {
                   setEstimatedTime(e.target.value);
-                  setLocalEstimateData(prev => prev ? {...prev, estimatedTime: e.target.value} : null);
+                  setLocalEstimateData((prev) =>
+                    prev ? { ...prev, estimatedTime: e.target.value } : null
+                  );
                 }}
                 placeholder="Enter estimated time"
                 className="w-full h-7 pl-2 text-[#A2ADC5] border rounded-md mt-3"
@@ -249,7 +257,9 @@ export function BillingDetailForm({
                 value={localEstimateData?.description || ""}
                 onChange={(e) => {
                   setDescription(e.target.value);
-                  setLocalEstimateData(prev => prev ? {...prev, description: e.target.value} : null);
+                  setLocalEstimateData((prev) =>
+                    prev ? { ...prev, description: e.target.value } : null
+                  );
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
@@ -262,10 +272,15 @@ export function BillingDetailForm({
             </div>
             <hr className="border-[#EBEDF2]" />
             <p>State</p>
-            <Select value={localEstimateData?.state || ""} onValueChange={(value) => {
-                  setStatus(value);
-                  setLocalEstimateData(prev => prev ? {...prev, state: value} : null);
-                }}>
+            <Select
+              value={localEstimateData?.state || ""}
+              onValueChange={(value) => {
+                setStatus(value);
+                setLocalEstimateData((prev) =>
+                  prev ? { ...prev, state: value } : null
+                );
+              }}
+            >
               <SelectTrigger className="w-full h-7 ">
                 <SelectValue placeholder="Dropdown here" />
               </SelectTrigger>
@@ -281,7 +296,10 @@ export function BillingDetailForm({
             <p>Percentage Paid: {localEstimateData?.percentagePaid || 0}%</p>
             <Progress value={localEstimateData?.percentagePaid || 0} />
             <hr className="border-[#EBEDF2]" />
-            <p>Remaining Percentage for paid: {localEstimateData?.remainingPercentage || 0}%</p>
+            <p>
+              Remaining Percentage for paid:{" "}
+              {localEstimateData?.remainingPercentage || 0}%
+            </p>
             <Progress value={localEstimateData?.remainingPercentage || 0} />
             <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
@@ -292,31 +310,46 @@ export function BillingDetailForm({
                   setAssociatedLeads(value);
                   // Tomamos el primer lead seleccionado como el lead principal
                   const primaryLeadId = value[0];
-                  setLocalEstimateData(prev => prev ? {...prev, lead_id: primaryLeadId || 0} : null);
+                  setLocalEstimateData((prev) =>
+                    prev ? { ...prev, lead_id: primaryLeadId || 0 } : null
+                  );
                 }}
                 leads={leads}
                 placeholder="Select a lead..."
                 disabled={false}
               />
               {associatedLeads.length > 0 ? (
-              <Card className="w-auto text-base">
-                <CardHeader>
-                  <CardTitle className="text-base">{leads.find(lead => lead.id === associatedLeads[0])?.clientName}</CardTitle>
-                  <CardDescription>
-                    <p className="font-bold">
-                      {leads.find(lead => lead.id === associatedLeads[0])?.service?.name}
-                    </p>
-                    <p>{leads.find(lead => lead.id === associatedLeads[0])?.description}</p>
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ) : (
-              <Card className="w-auto text-center text-base">
-                <CardHeader>
-                  <CardTitle className="text-base">Select a lead</CardTitle>
-                </CardHeader>
-              </Card>
-            )}
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        leads.find((lead) => lead.id === associatedLeads[0])
+                          ?.clientName
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p className="font-bold">
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.service?.name
+                        }
+                      </p>
+                      <p>
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.description
+                        }
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto text-center text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a lead</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
             </div>
             <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
@@ -326,29 +359,45 @@ export function BillingDetailForm({
                 value={associatedPlan}
                 onChange={(value) => {
                   setAssociatedPlan(value);
-                  setLocalEstimateData(prev => prev ? {...prev, plan_id: value[0] || 0} : null);
-                }}/>
-                {associatedPlan.length > 0 ? (
-                  <Card className="w-auto text-base">
-                    <CardHeader>
-                      <CardTitle className="text-base">{plans.find(plan => plan.id === associatedPlan[0])?.name}</CardTitle>
-                      <CardDescription>
-                        <p>
-                        {plans.find(plan => plan.id === associatedPlan[0])?.price ? formatCurrency(plans.find(plan => plan.id === associatedPlan[0])?.price!) : "No price"}
-                        </p>
-                        <p>
-                          {plans.find(plan => plan.id === associatedPlan[0])?.description || "No description"}
-                        </p>
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                ) : (
-                  <Card className="w-auto">
-                    <CardHeader>
-                      <CardTitle className="text-base">Select a plan</CardTitle>
-                    </CardHeader>
-                  </Card>
-                )}
+                  setLocalEstimateData((prev) =>
+                    prev ? { ...prev, plan_id: value[0] || 0 } : null
+                  );
+                }}
+              />
+              {associatedPlan.length > 0 ? (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.name
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.price
+                          ? formatCurrency(
+                              plans.find(
+                                (plan) => plan.id === associatedPlan[0]
+                              )?.price!
+                            )
+                          : "No price"}
+                      </p>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.description || "No description"}
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a plan</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
             </div>
             <hr className="border-[#EBEDF2]" />
             <p>service</p>
@@ -381,11 +430,14 @@ export function BillingDetailForm({
                 </Button>
               </CardHeader>
             </Card>
-            <Button 
-                className={'rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80'}
-                onClick={UpdateBilling}
-                disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update Billing'}
+            <Button
+              className={
+                "rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80"
+              }
+              onClick={UpdateBilling}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Updating..." : "Update Billing"}
             </Button>
           </div>
         </div>

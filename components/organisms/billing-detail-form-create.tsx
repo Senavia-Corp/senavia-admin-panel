@@ -21,6 +21,8 @@ import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CostPage } from "@/components/pages/cost-page";
 import { useToast } from "@/hooks/use-toast";
 import { CostDetailFormCreate } from "./cost-detail-form-create";
+import { MultiSelectPlan } from "../atoms/multiselect-plan";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -87,29 +89,33 @@ export function BillingDetailCreateForm({
   }, []);
   const [showDocument, setShowDocument] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
+  const [popupMessage, setPopupMessage] = useState({ type: "", message: "" });
   const { createBilling, error, successMessage } = BillingViewModel();
 
   // Estados para campos editables
   const [title, setTitle] = useState("");
-  const [totalValue, setTotalValue] = useState(selectedBilling?.totalValue?.toString() || "");
+  const [totalValue, setTotalValue] = useState(
+    selectedBilling?.totalValue?.toString() || ""
+  );
   const [estimatedTime, setEstimatedTime] = useState("");
   const [deadlineToPay, setDeadlineToPay] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
   const [associatedLeads, setAssociatedLeads] = useState<number[]>([]);
   const [service, setService] = useState("");
-  const [associatedPlan, setAssociatedPlan] = useState("");
+  const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [showCosts, setShowCosts] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
-  type ApiResponse = {
-    success: boolean;
-    data: Billing[];
-  } | {
-    success: boolean;
-    error: string;
-  };
+  type ApiResponse =
+    | {
+        success: boolean;
+        data: Billing[];
+      }
+    | {
+        success: boolean;
+        error: string;
+      };
   const [newEstimate, setNewEstimate] = useState<Billing | null>(null);
   const [createFisrtCost, setCreateFisrtCost] = useState(false);
 
@@ -119,11 +125,12 @@ export function BillingDetailCreateForm({
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
+      setAssociatedLeads(
+        selectedBilling.lead_id ? [selectedBilling.lead_id] : []
+      );
       setService(""); // No hay service en estos datos
     }
   }, [selectedBilling]); // Agregar selectedBilling como dependencia
-
 
   const handleDocumentPreview = () => {
     setShowDocument(true);
@@ -131,7 +138,7 @@ export function BillingDetailCreateForm({
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
+    return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
   };
 
   const isFormValid = () => {
@@ -141,56 +148,59 @@ export function BillingDetailCreateForm({
       description !== "" &&
       status !== "" &&
       associatedLeads.length > 0 &&
-      associatedPlan !== "" &&
+      associatedPlan.length > 0 &&
       deadlineToPay !== ""
     );
   };
 
-    const handleCreateBilling = async () => {
-      setIsCreating(true);
-      try {
-        const billingData: CreateBillingData = {
-          title: title,
-          totalValue: 0,
-          estimatedTime: estimatedTime,
-          description: description,
-          state: status,
-          lead_id: associatedLeads[0] || 0,
-          plan_id: Number(associatedPlan),
-          deadLineToPay: deadlineToPay,
-          invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-          invoiceReference: invoiceReference,
-          percentagePaid: 0,
-          remainingPercentage: 100,
-        };
-        const response = await createBilling(billingData) as ApiResponse;
-        
-        if (response.success && 'data' in response && response.data.length > 0) {
-          const newBilling = response.data[0];
-          setNewEstimate(newBilling);
-          toast({
-            title: 'Billing created successfully',
-            description: 'The billing has been created successfully.'
-          });
-          if (newBilling && newBilling.id) {
-            setCreateFisrtCost(true);
-            console.log('Created billing with ID:', newBilling.id);
-          }
-        } else if ('error' in response) {
-          toast({
-            title: 'Failed to create billing',
-            description: response.error || 'The billing has not been created.'
-          });
-        }
-      } catch (error) {
-        console.error('An error has occurred:', error);
+  const handleCreateBilling = async () => {
+    setIsCreating(true);
+    try {
+      const billingData: CreateBillingData = {
+        title: title,
+        totalValue: 0,
+        estimatedTime: estimatedTime,
+        description: description,
+        state: status,
+        lead_id: associatedLeads[0] || 0,
+        plan_id: associatedPlan[0] || 0,
+        deadLineToPay: deadlineToPay,
+        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+        invoiceReference: invoiceReference,
+        percentagePaid: 0,
+        remainingPercentage: 100,
+      };
+      const response = (await createBilling(billingData)) as ApiResponse;
+
+      if (response.success && "data" in response && response.data.length > 0) {
+        const newBilling = response.data[0];
+        setNewEstimate(newBilling);
         toast({
-          title: 'Failed to create billing',
-          description: error instanceof Error ? error.message : 'The billing has not been created.'
+          title: "Billing created successfully",
+          description: "The billing has been created successfully.",
         });
-      } finally {
-        setIsCreating(false);
+        if (newBilling && newBilling.id) {
+          setCreateFisrtCost(true);
+          console.log("Created billing with ID:", newBilling.id);
+        }
+      } else if ("error" in response) {
+        toast({
+          title: "Failed to create billing",
+          description: response.error || "The billing has not been created.",
+        });
       }
+    } catch (error) {
+      console.error("An error has occurred:", error);
+      toast({
+        title: "Failed to create billing",
+        description:
+          error instanceof Error
+            ? error.message
+            : "The billing has not been created.",
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (showCosts) {
@@ -208,16 +218,18 @@ export function BillingDetailCreateForm({
   if (createFisrtCost) {
     return (
       <div className="">
-          <CostDetailFormCreate 
-            estimateId={newEstimate?.id || 0} 
-            onBack={() => setCreateFisrtCost(false)} 
-            onCreateSuccess={() => { setCreateFisrtCost(false); onBack?.(); }} 
-            fisrtCost={true} 
-          />
-        </div>
+        <CostDetailFormCreate
+          estimateId={newEstimate?.id || 0}
+          onBack={() => setCreateFisrtCost(false)}
+          onCreateSuccess={() => {
+            setCreateFisrtCost(false);
+            onBack?.();
+          }}
+          fisrtCost={true}
+        />
+      </div>
     );
   }
-
 
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
@@ -249,7 +261,7 @@ export function BillingDetailCreateForm({
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">                                     
+          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">
             <p>Title</p>
             <Input
               type="text"
@@ -258,16 +270,14 @@ export function BillingDetailCreateForm({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter title"
             />
-              <p>
-                Estimated Time:
-              </p>
-              <Input
-                type="text"
-                className="w-full h-7"
-                value={estimatedTime}
-                onChange={(e) => setEstimatedTime(e.target.value)}
-                placeholder="Enter estimated time in months"
-              />
+            <p>Estimated Time:</p>
+            <Input
+              type="text"
+              className="w-full h-7"
+              value={estimatedTime}
+              onChange={(e) => setEstimatedTime(e.target.value)}
+              placeholder="Enter estimated time in months"
+            />
             <hr className="border-[#EBEDF2]" />
             <Label
               htmlFor="description"
@@ -315,23 +325,84 @@ export function BillingDetailCreateForm({
                 placeholder="Select a lead..."
                 disabled={false}
               />
+              {associatedLeads.length > 0 ? (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        leads.find((lead) => lead.id === associatedLeads[0])
+                          ?.clientName
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p className="font-bold">
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.service?.name
+                        }
+                      </p>
+                      <p>
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.description
+                        }
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a lead</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
             </div>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Plan ID
-              <Select value={associatedPlan} onValueChange={setAssociatedPlan}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {plans?.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.id.toString()}>
-                      Plan ID: {plan.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </p>
+            <div className="space-y-2">
+              <label>Associated Plan ID</label>
+              <MultiSelectPlan
+                plans={plans}
+                value={associatedPlan}
+                onChange={(value) => {
+                  setAssociatedPlan(value);
+                }}
+              />
+              {associatedPlan.length > 0 ? (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.name
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.price
+                          ? formatCurrency(
+                              plans.find(
+                                (plan) => plan.id === associatedPlan[0]
+                              )?.price!
+                            )
+                          : "No price"}
+                      </p>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.description || "No description"}
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a plan</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
+            </div>
             <hr className="border-[#EBEDF2]" />
             <p>Deadline to pay</p>
             <Input
@@ -340,21 +411,22 @@ export function BillingDetailCreateForm({
               value={deadlineToPay}
               onChange={(e) => setDeadlineToPay(e.target.value)}
             />
-             <Button 
-                className={`rounded-full text-3xl items-center py-2 px-4 ${
-                  isFormValid() && !isCreating
-                    ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80" 
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-                onClick={handleCreateBilling}
-                disabled={!isFormValid() || isCreating}>
-              {isCreating ? 'Creating...' : 'Create Billing'}
+            <Button
+              className={`rounded-full text-3xl items-center py-2 px-4 ${
+                isFormValid() && !isCreating
+                  ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              onClick={handleCreateBilling}
+              disabled={!isFormValid() || isCreating}
+            >
+              {isCreating ? "Creating..." : "Create Billing"}
             </Button>
           </div>
         </div>
       </div>
       <CardMokcup
-        type={popupMessage.type === 'success' ? 'success' : 'error'}
+        type={popupMessage.type === "success" ? "success" : "error"}
         message={popupMessage.message}
         isOpen={showPopup}
       />
