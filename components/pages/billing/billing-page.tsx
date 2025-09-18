@@ -172,7 +172,7 @@ export function BillingPage() {
                 "Description",
                 "All Billing",
                 "Description",
-                ["Billing ID", "Estimated Time", "State", "Total", "Actions"],
+                ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],
                 billingRecords,
                 handlers
               )}

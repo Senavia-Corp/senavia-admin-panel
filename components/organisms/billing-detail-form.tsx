@@ -22,6 +22,7 @@ import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
+import { Progress } from "../ui/progress";
 
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -72,6 +73,7 @@ export function BillingDetailForm({
     console.log("billingId recibido:", billingId);
     console.log("leads recibidos:", leads);
     console.log("lead recibido:", lead);
+    console.log("plans recibidos:", plans);
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
@@ -83,6 +85,7 @@ export function BillingDetailForm({
     }
 
     setLocalEstimateData({
+      title: selectedBilling?.title || "",
       totalValue: Number(selectedBilling?.totalValue) || 0, 
       estimatedTime: selectedBilling?.estimatedTime?.toString() || "",
       description: selectedBilling?.description || "",
@@ -92,6 +95,8 @@ export function BillingDetailForm({
       deadLineToPay: selectedBilling?.deadLineToPay || "",
       invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
       invoiceReference: selectedBilling?.invoiceReference || "",
+      percentagePaid: selectedBilling?.percentagePaid || 0,
+      remainingPercentage: selectedBilling?.remainingPercentage || 0,
     });
   }, []);
 
@@ -209,6 +214,15 @@ export function BillingDetailForm({
                 : "N/A"}
             </p>
             <hr className="border-[#EBEDF2]" />
+            <p>Title</p>
+            <Input
+              value={localEstimateData?.title || ""}
+              onChange={(e) => {
+                setLocalEstimateData(prev => prev ? {...prev, title: e.target.value} : null);
+              }}
+              placeholder="Enter title"
+            />
+            <hr className="border-[#EBEDF2]" />
             <Label className=" text-[#393939] text-base/4 font-normal block">
               Estimated Time
               <input
@@ -264,6 +278,12 @@ export function BillingDetailForm({
               </SelectContent>
             </Select>
             <hr className="border-[#EBEDF2]" />
+            <p>Percentage Paid: {localEstimateData?.percentagePaid || 0}%</p>
+            <Progress value={localEstimateData?.percentagePaid || 0} />
+            <hr className="border-[#EBEDF2]" />
+            <p>Remaining Percentage for paid: {localEstimateData?.remainingPercentage || 0}%</p>
+            <Progress value={localEstimateData?.remainingPercentage || 0} />
+            <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
               <Label>Associated Lead</Label>
               <MultiSelectBilling
@@ -279,37 +299,57 @@ export function BillingDetailForm({
                 disabled={false}
               />
               {associatedLeads.length > 0 ? (
-              <Card className="w-96 text-center">
+              <Card className="w-96 text-base">
                 <CardHeader>
-                  <CardTitle>{leads.find(lead => lead.id === associatedLeads[0])?.clientName}</CardTitle>
+                  <CardTitle className="text-base">{leads.find(lead => lead.id === associatedLeads[0])?.clientName}</CardTitle>
                   <CardDescription>
-                    <p className="font-bold  text-base text-center">
+                    <p className="font-bold">
                       {leads.find(lead => lead.id === associatedLeads[0])?.service?.name}
                     </p>
-                    <p className="font-bold text-center">Description</p>
                     <p>{leads.find(lead => lead.id === associatedLeads[0])?.description}</p>
                   </CardDescription>
                 </CardHeader>
               </Card>
             ) : (
-              <Card className="w-72">
+              <Card className="w-96 text-center text-base">
                 <CardHeader>
-                  <CardTitle>Select a lead</CardTitle>
+                  <CardTitle className="text-base">Select a lead</CardTitle>
                 </CardHeader>
               </Card>
             )}
             </div>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Plan
-               <MultiSelectPlan
+            <div className="space-y-2">
+              <Label>Associated Plan</Label>
+              <MultiSelectPlan
                 plans={plans}
                 value={associatedPlan}
                 onChange={(value) => {
                   setAssociatedPlan(value);
                   setLocalEstimateData(prev => prev ? {...prev, plan_id: value[0] || 0} : null);
                 }}/>
-            </p>
+                {associatedPlan.length > 0 ? (
+                  <Card className="w-96 text-base">
+                    <CardHeader>
+                      <CardTitle className="text-base">{plans.find(plan => plan.id === associatedPlan[0])?.name}</CardTitle>
+                      <CardDescription>
+                        <p>
+                        {plans.find(plan => plan.id === associatedPlan[0])?.price ? formatCurrency(plans.find(plan => plan.id === associatedPlan[0])?.price!) : "No price"}
+                        </p>
+                        <p>
+                          {plans.find(plan => plan.id === associatedPlan[0])?.description || "No description"}
+                        </p>
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                ) : (
+                  <Card className="w-72">
+                    <CardHeader>
+                      <CardTitle className="text-base">Select a plan</CardTitle>
+                    </CardHeader>
+                  </Card>
+                )}
+            </div>
             <hr className="border-[#EBEDF2]" />
             <p>service</p>
             <Select

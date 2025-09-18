@@ -42,6 +42,7 @@ export interface Cost {
 
 export interface Billings{
   id: number
+  title: string
   estimatedTime: number
   state: string
   totalValue: string
@@ -57,10 +58,13 @@ export interface apiResponse<T> {
 export type BillingStatus = "CREATED" | "PROCESSING" | "IN_REVIEW" | "REJECTED" | "ACCEPTED" | "INVOICE" | "PAID"
 
 export interface CreateBillingData {
+  title: string,
   estimatedTime: string,
   description: string,
   state: string,
   totalValue: number,
+  percentagePaid: number,
+  remainingPercentage: number,
   lead_id: number,
   plan_id: number,
   deadLineToPay: string,
