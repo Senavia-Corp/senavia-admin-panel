@@ -1,3 +1,5 @@
+import type { Payment } from "./payment-management";
+
 export interface BillingRecord {
   id: string
   estimatedTime: number // in months
@@ -26,6 +28,7 @@ export interface Billing {
   invoiceReference: string
   Project: any[] // TODO: Definir interfaz específica para Project
   costs: Cost[]
+  payments?: Payment[] // Pagos asociados al billing
 }
 
 export interface Cost {

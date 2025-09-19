@@ -59,27 +59,7 @@ export function BillingDetailForm({
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const [payments, setPayments] = useState<any[]>([]);
   const { PatchBilling } = BillingViewModel();
-
-  // Cargar pagos cuando se monta el componente
-  useEffect(() => {
-    const loadPayments = async () => {
-      if (selectedBilling?.id) {
-        try {
-          const paymentsData =
-            await PaymentManagementService.getPaymentsByEstimateId(
-              selectedBilling.id
-            );
-          setPayments(paymentsData);
-        } catch (error) {
-          console.error("Error loading payments:", error);
-        }
-      }
-    };
-
-    loadPayments();
-  }, [selectedBilling?.id]);
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -205,7 +185,7 @@ export function BillingDetailForm({
     return (
       <div className="">
         <PaymentPage
-          payments={payments}
+          payments={selectedBilling?.payments || []}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
         />

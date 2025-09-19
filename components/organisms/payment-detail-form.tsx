@@ -17,7 +17,7 @@ import {
 } from "@/types/payment-management";
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
-import { PaymentViewModel } from "@/components/pages/payment/PaymentViewModel";
+import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 
 interface PaymentDetailFormProps {
   paymentId: number;
@@ -35,7 +35,7 @@ export function PaymentDetailForm({
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment } = PaymentViewModel();
+  const { updatePayment } = BillingViewModel();
 
   const handleUpdatePayment = async () => {
     try {

@@ -6,7 +6,7 @@ import type {
   ApiResponse,
 } from "@/types/payment-management";
 
-// Mock data para desarrollo
+// Mock data para desarrollo - usando IDs más comunes que podrían existir en billing
 const mockPayments: Payment[] = [
   {
     id: 1,
@@ -49,6 +49,49 @@ const mockPayments: Payment[] = [
     estimateId: 2,
     createdAt: "2025-01-18T14:30:00Z",
     updatedAt: "2025-01-18T15:00:00Z",
+  },
+  // Agregamos más pagos para diferentes billings
+  {
+    id: 4,
+    reference: "PAY-2025-004",
+    description: "Marketing campaign payment",
+    amount: 1500,
+    percentagePaid: 100,
+    state: "COMPLETED",
+    paidDate: "2025-01-10",
+    method: "Wire Transfer",
+    attachments: [],
+    estimateId: 3,
+    createdAt: "2025-01-10T10:00:00Z",
+    updatedAt: "2025-01-10T10:00:00Z",
+  },
+  {
+    id: 5,
+    reference: "PAY-2025-005",
+    description: "Design services payment",
+    amount: 2500,
+    percentagePaid: 75,
+    state: "COMPLETED",
+    paidDate: "2025-01-12",
+    method: "Credit Card",
+    attachments: [],
+    estimateId: 4,
+    createdAt: "2025-01-12T10:00:00Z",
+    updatedAt: "2025-01-12T10:00:00Z",
+  },
+  {
+    id: 6,
+    reference: "PAY-2025-006",
+    description: "Development milestone 1",
+    amount: 4000,
+    percentagePaid: 40,
+    state: "PENDING",
+    paidDate: undefined,
+    method: undefined,
+    attachments: [],
+    estimateId: 5,
+    createdAt: "2025-01-14T10:00:00Z",
+    updatedAt: "2025-01-14T10:00:00Z",
   },
 ];
 

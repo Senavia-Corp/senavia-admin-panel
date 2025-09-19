@@ -42,7 +42,9 @@ export function PaymentPage({
       filtered = filtered.filter(
         (payment) =>
           payment.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           payment.method?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -56,7 +58,9 @@ export function PaymentPage({
 
   const handleDeletePayment = async (paymentToDelete: Payment) => {
     try {
-      const success = await PaymentManagementService.deletePayment(paymentToDelete.id);
+      const success = await PaymentManagementService.deletePayment(
+        paymentToDelete.id
+      );
       if (success) {
         setPayments((prevPayments) =>
           prevPayments.filter((payment) => payment.id !== paymentToDelete.id)
@@ -78,7 +82,9 @@ export function PaymentPage({
 
   const handlePaymentUpdate = (updatedPayment: Payment) => {
     setPayments((prevPayments) =>
-      prevPayments.map((payment) => (payment.id === updatedPayment.id ? updatedPayment : payment))
+      prevPayments.map((payment) =>
+        payment.id === updatedPayment.id ? updatedPayment : payment
+      )
     );
   };
 
@@ -123,7 +129,9 @@ export function PaymentPage({
       <div className="">
         <PaymentDetailForm
           paymentId={selectedPaymentId}
-          payment={payments.find((payment) => payment.id === selectedPaymentId)!}
+          payment={
+            payments.find((payment) => payment.id === selectedPaymentId)!
+          }
           onBack={handleBackToList}
           onUpdate={handlePaymentUpdate}
         />
@@ -166,12 +174,25 @@ export function PaymentPage({
               {GeneralTable(
                 "payments-page",
                 `Add Payment | Total: ${formatCurrency(
-                  filteredPayments.reduce((sum, payment) => sum + payment.amount, 0)
+                  filteredPayments.reduce(
+                    (sum, payment) => sum + payment.amount,
+                    0
+                  )
                 )}`,
                 "Description",
                 "All Payments",
                 "Description",
-                ["ID", "Reference", "Description", "Amount", "Percentage", "State", "Paid Date", "Method", "Actions"],
+                [
+                  "ID",
+                  "Reference",
+                  "Description",
+                  "Amount",
+                  "Percentage",
+                  "State",
+                  "Paid Date",
+                  "Method",
+                  "Actions",
+                ],
                 filteredPayments,
                 handlers
               )}

@@ -93,6 +93,14 @@ export const endpoints = {
     createCost: `${API}/cost`,
     deleteCost: (id: number) => `${API}/cost?id=${id}`,
     updateCost: (id: number) => `${API}/cost?id=${id}`
+  },
+  payment: {
+    createPayment: `${API}/payment`,
+    deletePayment: (id: number) => `${API}/payment?id=${id}`,
+    updatePayment: (id: number) => `${API}/payment?id=${id}`,
+    getPayments: `${API}/payment`,
+    getPayment: (id: number) => `${API}/payment?id=${id}`,
+    getPaymentsByEstimate: (estimateId: number) => `${API}/payment?estimateId=${estimateId}`
   }
 };
 

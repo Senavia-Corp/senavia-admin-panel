@@ -107,6 +107,7 @@ export function BillingDetailCreateForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [showCosts, setShowCosts] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   type ApiResponse =
@@ -212,6 +213,18 @@ export function BillingDetailCreateForm({
           costs={selectedBilling?.costs || []}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
+        />
+      </div>
+    );
+  }
+
+  if (showPayments) {
+    return (
+      <div className="">
+        <PaymentPage
+          payments={selectedBilling?.payments || []}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowPayments(false)}
         />
       </div>
     );

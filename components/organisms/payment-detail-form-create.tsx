@@ -17,7 +17,7 @@ import {
 } from "@/types/payment-management";
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
-import { PaymentViewModel } from "@/components/pages/payment/PaymentViewModel";
+import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 
 export function PaymentDetailFormCreate({
   estimateId,
@@ -32,7 +32,7 @@ export function PaymentDetailFormCreate({
 }) {
   const [loadingPost, setLoadingPost] = useState(false);
   const { toast } = useToast();
-  const { createPayment } = PaymentViewModel();
+  const { createPayment } = BillingViewModel();
 
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
