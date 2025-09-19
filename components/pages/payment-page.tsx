@@ -8,6 +8,7 @@ import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { PaymentDetailForm } from "@/components/organisms/payment-detail-form";
 import { PaymentDetailFormCreate } from "@/components/organisms/payment-detail-form-create";
 import { PaymentManagementService } from "@/services/payment-management-service";
+import { BillingViewModel } from "./billing/BillingViewModel";
 import { toast } from "sonner";
 import type { Payment } from "@/types/payment-management";
 
@@ -30,6 +31,7 @@ export function PaymentPage({
   const [showCreatePayment, setShowCreatePayment] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number>();
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
+  const { deletePayment } = BillingViewModel();
 
   useEffect(() => {
     filterPayments();
@@ -58,16 +60,13 @@ export function PaymentPage({
 
   const handleDeletePayment = async (paymentToDelete: Payment) => {
     try {
-      const success = await PaymentManagementService.deletePayment(
-        paymentToDelete.id
-      );
+      const success = await deletePayment(paymentToDelete.id);
       if (success) {
-        setPayments((prevPayments) =>
-          prevPayments.filter((payment) => payment.id !== paymentToDelete.id)
-        );
-        toast.success("Payment deleted successfully");
-      } else {
-        toast.error("Failed to delete payment");
+        const updatedPayments = payments.filter((payment) => payment.id !== paymentToDelete.id);
+        setPayments(updatedPayments);
+        setFilteredPayments(updatedPayments);
+        setPaymentToDelete(null);
+        // El toast ya se muestra en el BillingViewModel
       }
     } catch (error) {
       console.error("Error deleting payment", error);
@@ -81,15 +80,18 @@ export function PaymentPage({
   };
 
   const handlePaymentUpdate = (updatedPayment: Payment) => {
-    setPayments((prevPayments) =>
-      prevPayments.map((payment) =>
-        payment.id === updatedPayment.id ? updatedPayment : payment
-      )
+    const updatedPayments = payments.map((payment) =>
+      payment.id === updatedPayment.id ? updatedPayment : payment
     );
+    setPayments(updatedPayments);
+    setFilteredPayments(updatedPayments);
   };
 
   const handlePaymentCreate = (newPayment: Payment) => {
-    setPayments((prevPayments) => [...prevPayments, newPayment]);
+    const updatedPayments = [...payments, newPayment];
+    setPayments(updatedPayments);
+    setFilteredPayments(updatedPayments);
+    setShowCreatePayment(false);
   };
 
   const handleCreatePayment = () => {
