@@ -17,7 +17,7 @@ export const endpoints = {
     getById: (id: number) => `${API}/product?id=${id}`,
     delete: (id: number) => `${API}/product?id=${id}`,
     create: `${API}/product`,
-    update: (id: number) => `${API}/product?id=${id}`
+    update: (id: number) => `${API}/product?id=${id}`,
   },
 
   blog: {
@@ -76,7 +76,7 @@ export const endpoints = {
     getPermissions: `${API}/permission`,
   },
   auth: {
-    register: `${API}/auth/register`,
+    register: `${API}/auth/register-simple`,
   },
   estimate: {
     getEstimates: `${API}/estimate`,
@@ -92,8 +92,18 @@ export const endpoints = {
   cost: {
     createCost: `${API}/cost`,
     deleteCost: (id: number) => `${API}/cost?id=${id}`,
-    updateCost: (id: number) => `${API}/cost?id=${id}`
-  }
+    updateCost: (id: number) => `${API}/cost?id=${id}`,
+  },
+  clause: {
+    getClauses: `${API}/clause`,
+  },
+  contract: {
+    getAllContracts: `${API}/contract`,
+    deleteContract: (id: number) => `${API}/contract?id=${id}`,
+    createContract: `${API}/contract`,
+    updateContract: (id: number) => `${API}/contract?id=${id}`,
+    sendEmail: `https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e`,
+  },
 };
 
 // Header configurations

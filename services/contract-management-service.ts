@@ -1,100 +1,201 @@
-import type { Contract, CreateContractData, ContractStatus } from "@/types/contract-management"
+import type {
+  Contract,
+  CreateContractData,
+  ContractStatus,
+} from "@/types/contract-management";
+import Axios from "axios";
+import { endpoints } from "@/lib/services/endpoints";
 
-// Mock data
-const mockContracts: Contract[] = [
-  {
-    id: "0001",
-    title: "Website Development Contract",
-    clientName: "Acme Corporation",
-    status: "Signed",
-    totalValue: 15000,
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-20"),
-  },
-  {
-    id: "0002",
-    title: "E-commerce Platform Contract",
-    clientName: "Tech Solutions Inc",
-    status: "Not Signed",
-    totalValue: 25000,
-    createdAt: new Date("2024-01-10"),
-    updatedAt: new Date("2024-01-18"),
-  },
-  {
-    id: "0003",
-    title: "Mobile App Development",
-    clientName: "StartupXYZ",
-    status: "Signed",
-    totalValue: 18000,
-    createdAt: new Date("2024-01-12"),
-    updatedAt: new Date("2024-01-19"),
-  },
-  {
-    id: "0004",
-    title: "Digital Marketing Campaign",
-    clientName: "Local Business",
-    status: "Not Signed",
-    totalValue: 8000,
-    createdAt: new Date("2024-01-08"),
-    updatedAt: new Date("2024-01-16"),
-  },
-]
+// Clause type from API response
+type Clause = {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Service returns API-shaped Contract directly (normalized to backend model)
 
 export class ContractManagementService {
-  static async getContracts(search?: string, statusFilter?: string): Promise<Contract[]> {
-    let filteredContracts = [...mockContracts]
+  static async getContracts(): Promise<Contract[]> {
+    try {
+      const response = await Axios.get(endpoints.contract.getAllContracts, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
-    if (search) {
-      filteredContracts = filteredContracts.filter(
-        (contract) =>
-          contract.title.toLowerCase().includes(search.toLowerCase()) ||
-          contract.clientName.toLowerCase().includes(search.toLowerCase()),
-      )
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error fetching contracts");
+      }
+
+      return response.data.data || [];
+    } catch (error: any) {
+      console.error("Error fetching contracts:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch contracts. Please try again."
+      );
     }
-
-    if (statusFilter && statusFilter !== "all") {
-      filteredContracts = filteredContracts.filter((contract) => contract.status === statusFilter)
-    }
-
-    return filteredContracts
   }
 
-  static async getContractById(id: string): Promise<Contract | null> {
-    return mockContracts.find((contract) => contract.id === id) || null
-  }
+  static async createContract(
+    contractData: CreateContractData
+  ): Promise<Contract> {
+    try {
+      // Transform the data to match backend parameter names me toco hacer esto para que el backend lo entienda
+      const backendData = {
+        ...contractData,
+        user_id: contractData.userId,
+        lead_id: contractData.leadId,
+      };
+      //no es lo mas optimo toca cambiar los nombres de los campos en el backend
 
-  static async createContract(contractData: CreateContractData): Promise<Contract> {
-    const newContract: Contract = {
-      id: (mockContracts.length + 1).toString().padStart(4, "0"),
-      title: contractData.title,
-      clientName: contractData.clientName,
-      status: contractData.status,
-      totalValue: contractData.totalValue,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      // Remove the original camelCase properties
+      delete (backendData as any).userId;
+      delete (backendData as any).leadId;
+
+      const response = await Axios.post(
+        endpoints.contract.createContract,
+        backendData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error creating contract");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error creating contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to create contract. Please try again."
+      );
     }
-
-    mockContracts.push(newContract)
-    return newContract
   }
 
-  static async updateContract(id: string, updates: Partial<Contract>): Promise<Contract | null> {
-    const contractIndex = mockContracts.findIndex((contract) => contract.id === id)
-    if (contractIndex === -1) return null
+  static async updateContract(
+    id: string,
+    updates: Partial<CreateContractData>
+  ): Promise<Contract> {
+    try {
+      // Transform the data to match backend parameter names
+      const backendData: any = { ...updates };
 
-    mockContracts[contractIndex] = { ...mockContracts[contractIndex], ...updates, updatedAt: new Date() }
-    return mockContracts[contractIndex]
+      // Transform userId and leadId if they exist
+      if (updates.userId !== undefined) {
+        backendData.user_id = updates.userId;
+        delete backendData.userId;
+      }
+
+      if (updates.leadId !== undefined) {
+        backendData.lead_id = updates.leadId;
+        delete backendData.leadId;
+      }
+
+      const response = await Axios.patch(
+        endpoints.contract.updateContract(Number(id)),
+        backendData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error updating contract");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error updating contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to update contract. Please try again."
+      );
+    }
   }
 
   static async deleteContract(id: string): Promise<boolean> {
-    const contractIndex = mockContracts.findIndex((contract) => contract.id === id)
-    if (contractIndex === -1) return false
+    try {
+      const response = await Axios.delete(
+        endpoints.contract.deleteContract(Number(id)),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
-    mockContracts.splice(contractIndex, 1)
-    return true
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Error deleting contract");
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error("Error deleting contract:", error);
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please sign in again.");
+      }
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to delete contract. Please try again."
+      );
+    }
   }
 
   static getContractStatuses(): ContractStatus[] {
-    return ["Signed", "Not Signed"]
+    return ["DRAFT", "SENT", "SIGNED", "ACTIVE", "EXPIRED", "TERMINATED"];
+  }
+
+  static async getContractClauses(): Promise<Clause[]> {
+    //Esto no deberia ir aqui deberia ir en el servicio de clauses
+    //Ademas me permite traer las clauses sin estar logueado, revisar eso
+    try {
+      const response = await Axios.get(endpoints.clause.getClauses, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching clauses");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error fetching clauses:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(
+          "Error al obtener cláusulas. Por favor, intente nuevamente."
+        );
+      }
+    }
   }
 }

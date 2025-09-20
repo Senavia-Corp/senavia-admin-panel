@@ -1,152 +1,197 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+"use client";
 
-interface ContractDetailsFormValues {
-  title: string;
-  signedDate: string;
-  companyEmail: string;
-  companyAddress: string;
-  companyPhone: string;
-  ownerName: string;
-  ownerSignedDate: string;
-  billName: string;
-  billSignedDate: string;
+import React from "react";
+import { Contract } from "@/types/contract-management";
+import { Button } from "../../ui/button";
+import { useRenderPDF } from "@/hooks/useRenderPDF";
+
+interface ContractDetailsProps {
+  contract: Contract;
 }
 
-export function ContractDetails() {
-  const { register, handleSubmit } = useForm<ContractDetailsFormValues>();
+export function ContractDetails({ contract }: ContractDetailsProps) {
+  const { url, loading, error, generatePDF, downloadPDF, showPDF } =
+    useRenderPDF();
 
-  // Puedes reemplazar estos valores por props o datos reales
-  const contractId = "0000";
-  const userId = "0000";
-  const leadId = "0000";
+  const handleGeneratePDF = () => {
+    generatePDF("ContractPDF", { contract });
+  };
 
-  const onSubmit = (data: ContractDetailsFormValues) => {
-    // Aquí puedes manejar el envío del formulario
-    console.log(data);
+  // Auto-open PDF when it's ready
+  React.useEffect(() => {
+    if (url) {
+      showPDF();
+    }
+  }, [url, showPDF]);
+
+  const handleDownloadPDF = () => {
+    downloadPDF();
+  };
+
+  const handleShowPDF = () => {
+    showPDF();
   };
 
   return (
-    <div className="w-full border-[20px] border-[#04081E] rounded-lg p-4 md:p-[60px] lg:p-[111px]">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full mx-auto p-8 bg-white rounded-lg shadow-none "
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-          <div className="col-span-1">
-            <div className="mb-2">
-              <div className="text-gray-800 text-sm">
-                Contract ID: {contractId}
-              </div>
-              <div className="border-b border-gray-200 mt-1" />
+    <div className="flex flex-col h-full">
+      {/* Preview del contrato */}
+      <div className="flex-1 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Información básica del contrato */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gray-700 mb-3">
+              Contract Details
+            </h3>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="font-medium">ID:</span> {contract.id}
+              </p>
+              <p>
+                <span className="font-medium">Title:</span> {contract.title}
+              </p>
+              <p>
+                <span className="font-medium">State:</span>{" "}
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${
+                    contract.state === "SIGNED"
+                      ? "bg-green-100 text-green-800"
+                      : contract.state === "ACTIVE"
+                      ? "bg-blue-100 text-blue-800"
+                      : contract.state === "DRAFT"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : contract.state === "SENT"
+                      ? "bg-purple-100 text-purple-800"
+                      : contract.state === "EXPIRED"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {contract.state}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium">Created:</span>{" "}
+                {new Date(contract.createdAt).toLocaleDateString()}
+              </p>
+              <p>
+                <span className="font-medium">Updated:</span>{" "}
+                {new Date(contract.updatedAt).toLocaleDateString()}
+              </p>
             </div>
-            <div className="mb-2">
-              <div className="text-gray-800 text-sm">User ID: {userId}</div>
-              <div className="border-b border-gray-200 mt-1" />
+          </div>
+
+          {/* Información de la empresa */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gray-700 mb-3">
+              Company Information
+            </h3>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="font-medium">Recipient:</span>{" "}
+                {contract.recipientName}
+              </p>
+              <p>
+                <span className="font-medium">Email:</span>{" "}
+                {contract.companyEmail}
+              </p>
+              <p>
+                <span className="font-medium">Phone:</span>{" "}
+                {contract.companyPhone}
+              </p>
+              <p>
+                <span className="font-medium">Address:</span>{" "}
+                {contract.companyAdd}
+              </p>
+              <p>
+                <span className="font-medium">Lead ID:</span> {contract.leadId}
+              </p>
             </div>
-            <div className="mb-2">
-              <div className="text-gray-800 text-sm">Lead ID: {leadId}</div>
-              <div className="border-b border-gray-200 mt-1" />
+          </div>
+
+          {/* Información de firmas */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gray-700 mb-3">Signatures</h3>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="font-medium">Owner:</span> {contract.ownerName}
+              </p>
+              <p>
+                <span className="font-medium">Owner Signed:</span>{" "}
+                {contract.ownerSignDate
+                  ? new Date(contract.ownerSignDate).toLocaleDateString()
+                  : "Not signed"}
+              </p>
+              <p>
+                <span className="font-medium">Recipient Signed:</span>{" "}
+                {contract.recipientSignDate
+                  ? new Date(contract.recipientSignDate).toLocaleDateString()
+                  : "Not signed"}
+              </p>
+              <p>
+                <span className="font-medium">Status:</span>{" "}
+                {contract.signedDate ? "Signed" : "Pending"}
+              </p>
+              <p>
+                <span className="font-medium">Signed Date:</span>{" "}
+                {contract.signedDate
+                  ? new Date(contract.signedDate).toLocaleDateString()
+                  : "Not signed"}
+              </p>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 mt-8">
-              Company Phone
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="000-000-0000"
-              {...register("companyPhone")}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Contract Title"
-              {...register("title")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Owner Name</label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Owner Name"
-              {...register("ownerName")}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Signed date
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="MM-DD-YY"
-              {...register("signedDate")}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Owner Signed date
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="MM-DD-YY"
-              {...register("ownerSignedDate")}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Company Email
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="e-mail@company.com"
-              {...register("companyEmail")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Bill Name</label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Bill Name"
-              {...register("billName")}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Company Address
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Company Add"
-              {...register("companyAddress")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Bill Signed date
-            </label>
-            <input
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="MM-DD-YY"
-              {...register("billSignedDate")}
-            />
+          {/* Cláusulas */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gray-700 mb-3">Clauses</h3>
+            <div className="space-y-2 text-sm">
+              {contract.clauses && contract.clauses.length > 0 ? (
+                contract.clauses.map((clauseLink: any, index: number) => (
+                  <p key={clauseLink.clauseId || index}>
+                    <span className="font-medium">{index + 1}.</span>{" "}
+                    {clauseLink.clause?.title || "Untitled Clause"}
+                  </p>
+                ))
+              ) : (
+                <p className="text-gray-500">No clauses defined</p>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex justify-center mt-[50px]">
-          <button
-            type="submit"
-            className="w-full md:w-2/3 bg-[#99CC33] text-white py-2 rounded-full text-lg font-medium"
+      </div>
+
+      {/* Botones abajo en horizontal */}
+      <div className="flex flex-col space-y-2">
+        {!url && (
+          <Button
+            onClick={handleGeneratePDF}
+            disabled={loading}
+            className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
           >
-            Add / Update User
-          </button>
-        </div>
-      </form>
+            {loading ? "Generating PDF..." : "Generate and View"}
+          </Button>
+        )}
+
+        {url && (
+          <div className="flex space-x-3">
+            <Button
+              onClick={handleShowPDF}
+              className="rounded-full bg-blue-500 text-white font-bold text-sm py-2 px-4"
+            >
+              View PDF
+            </Button>
+            <Button
+              onClick={handleDownloadPDF}
+              className="rounded-full bg-gray-500 text-white font-bold text-sm py-2 px-4"
+            >
+              Download PDF
+            </Button>
+          </div>
+        )}
+
+        {error && (
+          <p className="text-red-500 text-sm mt-2">Error: {error.message}</p>
+        )}
+      </div>
     </div>
   );
 }
