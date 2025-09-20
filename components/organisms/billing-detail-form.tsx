@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { DocumentPreviewBilling } from "./document-preview-billing";
+import { DocumentPreviewBilling } from "../../lib/billing/document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
@@ -187,6 +187,8 @@ export function BillingDetailForm({
         totalValue: selectedBilling.totalValue || '0'
       } as Billing} 
       lead={lead} 
+      costs={selectedBilling.costs}
+      plans={plans}
       onBack={() => setShowDocument(false)} 
     />
   }
