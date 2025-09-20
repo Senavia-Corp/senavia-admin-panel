@@ -19,9 +19,9 @@ import {
 /* -------------------------------------------------- *
  *  Props
  * -------------------------------------------------- */
-interface DocumentPreviewBillingProps extends Billing {
+interface DocumentPreviewBillingProps {
   lead: Lead[];
-  billing: Billing[];
+  billing: Billing;
   onBack: () => void;
 }
 
@@ -29,7 +29,7 @@ interface DocumentPreviewBillingProps extends Billing {
  *  Componente principal
  * -------------------------------------------------- */
 export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
-  const { onBack, ...data } = props;
+  const { onBack, lead, billing } = props;
 
   /* -------- PDF inline -------- */
   const PDFDoc = () => (
@@ -54,18 +54,18 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
           {/* Cuatro tarjetas */}
           <View style={pdf.cardGrid}>
             <CardPDF title="Customer" lines={[
-              data.lead[0].clientName,
-              `ID: ${data.id}`,
+              lead[0].clientName,
+              `ID: ${billing.id}`,
               `(000) 000-0000`,
             ]} />
             <CardPDF title="Invoice Details" lines={[
-              `Creation Date: ${new Date(data.createdAt).toLocaleDateString()}`,
-              `€${data.totalValue.toLocaleString()}`,
-              `Service Date: ${new Date(data.updatedAt).toLocaleDateString()}`,
+              `Creation Date: ${new Date(billing.invoiceDateCreated).toLocaleDateString()}`,
+              `€${billing.totalValue}`,
+              `Service Date: ${new Date(billing.deadLineToPay).toLocaleDateString()}`,
             ]} />
             <CardPDF title="Payment" lines={[
               `Payment Date`,
-              `€${data.totalValue.toLocaleString()}`,
+              `€${billing.totalValue}`,
             ]} />
             <CardPDF title="Recurring" lines={[
               `Recurring Date`,
@@ -100,7 +100,7 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
           <View style={pdf.totalRow}>
             <Text style={pdf.totalLabel}>Total Paid</Text>
             <Text style={pdf.totalVal}>
-              €{data.totalValue.toLocaleString()}
+              €{billing.totalValue}
             </Text>
           </View>
         </View>
@@ -128,7 +128,7 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
         </div>
         <PDFDownloadLink
           document={<PDFDoc />}
-          fileName={`invoice-${data.id}.pdf`}
+          fileName={`invoice-${billing.id}.pdf`}
           className="no-underline"
         >
           {({ loading }) => (

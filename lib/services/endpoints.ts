@@ -84,6 +84,7 @@ export const endpoints = {
     createEstimate: `${API}/estimate`,
     updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
     deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
   },
   plan: {
     getPlans: `${API}/plan`,

@@ -171,6 +171,7 @@ export function BillingDetailForm({
       <div className="">
         <CostPage
           costs={selectedBilling?.costs || []}
+          totalValue= {parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
         />
@@ -178,9 +179,17 @@ export function BillingDetailForm({
     );
   }
 
-  // if (showDocument && selectedBilling) {
-  //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
-  // }
+  if (showDocument && selectedBilling) {
+    return <DocumentPreviewBilling 
+      billing={{
+        ...selectedBilling,
+        description: selectedBilling.description || '',
+        totalValue: selectedBilling.totalValue || '0'
+      } as Billing} 
+      lead={lead} 
+      onBack={() => setShowDocument(false)} 
+    />
+  }
 
   return (
     <div className="flex flex-col">

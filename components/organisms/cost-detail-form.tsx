@@ -10,19 +10,20 @@ import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
+  billingId: number;
   costId: number;
+  totalValue: number;
   cost: Cost;
   onBack?: () => void;
   onUpdate?: (updatedCost: Cost) => void;
 }
 
-export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFormProps) {
-  const { updateCost } = BillingViewModel();
+export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, onUpdate }: CostDetailFormProps) {
+  const { updateCost, PatchBilling } = BillingViewModel();
   const [isUpdating, setIsUpdating] = useState(false);
   const [localCost, setLocalCost] = useState(cost);
   const { toast } = useToast();
   const handleUpdateCost = async () => {
-  
     try {
       setIsUpdating(true);
       const costData: PatchCost = {
@@ -32,10 +33,19 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
         value: localCost.value,
       };
 
-      // Intentar actualizar en el servidor primero
+      // Primero actualizamos el costo
       await updateCost(costId, costData);
+      console.log("Cost updated successfully");
+
+      // Después actualizamos el billing con el nuevo total
+      const newTotalValue = Number(totalValue) + Number(costData.value);
+      console.log("Updating billing with new total:", newTotalValue);
       
-      // Solo si la actualización en el servidor fue exitosa, actualizamos localmente
+      await PatchBilling(billingId, {
+        totalValue: newTotalValue
+      });
+      
+      // Actualizamos localmente
       const updatedCost: Cost = {
         ...cost,
         ...costData,

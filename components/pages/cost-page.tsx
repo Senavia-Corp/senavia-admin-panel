@@ -19,12 +19,14 @@ import { CostDetailForm } from "../organisms/cost-detail-form";
 
 interface CostPageProps {
   costs: Cost[];
+  totalValue: number;
   estimateId: number;
   onBack?: () => void;
 }
 
 export function CostPage({
   costs: initialCosts,
+  totalValue,
   estimateId,
   onBack,
 }: CostPageProps) {
@@ -132,7 +134,9 @@ export function CostPage({
     return (
       <div className="">
         <CostDetailForm
+          billingId={estimateId}
           costId={selectedBillingId}
+          totalValue={totalValue}
           cost={costs.find((cost) => cost.id === selectedBillingId)!}
           onBack={handleBackToList}
           onUpdate={handleCostUpdate}
@@ -146,6 +150,7 @@ export function CostPage({
       <div className="">
         <CostDetailFormCreate
           estimateId={estimateId}
+          totalValue={totalValue}
           onBack={handleBackToList}
           onCreateSuccess={handleCostCreate}
         />

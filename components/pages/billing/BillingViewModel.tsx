@@ -5,6 +5,7 @@ import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
 import { CreateCostData,PatchCost } from "@/types/cost-management";
 import { toast } from "sonner"
+import { PatchBillingData } from "@/types/billing-management";
 
 export function BillingViewModel() {
    const { fetchData } = useFetch();
@@ -77,17 +78,28 @@ export function BillingViewModel() {
         }
     }
 
-    const PatchBilling = async (id: number, billing: CreateBillingData) => {
-        setLoading(true);
-        setError(null);
-        const {response, status, errorLogs} = await fetchData<apiResponse<Billing>>(endpoints.estimate.updateEstimate(id), "patch", billing);
-        if (status === 200 && response && response.success) {
-            setBilling(response.data);
-        }else {
-            setError(errorLogs?.message || response?.message || "Failed to update billing");
+    const PatchBilling = async (id: number, billing: Partial<CreateBillingData>) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const {response, status, errorLogs} = await fetchData<apiResponse<Billing>>(
+                endpoints.estimate.updateEstimate(id), 
+                "patch", 
+                billing
+            );
+            if (status === 200 && response && response.success) {
+                setBilling(response.data);
+                return response.data;
+            } else {
+                throw new Error(errorLogs?.message || response?.message || "Failed to update billing");
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "Failed to update billing");
+            throw error;
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    }
+    };
 
     const getLeads = async () => {
         setLoading(true);
@@ -121,6 +133,8 @@ export function BillingViewModel() {
             setLoading(false);
         }
     }
+
+
 
     const getLeadById = async (id: number) => {
         setLoading(true);

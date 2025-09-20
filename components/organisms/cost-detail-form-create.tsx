@@ -11,16 +11,18 @@ import { useToast } from "@/hooks/use-toast";
 
 export function CostDetailFormCreate({
   estimateId, 
+  totalValue,
   onBack,
   onCreateSuccess,
   fisrtCost
 }: {
   estimateId: number;
+  totalValue: number;
   onBack?: () => void;
   onCreateSuccess?: (newCost: Cost) => void;
   fisrtCost?: boolean;
 }) {
-  const { createCost } = BillingViewModel();
+  const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
   const { toast } = useToast();
   const handleCreateCost = async () => {
@@ -34,6 +36,11 @@ export function CostDetailFormCreate({
         estimateId: estimateId
       };
       await createCost(costData);
+
+      const newTotalValue = totalValue + value;
+      await PatchBilling(estimateId, {
+        totalValue: newTotalValue
+      });
       
       // Crear objeto de costo local para la UI
       const newCost: Cost = {
