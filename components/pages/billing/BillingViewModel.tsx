@@ -31,6 +31,7 @@ export function BillingViewModel() {
   const [plan, setPlan] = useState<Plan[]>([]);
   const [cost, setCost] = useState<CreateCostData[]>([]);
   const [payment, setPayment] = useState<CreatePaymentData[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
 
   const getBillings = async () => {
     setLoading(true);
@@ -404,6 +405,33 @@ export function BillingViewModel() {
   };
 
   // ===== PAYMENT FUNCTIONS =====
+  const getPayments = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Payment>
+      >(endpoints.payment.getPayments, "get");
+
+      if (status === 200 && response && response.success) {
+        setPayments(response.data);
+      } else {
+        // Si la API falla, usar el servicio mock
+        console.warn("API failed for getPayments, using mock service");
+        const mockPayments = await PaymentManagementService.getPayments();
+        setPayments(mockPayments);
+      }
+    } catch (error) {
+      console.warn("API request failed for getPayments, using mock service");
+      // Si hay error de red, usar el servicio mock
+      const mockPayments = await PaymentManagementService.getPayments();
+      setPayments(mockPayments);
+    }
+
+    setLoading(false);
+  };
+
   const createPayment = async (payment: CreatePaymentData) => {
     setLoading(true);
     setError(null);
@@ -584,7 +612,8 @@ export function BillingViewModel() {
     createCost,
     deleteCost,
     updateCost,
-    // Payment functions
+    payments,
+    getPayments,
     createPayment,
     deletePayment,
     updatePayment,

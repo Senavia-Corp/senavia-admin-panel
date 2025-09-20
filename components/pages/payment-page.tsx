@@ -31,11 +31,50 @@ export function PaymentPage({
   const [showCreatePayment, setShowCreatePayment] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number>();
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
-  const { deletePayment } = BillingViewModel();
+  const {
+    deletePayment,
+    getPayments,
+    payments: billingPayments,
+    loading,
+  } = BillingViewModel();
+
+  useEffect(() => {
+    // Si no hay payments iniciales, cargar todos los payments
+    if (initialPayments.length === 0) {
+      loadPayments();
+    }
+  }, []);
 
   useEffect(() => {
     filterPayments();
   }, [searchTerm, statusFilter, payments]);
+
+  const loadPayments = async () => {
+    try {
+      await getPayments();
+    } catch (error) {
+      console.error("Error loading payments", error);
+      toast.error("Failed to load payments");
+    }
+  };
+
+  // Actualizar payments cuando billingPayments cambie
+  useEffect(() => {
+    if (billingPayments && billingPayments.length > 0) {
+      // Si hay un estimateId específico, filtrar solo los payments de ese estimate
+      if (estimateId > 0) {
+        const estimatePayments = billingPayments.filter(
+          (p) => p.estimateId === estimateId
+        );
+        setPayments(estimatePayments);
+        setFilteredPayments(estimatePayments);
+      } else {
+        // Si no hay estimateId, mostrar todos los payments
+        setPayments(billingPayments);
+        setFilteredPayments(billingPayments);
+      }
+    }
+  }, [billingPayments, estimateId]);
 
   const filterPayments = () => {
     let filtered = payments;
@@ -62,7 +101,9 @@ export function PaymentPage({
     try {
       const success = await deletePayment(paymentToDelete.id);
       if (success) {
-        const updatedPayments = payments.filter((payment) => payment.id !== paymentToDelete.id);
+        const updatedPayments = payments.filter(
+          (payment) => payment.id !== paymentToDelete.id
+        );
         setPayments(updatedPayments);
         setFilteredPayments(updatedPayments);
         setPaymentToDelete(null);
@@ -149,6 +190,16 @@ export function PaymentPage({
           onBack={handleBackToList}
           onCreateSuccess={handlePaymentCreate}
         />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-lg text-gray-600">Loading payments...</p>
+        </div>
       </div>
     );
   }
