@@ -2,18 +2,22 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { proxy, wrap } from "comlink";
 import type { WorkerType } from "../workers/pdf.worker";
 
-// Create worker instance
-const worker = new Worker(
-  new URL("../workers/pdf.worker.ts", import.meta.url),
-  {
-    type: "module",
-  }
-);
+// Create worker instance only on client side
+let pdfWorker: any = null;
 
-export const pdfWorker = wrap<WorkerType>(worker);
+if (typeof window !== "undefined") {
+  const worker = new Worker(
+    new URL("../workers/pdf.worker.ts", import.meta.url),
+    {
+      type: "module",
+    }
+  );
 
-// hook up the debugging inside the main thread
-pdfWorker.onProgress(proxy((info: any) => console.log(info)));
+  pdfWorker = wrap<WorkerType>(worker);
+
+  // hook up the debugging inside the main thread
+  pdfWorker.onProgress(proxy((info: any) => console.log(info)));
+}
 
 export const useRenderPDF = () => {
   const [url, setUrl] = useState<string | null>(null);
@@ -47,6 +51,12 @@ export const useRenderPDF = () => {
     async (componentName: string, props: any) => {
       if (isGenerating || loading) {
         console.log("🚫 Generación ya en progreso, ignorando...");
+        return;
+      }
+
+      if (!pdfWorker) {
+        console.error("❌ Worker no disponible - ejecutándose en servidor");
+        setError(new Error("PDF generation not available on server side"));
         return;
       }
 
