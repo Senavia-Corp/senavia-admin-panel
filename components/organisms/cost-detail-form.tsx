@@ -102,7 +102,7 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
       </div>
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-52">
+          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
             <p>Name</p>
             <Input
               placeholder="Name"
