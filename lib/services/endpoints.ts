@@ -17,6 +17,8 @@ export const endpoints = {
     create: `${API}/clause`,
     update: (id: number) => `${API}/clause?id=${id}`,
      delete: (id: number) => `${API}/clause?id=${id}`,
+     search: (term: string, isPaginated = false, offset = 0, itemsPerPage = 10) =>
+    `${API}/clause?searchTerm=${encodeURIComponent(term)}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
   },
 
   product: {

@@ -6,12 +6,14 @@ export interface ClauseViewModelParams {
   isPaginated?: boolean;
   offset?: number;
   itemsPerPage?: number;
+  searchTerm?: string;
 }
 
 export const ClauseViewModel = ({
   isPaginated = false,
   offset = 0,
   itemsPerPage = 10,
+  searchTerm = "",
 }: ClauseViewModelParams = {}) => {
   const { fetchData } = useFetch();
   const [clauses, setClauses] = useState<Clause[]>([]);
@@ -21,13 +23,12 @@ export const ClauseViewModel = ({
   const [clauseId, setClauseId] = useState<Clause | null>(null);
 
   const saveClause = async (
-    data: {title:string;description:string},
+    data: { title: string; description: string },
     clauseId?: number
   ): Promise<boolean> => {
     setLoading(true);
     setError(null);
     try {
-      
       const url = clauseId
         ? endpoints.clause.update(clauseId)
         : endpoints.clause.create;
@@ -39,9 +40,10 @@ export const ClauseViewModel = ({
         "json"
       );
 
-      if (status === 200 && response?.success) {
+      if (status === 201 || status === 200) {
         if (!clauseId) {
           setClauses((prev) => [...prev, response.data]);
+          return true;
         } else {
           setClauses((prev) =>
             prev.map((p) => (p.id === response.data.id ? response.data : p))
@@ -54,33 +56,19 @@ export const ClauseViewModel = ({
           response?.message ||
           `Failed to save Clause (Status: ${status})`;
         setError(errorMessage);
-      
+
         return false;
       }
     } catch (err: any) {
       const errorMessage =
-        err.errorMessage ||
-        "An unexpected error occurred while saving Clause.";
+        err.errorMessage || "An unexpected error occurred while saving Clause.";
       setError(errorMessage);
-      
+
       return false;
     } finally {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    const getClauses = async () => {
-      const { response, status, errorLogs } = await fetchData<any>(
-        endpoints.clause.getAll,
-        "get"
-      );
-    };
-    getClauses();
-  }, []);
-
-  useEffect(() => {
-    getAllClauses();
-  }, [isPaginated, offset, itemsPerPage]);
 
   const getAllClauses = async () => {
     setLoading(true);
@@ -91,6 +79,10 @@ export const ClauseViewModel = ({
       if (offset) params.append("offset", offset.toString());
       if (isPaginated && itemsPerPage)
         params.append("itemsPerPage", itemsPerPage.toString());
+
+      if (searchTerm) params.append("searchTerm", searchTerm);
+
+
       const url = `${endpoints.clause.getAll}${
         params.toString() ? `?${params.toString()}` : ""
       }`;
@@ -135,18 +127,21 @@ export const ClauseViewModel = ({
       setLoading(false);
     }
   };
+  useEffect(() => {
+    getAllClauses();
+  }, [isPaginated, offset, itemsPerPage, searchTerm]);
 
   const getClauseById = async (id: number): Promise<Clause | null> => {
-    console.log("deberia funcionar.")
+    console.log("deberia funcionar.");
     setLoading(true);
     setError(null);
     try {
-      const url = endpoints.clause.getById(id);      
-       console.log("Soy url:", url);
+      const url = endpoints.clause.getById(id);
+      console.log("Soy url:", url);
       const { response, status, errorLogs } = await fetchData<
         ApiResponse<Clause>
       >(url, "get");
-           console.log("Respuesta completa: ", response);
+      console.log("Respuesta completa: ", response);
 
       if (status === 200 && response?.success) {
         const clause = Array.isArray(response.data)
@@ -216,7 +211,7 @@ export const ClauseViewModel = ({
     getClauseById,
     deleteClause,
     saveClause,
-    getAllClauses
+    getAllClauses,
   };
 };
 export default ClauseViewModel;

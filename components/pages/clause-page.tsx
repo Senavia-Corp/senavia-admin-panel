@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreateBlogDialog } from "@/components/organisms/create-blog-dialog";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
-import { BlogManagementService } from "@/services/blog-management-service";
 import type { Clause } from "./clause/clause";
-//import { BlogEditor } from "@/components/organisms/blog-editor"
 import { ClauseEditor } from "../organisms/clause-editor";
-
 import { GeneralTable } from "@/components/organisms/tables/general-table";
-
 import ClauseViewModel from "./clause/ClauseViewModel";
+import { useToast } from "@/hooks/use-toast";
 
 export function ClausePage() {
   const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
@@ -19,13 +15,22 @@ export function ClausePage() {
   const [themeFilter, setThemeFilter] = useState("");
   const [showEditor, setShowEditor] = useState(false);
   const [editingClauseId, setEditingClauseId] = useState<number | null>(null);
-  const [simpleBlogsPerPage, setSimpleBlogsPerPage] = useState(10);
   const [itemsPerPage, setitemsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
-  const { clauses, loading, pageInfo, getAllClauses, getClauseById,deleteClause } =
-    ClauseViewModel({ isPaginated: true, offset, itemsPerPage });
+  const {
+    clauses,
+    loading,
+    pageInfo,
+    getAllClauses,
+    getClauseById,
+    deleteClause,
+  } = ClauseViewModel({ isPaginated: true, offset, itemsPerPage, searchTerm });
   const [entityToDelete, setEntityToDelete] = useState<Clause | null>(null);
-const [dataClauses, setDataClauses] = useState<Clause[]>([]);  
+  const [dataClauses, setDataClauses] = useState<Clause[]>([]);
+  const { toast } = useToast();
+  useEffect(() => {
+    setOffset(0);
+  }, [searchTerm]);
 
   const handleView = (clause: Clause) => {
     setEditingClauseId(clause.id);
@@ -45,22 +50,21 @@ const [dataClauses, setDataClauses] = useState<Clause[]>([]);
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
   };
-  const handleDelete=async(id:number)=>{
-    console.log("deberia funcionar: " +id)
+  const handleDelete = async (id: number) => {
+    console.log("deberia funcionar: " + id);
     try {
       const success = await deleteClause(id);
       if (success) {
         console.log(`✅ Clause ${id} eliminado correctamente`);
+           toast({ title: "Success", description: "Clause deleted successfully" });
         //setDataProducts((prev) => prev.filter((p) => p.id !== id));
-
       } else {
         console.error(`❌ No se pudo eliminar el producto ${id}`);
       }
     } catch (error) {
       console.error("Error eliminando producto:", error);
     }
-  }
-
+  };
 
   if (showEditor) {
     return (
@@ -114,7 +118,7 @@ const [dataClauses, setDataClauses] = useState<Clause[]>([]);
         onSuccess={loadBlog}
         themes={themes}
       />*/}
-      
+
       <DeleteConfirmDialog
         open={!!clauseToDelete}
         onClose={() => setClauseToDelete(null)}
@@ -125,8 +129,9 @@ const [dataClauses, setDataClauses] = useState<Clause[]>([]);
       {/* Controles de paginación */}
       <div className="flex justify-between items-center mt-4">
         <button
-          onClick={() =>
-            setOffset((prev) => Math.max(prev - simpleBlogsPerPage, 0))
+          onClick={
+            () => setOffset((prev) => Math.max(prev - itemsPerPage, 0))
+            //setOffset((prev) => prev + itemsPerPage)
           }
           disabled={offset === 0 || loading}
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
@@ -134,21 +139,18 @@ const [dataClauses, setDataClauses] = useState<Clause[]>([]);
           ⬅️ Anterior
         </button>
 
-        <span>Página {Math.floor(offset / simpleBlogsPerPage) + 1}</span>
+        <span>Página {Math.floor(offset / itemsPerPage) + 1}</span>
 
         <button
           onClick={() => {
-            if (
-              !pageInfo ||
-              offset + simpleBlogsPerPage < pageInfo.totalBlogs
-            ) {
-              const lastBlogId = clauses[clauses.length - 1].id;
-              setOffset(lastBlogId);
+            console.log("deberia fun: " + pageInfo.totalClauses);
+            if (!pageInfo || offset + itemsPerPage < pageInfo.totalClauses) {
+              setOffset((prev) => prev + itemsPerPage);
             }
           }}
           disabled={
             loading ||
-            (pageInfo && offset + simpleBlogsPerPage >= pageInfo.totalBlogs)
+            (pageInfo && offset + itemsPerPage >= pageInfo.totalClauses)
           }
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
         >

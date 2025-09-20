@@ -51,6 +51,7 @@ const navigationItems = [
     url: "/contracts",
     icon: FileText,
   },
+    { title: "Clause", url: "/clause", icon: Target },
   {
     title: "Billing",
     url: "/billing",
@@ -76,7 +77,7 @@ const navigationItems = [
     url: "/leads",
     icon: Target,
   },
-  { title: "Clause", url: "/clause", icon: Target },
+
 ];
 
 export function AppSidebar() {

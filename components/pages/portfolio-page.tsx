@@ -83,38 +83,6 @@ export function PortfolioPage() {
     }
   }, [productId]);
 
-  /*useEffect(() => {
-    loadProjects()
-    loadThemes()
-  }, [searchTerm, themeFilter])*/
-
-  /*const loadProjects = async () => {
-    try {
-      const projectsData = await BlogManagementService.getBlogs(searchTerm, themeFilter)
-      //setBlogs(blogsData)      
-    } catch (error) {
-      console.error("Error loading blogs:", error)
-    }
-  }*/
-
-  /*const loadThemes = async () => {
-    try {
-      const themesData = await BlogManagementService.getBlogThemes()
-      setThemes(themesData)
-    } catch (error) {
-      console.error("Error loading themes:", error)
-    }
-  }*/
-
-  /*const handleDeleteBlog = async (blog: Blog) => {
-    try {
-      await BlogManagementService.deleteBlog(blog.id)
-      setBlogToDelete(null)
-      loadBlogs()
-    } catch (error) {
-      console.error("Error deleting blog:", error)
-    }
-  }*/
   const handleImageChange = (file: File | null) => {
     setProfileImage(file);
     setFormData({...formData,imageUrl:file})
@@ -348,21 +316,6 @@ export function PortfolioPage() {
         </div>
       </main>
 
-      {/*<CreateBlogDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={loadBlogs}
-        themes={themes}
-      />*/}
-
-      {/*<DeleteConfirmDialog
-        open={!!projectToDelete}
-        onClose={() => setProjectToDelete(null)}
-        onConfirm={() => projectToDelete && handleDeleteBlog(blogToDelete)}
-        title="Delete Blog Post"
-        description={`Are you sure you want to delete "${blogToDelete?.title}"? This action cannot be undone.`}
-      />*/}
-      {/* Controles de paginación */}
       <DeleteConfirmDialog
         open={!!productToDelete}
         onClose={() => setProductToDelete(null)}
