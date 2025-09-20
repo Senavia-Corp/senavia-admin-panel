@@ -121,17 +121,14 @@ export function PaymentPage({
   };
 
   const handlePaymentUpdate = (updatedPayment: Payment) => {
-    const updatedPayments = payments.map((payment) =>
-      payment.id === updatedPayment.id ? updatedPayment : payment
-    );
-    setPayments(updatedPayments);
-    setFilteredPayments(updatedPayments);
+    // El BillingViewModel ya actualiza su estado interno
+    // Solo necesitamos forzar una re-renderización si es necesario
+    // Los cambios se reflejarán automáticamente a través del efecto que sincroniza billingPayments
   };
 
   const handlePaymentCreate = (newPayment: Payment) => {
-    const updatedPayments = [...payments, newPayment];
-    setPayments(updatedPayments);
-    setFilteredPayments(updatedPayments);
+    // El BillingViewModel ya actualiza su estado interno cuando se crea un payment
+    // Los cambios se reflejarán automáticamente a través del efecto que sincroniza billingPayments
     setShowCreatePayment(false);
   };
 

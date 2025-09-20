@@ -442,6 +442,11 @@ export function BillingViewModel() {
       >(endpoints.payment.createPayment, "post", payment);
 
       if (status === 201 && response && response.success) {
+        const newPayments = Array.isArray(response.data)
+          ? response.data
+          : [response.data];
+        // Actualizar la lista de payments agregando el nuevo payment
+        setPayments((prevPayments) => [...prevPayments, ...newPayments]);
         setPayment(response.data);
         toast.success("Payment created successfully");
         return { success: true, data: response.data };
@@ -452,6 +457,11 @@ export function BillingViewModel() {
           payment
         );
         if (mockResponse.success) {
+          const newPayments = Array.isArray(mockResponse.data)
+            ? mockResponse.data
+            : [mockResponse.data];
+          // Actualizar la lista de payments agregando el nuevo payment
+          setPayments((prevPayments) => [...prevPayments, ...newPayments]);
           toast.success("Payment created successfully (mock)");
           return mockResponse;
         } else {
@@ -466,6 +476,11 @@ export function BillingViewModel() {
         payment
       );
       if (mockResponse.success) {
+        const newPayments = Array.isArray(mockResponse.data)
+          ? mockResponse.data
+          : [mockResponse.data];
+        // Actualizar la lista de payments agregando el nuevo payment
+        setPayments((prevPayments) => [...prevPayments, ...newPayments]);
         toast.success("Payment created successfully (mock)");
         return mockResponse;
       } else {
@@ -493,6 +508,10 @@ export function BillingViewModel() {
         >(endpoints.payment.deletePayment(id), "delete");
 
         if (status === 200 && response && response.success) {
+          // Actualizar el estado local removiendo el payment eliminado
+          setPayments((prevPayments) =>
+            prevPayments.filter((payment) => payment.id !== id)
+          );
           toast.success("Payment deleted successfully");
           return true;
         } else {
@@ -500,6 +519,10 @@ export function BillingViewModel() {
           console.warn("API failed for deletePayment, using mock service");
           const success = await PaymentManagementService.deletePayment(id);
           if (success) {
+            // Actualizar el estado local removiendo el payment eliminado
+            setPayments((prevPayments) =>
+              prevPayments.filter((payment) => payment.id !== id)
+            );
             toast.success("Payment deleted successfully (mock)");
             return true;
           } else {
@@ -514,6 +537,10 @@ export function BillingViewModel() {
         // Si hay error de red, usar el servicio mock
         const success = await PaymentManagementService.deletePayment(id);
         if (success) {
+          // Actualizar el estado local removiendo el payment eliminado
+          setPayments((prevPayments) =>
+            prevPayments.filter((payment) => payment.id !== id)
+          );
           toast.success("Payment deleted successfully (mock)");
           return true;
         } else {
@@ -536,12 +563,24 @@ export function BillingViewModel() {
 
       try {
         const { response, status, errorLogs } = await fetchData<
-          apiResponse<PatchPaymentData>
+          apiResponse<Payment>
         >(endpoints.payment.updatePayment(id), "patch", PatchPayment);
 
-        if (status === 200) {
+        if (status === 200 && response && response.success) {
+          // Actualizar el estado local de payments
+          setPayments((prevPayments) =>
+            prevPayments.map((payment) =>
+              payment.id === id
+                ? {
+                    ...payment,
+                    ...PatchPayment,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : payment
+            )
+          );
           toast.success("Payment updated successfully");
-          return { success: true };
+          return { success: true, data: response.data };
         } else {
           // Si la API falla, usar el servicio mock
           console.warn("API failed for updatePayment, using mock service");
@@ -550,6 +589,18 @@ export function BillingViewModel() {
             PatchPayment
           );
           if (mockResponse.success) {
+            // Actualizar el estado local con los datos del mock
+            setPayments((prevPayments) =>
+              prevPayments.map((payment) =>
+                payment.id === id
+                  ? {
+                      ...payment,
+                      ...PatchPayment,
+                      updatedAt: new Date().toISOString(),
+                    }
+                  : payment
+              )
+            );
             toast.success("Payment updated successfully (mock)");
             return mockResponse;
           } else {
@@ -567,6 +618,18 @@ export function BillingViewModel() {
           PatchPayment
         );
         if (mockResponse.success) {
+          // Actualizar el estado local con los datos del mock
+          setPayments((prevPayments) =>
+            prevPayments.map((payment) =>
+              payment.id === id
+                ? {
+                    ...payment,
+                    ...PatchPayment,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : payment
+            )
+          );
           toast.success("Payment updated successfully (mock)");
           return mockResponse;
         } else {
