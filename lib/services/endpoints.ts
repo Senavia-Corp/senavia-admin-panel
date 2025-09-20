@@ -102,6 +102,7 @@ export const endpoints = {
     deleteContract: (id: number) => `${API}/contract?id=${id}`,
     createContract: `${API}/contract`,
     updateContract: (id: number) => `${API}/contract?id=${id}`,
+    sendEmail: `https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e`,
   },
 };
 
