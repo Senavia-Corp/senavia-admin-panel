@@ -166,7 +166,7 @@ export function CostPage({
       <div className="flex-1 overflow-hidden">
         <div className="h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <div className="my-3 flex flex-row space-x-1">
+            <div className="my-3 flex flex-row space-x-1 items-center">
               <Button
                 variant="ghost"
                 size="sm"
