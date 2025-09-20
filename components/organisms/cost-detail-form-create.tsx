@@ -89,6 +89,12 @@ export function CostDetailFormCreate({
 
   const Types = ["LICENSE"]
   
+  const isFormValid =
+    Name.trim().length > 0 &&
+    description.trim().length > 0 &&
+    type.trim().length > 0 &&
+    value > 0;
+  
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -172,7 +178,7 @@ export function CostDetailFormCreate({
             <Button
               className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={handleCreateCost}
-              disabled={loadingPost}
+              disabled={loadingPost || !isFormValid}
             >
               {loadingPost ? 'Updating...' : 'Add Cost'}  
             </Button>

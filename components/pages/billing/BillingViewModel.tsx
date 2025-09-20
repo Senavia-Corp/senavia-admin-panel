@@ -166,10 +166,13 @@ export function BillingViewModel() {
         const {response, status, errorLogs} = await fetchData<apiResponse<Cost>>(endpoints.cost.createCost, "post", cost);
         if (status === 201 && response && response.success) {
             setCost(response.data);
+            setLoading(false);
+            return true;
         }else {
             setError(errorLogs?.message || response?.message || "Failed to create cost");
+            setLoading(false);
+            return false;
         }
-        setLoading(false);
     }
 
     const deleteCost = async (id: number) => {
