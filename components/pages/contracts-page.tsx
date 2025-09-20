@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import { ContractManagementService } from "@/services/contract-management-service";
@@ -12,9 +12,13 @@ import { CreateContractForm } from "../organisms/contracs/create-contract-form";
 import { useToast } from "@/hooks/use-toast";
 import { ContractTableRowSkeleton } from "../atoms/contract-table-row-skeleton";
 
+// Campos de búsqueda para contratos
+const SEARCHABLE_FIELDS = ["title", "recipientName", "companyEmail"] as const;
+
 export function ContractsPage() {
   const { toast } = useToast();
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(
     null
   );
@@ -30,7 +34,43 @@ export function ContractsPage() {
 
   useEffect(() => {
     loadContracts();
-  }, [searchTerm, statusFilter]);
+  }, []); // Solo cargar una vez al montar
+
+  // Función para verificar si un contrato coincide con el término de búsqueda
+  const matchesSearchTerm = useCallback(
+    (contract: Contract, searchTerm: string): boolean => {
+      if (!searchTerm) return true;
+
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      return SEARCHABLE_FIELDS.some((field) =>
+        (contract[field] as string).toLowerCase().includes(lowerSearchTerm)
+      );
+    },
+    []
+  );
+
+  // Función para filtrar contratos
+  const filterContracts = useCallback(
+    (
+      contracts: Contract[],
+      searchTerm: string,
+      statusFilter: string
+    ): Contract[] => {
+      return contracts.filter((contract) => {
+        const matchesSearch = matchesSearchTerm(contract, searchTerm);
+        const matchesStatus = !statusFilter || contract.state === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      });
+    },
+    [matchesSearchTerm]
+  );
+
+  // Filtrar contratos localmente
+  useEffect(() => {
+    const filtered = filterContracts(contracts, searchTerm, statusFilter);
+    setFilteredContracts(filtered);
+  }, [contracts, searchTerm, statusFilter, filterContracts]);
 
   const loadContracts = async () => {
     try {
@@ -38,6 +78,7 @@ export function ContractsPage() {
       setHasError(false);
       const contractsData = await ContractManagementService.getContracts();
       setContracts(contractsData);
+      setFilteredContracts(contractsData); // Inicializar filtrados con todos los contratos
     } catch (error) {
       console.error("Error loading contracts:", error);
       setHasError(true);
@@ -178,15 +219,17 @@ export function ContractsPage() {
                 "All Contracts",
                 "View and manage all contracts in the system",
                 ["Contract ID", "Title", "Client", "Status", "Actions"],
-                contracts,
+                filteredContracts,
                 handlers,
                 {
                   isLoading,
                   hasError,
                   onRetry: loadContracts,
-                  emptyStateTitle: "No contracts registered",
+                  emptyStateTitle: "No contracts found",
                   emptyStateDescription:
-                    "No contracts have been created in the system yet. Click the '+' button to create the first contract.",
+                    searchTerm || statusFilter
+                      ? "No contracts match your current filters. Try adjusting your search criteria."
+                      : "No contracts have been created in the system yet. Click the '+' button to create the first contract.",
                   skeletonComponent: ContractTableRowSkeleton,
                   skeletonCount: 5,
                 }
