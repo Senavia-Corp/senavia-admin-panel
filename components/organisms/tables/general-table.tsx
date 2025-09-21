@@ -15,6 +15,7 @@ import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
 import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-row";
 import { CostTableRow } from "@/components/organisms/tables/row/cost-table-row";
+import { PaymentTableRow } from "@/components/organisms/tables/row/payment-table-row";
 import {
   FilterBilling,
   FilterPermission,
@@ -191,6 +192,15 @@ export function GeneralTable(
             <CostTableRow
               key={item.id}
               cost={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "payments-page":
+          return (
+            <PaymentTableRow
+              key={item.id}
+              payment={item}
               onView={() => onView(item)}
               onDelete={() => onDelete(item)}
             />

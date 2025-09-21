@@ -19,6 +19,8 @@ import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CostPage } from "@/components/pages/cost-page";
+import { PaymentPage } from "@/components/pages/payment-page";
+import { PaymentManagementService } from "@/services/payment-management-service";
 import { useToast } from "@/hooks/use-toast";
 import { CostDetailFormCreate } from "./cost-detail-form-create";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
@@ -105,6 +107,7 @@ export function BillingDetailCreateForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [showCosts, setShowCosts] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   type ApiResponse =
@@ -211,6 +214,18 @@ export function BillingDetailCreateForm({
           totalValue={parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
+        />
+      </div>
+    );
+  }
+
+  if (showPayments) {
+    return (
+      <div className="">
+        <PaymentPage
+          payments={selectedBilling?.payments || []}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowPayments(false)}
         />
       </div>
     );
