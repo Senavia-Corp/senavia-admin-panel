@@ -12,18 +12,23 @@ export interface BillingRecord {
 
 export interface Billing {
   id: number
+  title: string
   estimatedTime: number
   description: string
   state: string
   totalValue: string
+  percentagePaid: number
+  remainingPercentage: number
   lead_id: number
   plan_id: number
   deadLineToPay: string
   invoiceDateCreated: string
   invoiceReference: string
+  createdAt: string
   Project: any[] // TODO: Definir interfaz específica para Project
   costs: Cost[]
 }
+
 export interface Cost {
   id: number
   name: string
@@ -38,6 +43,7 @@ export interface Cost {
 
 export interface Billings{
   id: number
+  title: string
   estimatedTime: number
   state: string
   totalValue: string
@@ -52,11 +58,17 @@ export interface apiResponse<T> {
 
 export type BillingStatus = "CREATED" | "PROCESSING" | "IN_REVIEW" | "REJECTED" | "ACCEPTED" | "INVOICE" | "PAID"
 
+
+export type PatchBillingData = Partial<CreateBillingData>;
+
 export interface CreateBillingData {
+  title: string,
   estimatedTime: string,
   description: string,
   state: string,
   totalValue: number,
+  percentagePaid: number,
+  remainingPercentage: number,
   lead_id: number,
   plan_id: number,
   deadLineToPay: string,

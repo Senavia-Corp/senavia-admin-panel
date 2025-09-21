@@ -5,6 +5,7 @@ import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
 import { CreateCostData,PatchCost } from "@/types/cost-management";
 import { toast } from "sonner"
+import { PatchBillingData } from "@/types/billing-management";
 
 export function BillingViewModel() {
    const { fetchData } = useFetch();
@@ -61,9 +62,10 @@ export function BillingViewModel() {
             );
 
             if (status === 201 && response?.success) {
-                setBilling(response.data);
+                const billingData = Array.isArray(response.data) ? response.data : [response.data];
+                setBilling(billingData);
                 setSuccessMessage("Estimate created successfully!");
-                return { success: true, data: response.data };
+                return { success: true, data: billingData };
             } else {
                 throw new Error(errorLogs?.message || response?.message || "Failed to create billing");
             }
@@ -76,17 +78,28 @@ export function BillingViewModel() {
         }
     }
 
-    const PatchBilling = async (id: number, billing: CreateBillingData) => {
-        setLoading(true);
-        setError(null);
-        const {response, status, errorLogs} = await fetchData<apiResponse<Billing>>(endpoints.estimate.updateEstimate(id), "patch", billing);
-        if (status === 200 && response && response.success) {
-            setBilling(response.data);
-        }else {
-            setError(errorLogs?.message || response?.message || "Failed to update billing");
+    const PatchBilling = async (id: number, billing: Partial<CreateBillingData>) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const {response, status, errorLogs} = await fetchData<apiResponse<Billing>>(
+                endpoints.estimate.updateEstimate(id), 
+                "patch", 
+                billing
+            );
+            if (status === 200 && response && response.success) {
+                setBilling(response.data);
+                return response.data;
+            } else {
+                throw new Error(errorLogs?.message || response?.message || "Failed to update billing");
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "Failed to update billing");
+            throw error;
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    }
+    };
 
     const getLeads = async () => {
         setLoading(true);
@@ -108,7 +121,8 @@ export function BillingViewModel() {
             if (status === 200 && response && response.success) {
                 await getBillings(); // Recargar la lista después de eliminar
                 return true;
-            } else {
+            }
+             else {
                 setError(errorLogs?.message || response?.message || "Failed to delete billing");
                 return false;
             }
@@ -119,6 +133,8 @@ export function BillingViewModel() {
             setLoading(false);
         }
     }
+
+
 
     const getLeadById = async (id: number) => {
         setLoading(true);
@@ -150,10 +166,13 @@ export function BillingViewModel() {
         const {response, status, errorLogs} = await fetchData<apiResponse<Cost>>(endpoints.cost.createCost, "post", cost);
         if (status === 201 && response && response.success) {
             setCost(response.data);
+            setLoading(false);
+            return true;
         }else {
             setError(errorLogs?.message || response?.message || "Failed to create cost");
+            setLoading(false);
+            return false;
         }
-        setLoading(false);
     }
 
     const deleteCost = async (id: number) => {

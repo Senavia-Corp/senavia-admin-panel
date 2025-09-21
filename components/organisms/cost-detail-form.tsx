@@ -7,21 +7,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { Cost, PatchCost } from "@/types/cost-management";
 import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
+  billingId: number;
   costId: number;
+  totalValue: number;
   cost: Cost;
   onBack?: () => void;
   onUpdate?: (updatedCost: Cost) => void;
 }
 
-export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFormProps) {
-  const { updateCost } = BillingViewModel();
+export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, onUpdate }: CostDetailFormProps) {
+  const { updateCost, PatchBilling } = BillingViewModel();
   const [isUpdating, setIsUpdating] = useState(false);
   const [localCost, setLocalCost] = useState(cost);
-
+  const { toast } = useToast();
   const handleUpdateCost = async () => {
-    const toastId = toast.loading('Updating cost...');
     try {
       setIsUpdating(true);
       const costData: PatchCost = {
@@ -31,10 +33,20 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
         value: localCost.value,
       };
 
-      // Intentar actualizar en el servidor primero
+      // Primero actualizamos el costo
       await updateCost(costId, costData);
+      console.log("Cost updated successfully");
+
+      // Después actualizamos el billing con el nuevo total
+      // Restamos el valor anterior y sumamos el nuevo valor
+      const newTotalValue = Number(totalValue) - Number(cost.value) + Number(costData.value);
+      console.log("Updating billing with new total:", newTotalValue);
       
-      // Solo si la actualización en el servidor fue exitosa, actualizamos localmente
+      await PatchBilling(billingId, {
+        totalValue: newTotalValue
+      });
+      
+      // Actualizamos localmente
       const updatedCost: Cost = {
         ...cost,
         ...costData,
@@ -45,17 +57,17 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
       setLocalCost(updatedCost);
       onUpdate?.(updatedCost);
       
-      toast.success('Cost updated successfully', {
-        id: toastId,
+      toast({
+        title: 'Cost updated successfully',
         description: `The cost "${costData.name}" has been updated.`
       });
     } catch (error) {
       console.error('Error updating cost:', error);
       // En caso de error, revertimos los cambios locales
       setLocalCost(cost);
-      toast.error('Failed to update cost', {
-        id: toastId,
-        description: error instanceof Error ? error.message : 'There was an error updating the cost. Please try again.'
+      toast({
+        title: 'Failed to update cost',
+        description: 'The cost has not been updated.'
       });
     } finally {
       setIsUpdating(false);
@@ -75,7 +87,7 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"
@@ -91,7 +103,7 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
       </div>
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-52">
+          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
             <p>Name</p>
             <Input
               placeholder="Name"
@@ -127,11 +139,24 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
             <hr className="border-[#EBEDF2]" />
             <p>Value</p>
             <Input
-              placeholder="Value"
+              placeholder="$0"
               className="w-full h-7"
-              value={localCost.value}
-              onChange={(e) => handleFieldChange('value', Number(e.target.value))}
-              type="number"
+              type="text"
+              value={localCost.value ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(localCost.value) : ''}
+              onChange={(e) => {
+                // Eliminar todo excepto números
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                if (rawValue === '') {
+                  handleFieldChange('value', 0);
+                  return;
+                }
+                handleFieldChange('value', parseInt(rawValue));
+              }}
             />
             <hr className="border-[#EBEDF2]" />
             <Button

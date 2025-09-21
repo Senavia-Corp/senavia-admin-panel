@@ -6,24 +6,26 @@ import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CreateCostData } from "@/types/cost-management";
-
-import { toast } from "sonner";
 import { Cost } from "@/types/cost-management";
+import { useToast } from "@/hooks/use-toast";
 
 export function CostDetailFormCreate({
   estimateId, 
+  totalValue,
   onBack,
-  onCreateSuccess
+  onCreateSuccess,
+  fisrtCost
 }: {
   estimateId: number;
+  totalValue: number;
   onBack?: () => void;
   onCreateSuccess?: (newCost: Cost) => void;
+  fisrtCost?: boolean;
 }) {
-  const { createCost } = BillingViewModel();
+  const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
-
+  const { toast } = useToast();
   const handleCreateCost = async () => {
-    const toastId = toast.loading('Creating cost...');
     try {
       setLoadingPost(true);
       const costData: CreateCostData = {
@@ -34,33 +36,50 @@ export function CostDetailFormCreate({
         estimateId: estimateId
       };
       await createCost(costData);
+
+      const newTotalValue = totalValue + value;
+      await PatchBilling(estimateId, {
+        totalValue: newTotalValue
+      });
       
       // Crear objeto de costo local para la UI
       const newCost: Cost = {
         ...costData,
-        id: Date.now(), // ID temporal
+        // Puedes generar un número aleatorio para el ID así:
+        id: Math.floor(Math.random() * 10000), // ID temporal aleatorio entre 0 y 9999
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
-      toast.success('Cost created successfully', {
-        id: toastId,
-        description: `The cost "${costData.name}" has been created.`
+      toast({
+        title: 'Cost created successfully',
+        description: 'The cost has been created successfully.'
       });
 
-      // Notificar al componente padre y regresar
+      // Notificar al componente padre
       onCreateSuccess?.(newCost);
-      onBack?.();
+      
+      // Solo ejecutar onBack si NO es el primer costo
+      if (!fisrtCost) {
+        onBack?.();
+      }
     } catch (error) {
       console.error('Error creating cost:', error);
-      toast.error('Failed to create cost', {
-        id: toastId,
-        description: error instanceof Error ? error.message : 'There was an error creating the cost. Please try again.'
+      toast({
+        title: 'Failed to create cost',
+        description: 'The cost has not been created.'
       });
     } finally {
       setLoadingPost(false);
     }
   };
+
+  const disableBackButton = () => {
+    if (fisrtCost) {
+      return true;
+    }
+    return false;
+  }
 
   
   const [Name, setName] = useState("");
@@ -70,16 +89,23 @@ export function CostDetailFormCreate({
 
   const Types = ["LICENSE"]
   
+  const isFormValid =
+    Name.trim().length > 0 &&
+    description.trim().length > 0 &&
+    type.trim().length > 0 &&
+    value > 0;
+  
   return (
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"
             className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
             onClick={onBack}
+            disabled={disableBackButton()}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -90,7 +116,10 @@ export function CostDetailFormCreate({
       </div>
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto ">
-          <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-52">
+          <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
+            {fisrtCost && (
+              <p className="text-red-500 text-sm">Please enter at least one cost</p>
+            )}
             <p>Name</p>
             <Input
               placeholder="Name"
@@ -126,17 +155,30 @@ export function CostDetailFormCreate({
             <hr className="border-[#EBEDF2]" />
             <p>Value</p>
             <Input
-              placeholder="Value"
+              placeholder="$0"
               className="w-full h-7"
-              value={value}
-              onChange={(e) => setValue(Number(e.target.value))}
-              type="number"
+              type="text"
+              value={value ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value) : ''}
+              onChange={(e) => {
+                // Eliminar todo excepto números
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                if (rawValue === '') {
+                  setValue(0);
+                  return;
+                }
+                setValue(parseInt(rawValue));
+              }}
             />
             <hr className="border-[#EBEDF2]" />
             <Button
               className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={handleCreateCost}
-              disabled={loadingPost}
+              disabled={loadingPost || !isFormValid}
             >
               {loadingPost ? 'Updating...' : 'Add Cost'}  
             </Button>

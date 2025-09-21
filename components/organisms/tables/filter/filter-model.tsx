@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RoleStatus } from "@/types/role-management";
+import React, { useCallback } from "react";
 
 const actions: PermissionAction[] = ["View", "Create", "Update", "Delete"];
 const services: AssociatedService[] = [
@@ -174,7 +175,7 @@ const billingStatuses = [
   "Paid",
 ];
 
-export const FilterBilling = ({
+export const FilterBilling = React.memo(({
   onFilter,
 }: {
   onFilter: (filter: string) => void;
@@ -182,12 +183,16 @@ export const FilterBilling = ({
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
-  const toggleFilters = () => setShowFilters((prev) => !prev);
+  const toggleFilters = useCallback(() => {
+    setShowFilters((prev) => !prev);
+  }, []);
 
-  const handleStatusFilter = (status: string) => {
-    setSelectedStatus(status);
-    onFilter(`status:${status}`);
-  };
+  const handleStatusFilter = useCallback((status: string) => {
+    if (status !== selectedStatus) {  // Solo actualizar si el valor cambió
+      setSelectedStatus(status);
+      onFilter(`status:${status}`);
+    }
+  }, [selectedStatus, onFilter]);
 
   return (
     <>
@@ -199,7 +204,6 @@ export const FilterBilling = ({
         <Filter className="h-5 w-5" />
       </Button>
       {showFilters && (
-        <>
           <Select value={selectedStatus} onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
               <SelectValue placeholder="Status" />
@@ -213,11 +217,10 @@ export const FilterBilling = ({
               ))}
             </SelectContent>
           </Select>
-        </>
       )}
     </>
   );
-};
+});
 
 // User filter component
 export const FilterUser = ({
