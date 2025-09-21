@@ -50,9 +50,10 @@ export class LeadManagementService {
     }
   }
 
-  static async getLeadById(id: string): Promise<Lead | null> {
+  static async getLeadById(id: string | number): Promise<Lead | null> {
     try {
-      const response = await Axios.get(endpoints.lead.getPost(Number(id)), {
+      const leadId = typeof id === "string" ? Number(id) : id;
+      const response = await Axios.get(endpoints.lead.getPost(leadId), {
         headers: {
           "Content-Type": "application/json",
         },
@@ -106,11 +107,12 @@ export class LeadManagementService {
   }
 
   static async updateLead(
-    id: string,
+    id: string | number,
     updates: Partial<Lead>
   ): Promise<Lead | null> {
     try {
-      const response = await fetch(endpoints.lead.updatePost(Number(id)), {
+      const leadId = typeof id === "string" ? Number(id) : id;
+      const response = await fetch(endpoints.lead.updatePost(leadId), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -134,9 +136,10 @@ export class LeadManagementService {
     }
   }
 
-  static async deleteLead(id: string): Promise<boolean> {
+  static async deleteLead(id: string | number): Promise<boolean> {
     try {
-      const response = await fetch(endpoints.lead.deletePost(Number(id)), {
+      const leadId = typeof id === "string" ? Number(id) : id;
+      const response = await fetch(endpoints.lead.deleteLead(leadId), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -183,17 +186,12 @@ export class LeadManagementService {
       if (Array.isArray(leads) && leads.length > 0) {
         // Check if server already filtered by userId
         const hasUserIdFilter = leads.every(
-          (lead: Lead) =>
-            lead.userId === userId.toString() || lead.userId === Number(userId)
+          (lead: Lead) => lead.userId === Number(userId)
         );
 
         // If server didn't filter, do client-side filtering
         if (!hasUserIdFilter) {
-          leads = leads.filter(
-            (lead: Lead) =>
-              lead.userId === userId.toString() ||
-              lead.userId === Number(userId)
-          );
+          leads = leads.filter((lead: Lead) => lead.userId === Number(userId));
         }
       }
 
@@ -218,10 +216,7 @@ export class LeadManagementService {
       try {
         console.log("Falling back to client-side filtering...");
         const allLeads = await this.getLeads(search, statusFilter);
-        return allLeads.filter(
-          (lead: Lead) =>
-            lead.userId === userId.toString() || lead.userId === Number(userId)
-        );
+        return allLeads.filter((lead: Lead) => lead.userId === Number(userId));
       } catch (fallbackError) {
         console.error("Fallback also failed:", fallbackError);
 

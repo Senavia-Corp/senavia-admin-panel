@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { UserPanelService } from "@/services/user-panel/user-panel-service";
 
 // Define the structure for each item in the invoice
 interface InvoiceItem {
@@ -11,17 +12,18 @@ interface InvoiceItem {
 
 // Define the structure for an invoice group
 interface InvoiceGroup {
+  id?: string | number;
   title: string;
   items: InvoiceItem[];
   invoiceNumber?: string;
-  dueDate?: string;
+  dueDate?: string | Date;
 }
 
 // Define the props for the Invoice component
 interface InvoiceProps {
   invoices: InvoiceGroup[];
   currencySymbol?: string;
-  onGoToPayment?: (invoiceIndex: number) => void;
+  onGoToPayment?: (invoiceIndex: number) => void; // Optional external handler
   status?: string;
   // Estado controlado opcional
   openStates?: boolean[];
@@ -82,7 +84,8 @@ export function Invoice({
     new Array(invoices.length).fill(false)
   );
   useEffect(() => {
-    if (!controlledOpenStates) internalSetOpenStates(new Array(invoices.length).fill(false));
+    if (!controlledOpenStates)
+      internalSetOpenStates(new Array(invoices.length).fill(false));
   }, [invoices]);
   const openStates = controlledOpenStates ?? internalOpenStates;
   const setOpenStates = setControlledOpenStates ?? internalSetOpenStates;
@@ -92,7 +95,10 @@ export function Invoice({
     <div className="space-y-4">
       {invoices.map((invoice, index) => {
         // Calculate the total value for this invoice
-        const totalValue = invoice.items.reduce((sum, item) => sum + item.value, 0);
+        const totalValue = invoice.items.reduce(
+          (sum, item) => sum + item.value,
+          0
+        );
 
         const isOpen = openStates[index];
 
@@ -113,7 +119,12 @@ export function Invoice({
                 : "border border-gray-200 shadow-[0_2px_8px_0_rgba(0,0,0,0.06)]"
             )}
           >
-            <div className={cn("w-full h-full bg-[#0b0e1c] rounded-lg", isOpen ? "p-4" : "")}>
+            <div
+              className={cn(
+                "w-full h-full bg-[#0b0e1c] rounded-lg",
+                isOpen ? "p-4" : ""
+              )}
+            >
               {/* Header (Always Visible, Clickable) */}
               <div
                 className={cn(
@@ -124,9 +135,13 @@ export function Invoice({
                 onClick={handleToggle}
               >
                 <div className="flex flex-col">
-                  <span className="font-bold text-lg text-gray-100">{invoice.title}</span>
+                  <span className="font-bold text-lg text-gray-100">
+                    {invoice.title}
+                  </span>
                   {invoice.invoiceNumber && (
-                    <span className="text-sm text-gray-400">Invoice #{invoice.invoiceNumber}</span>
+                    <span className="text-sm text-gray-400">
+                      Invoice #{invoice.invoiceNumber}
+                    </span>
                   )}
                 </div>
                 <div className="flex flex-col items-end">
@@ -134,7 +149,12 @@ export function Invoice({
                     {formatCurrency(totalValue, currencySymbol)}
                   </span>
                   {invoice.dueDate && (
-                    <span className="text-sm text-gray-400">Due: {invoice.dueDate}</span>
+                    <span className="text-sm text-gray-400">
+                      Due:{" "}
+                      {typeof invoice.dueDate === "string"
+                        ? invoice.dueDate
+                        : invoice.dueDate.toISOString().split("T")[0]}
+                    </span>
                   )}
                 </div>
               </div>
@@ -149,7 +169,10 @@ export function Invoice({
                 {/* Item List */}
                 <ul className="mb-4 space-y-1 text-gray-200">
                   {invoice.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex justify-between items-center text-sm ml-4">
+                    <li
+                      key={itemIndex}
+                      className="flex justify-between items-center text-sm ml-4"
+                    >
                       <span>• {item.name}</span>
                       <span>{formatCurrency(item.value, currencySymbol)}</span>
                     </li>
@@ -165,19 +188,31 @@ export function Invoice({
                 </div>
 
                 {/* Go to Payment Button */}
-                {onGoToPayment && (
-                  <div className="flex justify-end mt-5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onGoToPayment) onGoToPayment(index);
-                      }}
-                      className="px-5 py-1 bg-[#99CC33] text-[#13103A] rounded-full text-sm font-semibold hover:bg-opacity-90 transition-colors"
-                    >
-                      Go to Payment
-                    </button>
-                  </div>
-                )}
+                <div className="flex justify-end mt-5">
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (onGoToPayment) {
+                        onGoToPayment(index);
+                      } else if (invoices[index]?.id) {
+                        try {
+                          const { paymentUrl } =
+                            await UserPanelService.processInvoicePayment(
+                              invoices[index].id as string
+                            );
+                          if (typeof window !== "undefined") {
+                            window.open(paymentUrl, "_blank");
+                          }
+                        } catch (err) {
+                          // noop
+                        }
+                      }
+                    }}
+                    className="px-5 py-1 bg-[#99CC33] text-[#13103A] rounded-full text-sm font-semibold hover:bg-opacity-90 transition-colors"
+                  >
+                    Go to Payment
+                  </button>
+                </div>
               </div>
             </div>
           </div>

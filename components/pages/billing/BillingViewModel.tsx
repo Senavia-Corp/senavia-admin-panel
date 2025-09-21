@@ -16,7 +16,8 @@ import {
   PatchPaymentData,
   Payment,
 } from "@/types/payment-management";
-import { toast } from "sonner";
+import { toast } from "sonner"
+import { PatchBillingData } from "@/types/billing-management";
 
 export function BillingViewModel() {
   const { fetchData } = useFetch();

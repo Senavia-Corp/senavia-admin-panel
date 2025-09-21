@@ -6,7 +6,7 @@ import { DetailTabs } from "../molecules/detail-tabs";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import { UserManagementService } from "@/services/user-management-service";
 import type { User } from "@/types/user-management";
-import DashboardPage from "./dashboard/dashboard-page";
+import DashboardPage from "./dashboard/user-panel";
 import { CreateUserForm } from "./dashboard/create-user-form";
 import UserSettings from "./user-settings";
 import { useToast } from "@/hooks/use-toast";

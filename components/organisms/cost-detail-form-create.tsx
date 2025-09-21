@@ -11,16 +11,18 @@ import { useToast } from "@/hooks/use-toast";
 
 export function CostDetailFormCreate({
   estimateId, 
+  totalValue,
   onBack,
   onCreateSuccess,
   fisrtCost
 }: {
   estimateId: number;
+  totalValue: number;
   onBack?: () => void;
   onCreateSuccess?: (newCost: Cost) => void;
   fisrtCost?: boolean;
 }) {
-  const { createCost } = BillingViewModel();
+  const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
   const { toast } = useToast();
   const handleCreateCost = async () => {
@@ -34,6 +36,11 @@ export function CostDetailFormCreate({
         estimateId: estimateId
       };
       await createCost(costData);
+
+      const newTotalValue = totalValue + value;
+      await PatchBilling(estimateId, {
+        totalValue: newTotalValue
+      });
       
       // Crear objeto de costo local para la UI
       const newCost: Cost = {
@@ -82,11 +89,17 @@ export function CostDetailFormCreate({
 
   const Types = ["LICENSE"]
   
+  const isFormValid =
+    Name.trim().length > 0 &&
+    description.trim().length > 0 &&
+    type.trim().length > 0 &&
+    value > 0;
+  
   return (
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"
@@ -103,7 +116,7 @@ export function CostDetailFormCreate({
       </div>
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto ">
-          <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-52">
+          <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
             {fisrtCost && (
               <p className="text-red-500 text-sm">Please enter at least one cost</p>
             )}
@@ -165,7 +178,7 @@ export function CostDetailFormCreate({
             <Button
               className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={handleCreateCost}
-              disabled={loadingPost}
+              disabled={loadingPost || !isFormValid}
             >
               {loadingPost ? 'Updating...' : 'Add Cost'}  
             </Button>

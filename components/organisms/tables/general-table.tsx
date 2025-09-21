@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,8 @@ import {
 import { FilterLead } from "@/components/organisms/tables/filter/filter-lead";
 import { FilterProject } from "@/components/organisms/tables/filter/filter-project";
 import { PortfolioTableRow } from "./row/portfolio-table-row";
+import { EmptyState } from "@/components/atoms/empty-state";
+import { ErrorState } from "@/components/atoms/error-state";
 
 {
   /* HANDLERS */
@@ -49,7 +50,16 @@ export function GeneralTable(
   SubTitleDescription: string,
   TableTitle: string[],
   data: any[],
-  handlers: GeneralTableHandlers
+  handlers: GeneralTableHandlers,
+  options?: {
+    isLoading?: boolean;
+    hasError?: boolean;
+    onRetry?: () => void;
+    emptyStateTitle?: string;
+    emptyStateDescription?: string;
+    skeletonComponent?: React.ComponentType;
+    skeletonCount?: number;
+  }
 ) {
   const {
     onCreate,
@@ -60,6 +70,16 @@ export function GeneralTable(
     onViewTasks,
     onEdit,
   } = handlers;
+
+  const {
+    isLoading = false,
+    hasError = false,
+    onRetry,
+    emptyStateTitle = "No data available",
+    emptyStateDescription = "No records found to display.",
+    skeletonComponent: SkeletonComponent,
+    skeletonCount = 5,
+  } = options || {};
 
   const tableRows = data
     .filter((item) => item && item.id)
@@ -258,25 +278,66 @@ export function GeneralTable(
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0 px-5 pb-5">
-          <div className="bg-white rounded-lg overflow-auto flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
-            <table className="w-full min-w-[700px] border-separate border-spacing-y-2.5">
-              <thead className="bg-[#E1E4ED] sticky top-0 z-10">
-                <tr>
-                  {TableTitle.map((title, index) => (
-                    <th
-                      key={index}
-                      className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
-                    >
-                      {title}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white relative z-0">
-                {/* PAGES AND CORRESPONDING ROWS */}
-                {tableRows}
-              </tbody>
-            </table>
+          <div className="bg-white rounded-lg flex-1 flex flex-col w-full min-h-0 p-0 lg:p-5">
+            {/* Fixed header (not scrollable) */}
+            <div className="w-full overflow-hidden">
+              <table className="w-full min-w-[700px] table-fixed">
+                <thead className="bg-[#E1E4ED]">
+                  <tr>
+                    {TableTitle.map((title, index) => (
+                      <th
+                        key={index}
+                        className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
+                      >
+                        {title}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            {/* Scrollable body */}
+            <div className="flex-1 min-h-0 overflow-auto">
+              <table className="w-full min-w-[700px] table-fixed">
+                <tbody className="bg-white">
+                  {/* PAGES AND CORRESPONDING ROWS */}
+                  {isLoading ? (
+                    SkeletonComponent ? (
+                      Array.from({ length: skeletonCount }).map((_, index) => (
+                        <SkeletonComponent key={index} />
+                      ))
+                    ) : (
+                      // For other pages, show a simple loading message
+                      <tr>
+                        <td
+                          colSpan={TableTitle.length}
+                          className="text-center py-8 text-gray-500"
+                        >
+                          Loading...
+                        </td>
+                      </tr>
+                    )
+                  ) : hasError ? (
+                    <tr>
+                      <td colSpan={TableTitle.length} className="p-0">
+                        <ErrorState onRetry={onRetry} />
+                      </td>
+                    </tr>
+                  ) : data.length === 0 ? (
+                    <tr>
+                      <td colSpan={TableTitle.length} className="p-0">
+                        <EmptyState
+                          title={emptyStateTitle}
+                          description={emptyStateDescription}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    tableRows
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

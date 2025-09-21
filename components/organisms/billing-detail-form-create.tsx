@@ -161,7 +161,7 @@ export function BillingDetailCreateForm({
     try {
       const billingData: CreateBillingData = {
         title: title,
-        totalValue: 0,
+        totalValue: plans.find((plan) => plan.id === associatedPlan[0])?.price || 0,
         estimatedTime: estimatedTime,
         description: description,
         state: status,
@@ -211,6 +211,7 @@ export function BillingDetailCreateForm({
       <div className="">
         <CostPage
           costs={selectedBilling?.costs || []}
+          totalValue={parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
         />
@@ -235,6 +236,7 @@ export function BillingDetailCreateForm({
       <div className="">
         <CostDetailFormCreate
           estimateId={newEstimate?.id || 0}
+          totalValue={parseInt(newEstimate?.totalValue || "0")}
           onBack={() => setCreateFisrtCost(false)}
           onCreateSuccess={() => {
             setCreateFisrtCost(false);
@@ -254,7 +256,7 @@ export function BillingDetailCreateForm({
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"

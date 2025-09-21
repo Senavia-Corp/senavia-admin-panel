@@ -26,6 +26,7 @@ export interface Billing {
   deadLineToPay: string
   invoiceDateCreated: string
   invoiceReference: string
+  createdAt: string
   Project: any[] // TODO: Definir interfaz específica para Project
   costs: Cost[]
   payments?: Payment[] // Pagos asociados al billing
@@ -59,6 +60,9 @@ export interface apiResponse<T> {
 }
 
 export type BillingStatus = "CREATED" | "PROCESSING" | "IN_REVIEW" | "REJECTED" | "ACCEPTED" | "INVOICE" | "PAID"
+
+
+export type PatchBillingData = Partial<CreateBillingData>;
 
 export interface CreateBillingData {
   title: string,

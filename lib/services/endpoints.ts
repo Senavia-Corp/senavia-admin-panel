@@ -76,7 +76,7 @@ export const endpoints = {
     getPermissions: `${API}/permission`,
   },
   auth: {
-    register: `${API}/auth/register`,
+    register: `${API}/auth/register-simple`,
   },
   estimate: {
     getEstimates: `${API}/estimate`,
@@ -84,6 +84,7 @@ export const endpoints = {
     createEstimate: `${API}/estimate`,
     updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
     deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
   },
   plan: {
     getPlans: `${API}/plan`,
@@ -100,6 +101,16 @@ export const endpoints = {
     createPayment: `${API}/payment`,
     deletePayment: (id: number) => `${API}/payment?id=${id}`,
     updatePayment: (id: number) => `${API}/payment?id=${id}`,
+  },
+  clause: {
+    getClauses: `${API}/clause`,
+  },
+  contract: {
+    getAllContracts: `${API}/contract`,
+    deleteContract: (id: number) => `${API}/contract?id=${id}`,
+    createContract: `${API}/contract`,
+    updateContract: (id: number) => `${API}/contract?id=${id}`,
+    sendEmail: `https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e`,
   },
 };
 

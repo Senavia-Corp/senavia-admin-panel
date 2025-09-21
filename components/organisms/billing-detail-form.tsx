@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { DocumentPreviewBilling } from "./document-preview-billing";
+import { DocumentPreviewBilling } from "../../lib/billing/document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
@@ -174,6 +174,7 @@ export function BillingDetailForm({
       <div className="">
         <CostPage
           costs={selectedBilling?.costs || []}
+          totalValue= {parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
         />
@@ -193,15 +194,25 @@ export function BillingDetailForm({
     );
   }
 
-  // if (showDocument && selectedBilling) {
-  //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
-  // }
+  if (showDocument && selectedBilling) {
+    return <DocumentPreviewBilling 
+      billing={{
+        ...selectedBilling,
+        description: selectedBilling.description || '',
+        totalValue: selectedBilling.totalValue || '0'
+      } as Billing} 
+      lead={lead} 
+      costs={selectedBilling.costs}
+      plans={plans}
+      onBack={() => setShowDocument(false)} 
+    />
+  }
 
   return (
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"

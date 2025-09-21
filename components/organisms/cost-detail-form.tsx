@@ -10,19 +10,20 @@ import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
+  billingId: number;
   costId: number;
+  totalValue: number;
   cost: Cost;
   onBack?: () => void;
   onUpdate?: (updatedCost: Cost) => void;
 }
 
-export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFormProps) {
-  const { updateCost } = BillingViewModel();
+export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, onUpdate }: CostDetailFormProps) {
+  const { updateCost, PatchBilling } = BillingViewModel();
   const [isUpdating, setIsUpdating] = useState(false);
   const [localCost, setLocalCost] = useState(cost);
   const { toast } = useToast();
   const handleUpdateCost = async () => {
-  
     try {
       setIsUpdating(true);
       const costData: PatchCost = {
@@ -32,10 +33,20 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
         value: localCost.value,
       };
 
-      // Intentar actualizar en el servidor primero
+      // Primero actualizamos el costo
       await updateCost(costId, costData);
+      console.log("Cost updated successfully");
+
+      // Después actualizamos el billing con el nuevo total
+      // Restamos el valor anterior y sumamos el nuevo valor
+      const newTotalValue = Number(totalValue) - Number(cost.value) + Number(costData.value);
+      console.log("Updating billing with new total:", newTotalValue);
       
-      // Solo si la actualización en el servidor fue exitosa, actualizamos localmente
+      await PatchBilling(billingId, {
+        totalValue: newTotalValue
+      });
+      
+      // Actualizamos localmente
       const updatedCost: Cost = {
         ...cost,
         ...costData,
@@ -76,7 +87,7 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"
@@ -92,7 +103,7 @@ export function CostDetailForm({ costId, cost, onBack, onUpdate }: CostDetailFor
       </div>
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-52">
+          <div className="max-w-7xl space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
             <p>Name</p>
             <Input
               placeholder="Name"
