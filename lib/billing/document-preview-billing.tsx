@@ -53,8 +53,8 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
     return (
       <Document>
         <Page size="A4" style={pdf.page}>
-          <View style={[pdf.bannerBase, pdf.topBanner]} />
-          <View style={[pdf.bannerBase, pdf.bottomBanner]} />
+          <View style={[pdf.bannerBase, pdf.topBanner]} fixed />
+          <View style={[pdf.bannerBase, pdf.bottomBanner]} fixed />
           <View style={pdf.inner}>
             {/* Marca */}
               <Text style={pdf.brandTitle}>Senavia Corp</Text>
@@ -188,7 +188,8 @@ const pdf = StyleSheet.create({
     lineHeight: 1.4,
     position: "relative",
     backgroundColor: "white",
-    
+    paddingTop: 100,
+    paddingBottom: 100,
   },
 
   /* Banners */
@@ -207,17 +208,17 @@ const pdf = StyleSheet.create({
     height: 60,
   },
   brandTitle: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: "bold",
     color: "#04081E",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   /* Contenido con padding para no solapar banners */
   inner: {
     paddingHorizontal: 40,
-    paddingTop: 100,
-    paddingBottom: 100,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
 
   /* Texto principal */

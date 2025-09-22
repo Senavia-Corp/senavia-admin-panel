@@ -120,7 +120,6 @@ export function BillingDetailCreateForm({
         error: string;
       };
   const [newEstimate, setNewEstimate] = useState<Billing | null>(null);
-  const [createFisrtCost, setCreateFisrtCost] = useState(false);
 
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
@@ -161,7 +160,7 @@ export function BillingDetailCreateForm({
     try {
       const billingData: CreateBillingData = {
         title: title,
-        totalValue: plans.find((plan) => plan.id === associatedPlan[0])?.price || 0,
+        totalValue: Number(plans.find((plan) => plan.id === associatedPlan[0])?.price ?? 0),
         estimatedTime: estimatedTime,
         description: description,
         state: status,
@@ -183,7 +182,6 @@ export function BillingDetailCreateForm({
           description: "The billing has been created successfully.",
         });
         if (newBilling && newBilling.id) {
-          setCreateFisrtCost(true);
           console.log("Created billing with ID:", newBilling.id);
         }
       } else if ("error" in response) {
@@ -231,22 +229,6 @@ export function BillingDetailCreateForm({
     );
   }
 
-  if (createFisrtCost) {
-    return (
-      <div className="">
-        <CostDetailFormCreate
-          estimateId={newEstimate?.id || 0}
-          totalValue={parseInt(newEstimate?.totalValue || "0")}
-          onBack={() => setCreateFisrtCost(false)}
-          onCreateSuccess={() => {
-            setCreateFisrtCost(false);
-            onBack?.();
-          }}
-          fisrtCost={true}
-        />
-      </div>
-    );
-  }
 
   // if (showDocument && selectedBilling) {
   //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
