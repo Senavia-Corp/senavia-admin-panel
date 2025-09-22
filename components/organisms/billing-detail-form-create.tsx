@@ -1,8 +1,8 @@
 import { ArrowLeft, Eye } from "lucide-react";
+import { MultiSelectBilling } from "@/components/atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { BillingManagementService } from "@/services/billing-management-service";
 import { Textarea } from "../ui/textarea";
 import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import {
@@ -13,14 +13,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CardMokcup } from "@/components/atoms/card_mokcup";
-import { Card, CardHeader } from "../ui/card";
-import { DocumentPreviewBilling } from "./document-preview-billing";
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
 import { Plans } from "@/types/plan";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { CostPage } from "@/components/pages/cost-page";
+import { PaymentPage } from "@/components/pages/payment-page";
+import { PaymentManagementService } from "@/services/payment-management-service";
+import { useToast } from "@/hooks/use-toast";
+import { CostDetailFormCreate } from "./cost-detail-form-create";
+import { MultiSelectPlan } from "../atoms/multiselect-plan";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 interface BillingDetailCreateFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -31,6 +35,7 @@ interface BillingDetailCreateFormProps {
   onSave: (billingData: CreateBillingData) => void;
 }
 
+// Mover la función fuera del componente para evitar recreaciones
 const servicesID = (service_ID: number) => {
   if (service_ID === 1) {
     return "Digital Marketing Service";
@@ -42,6 +47,34 @@ const servicesID = (service_ID: number) => {
     return "Service not found";
   }
 };
+
+// Constantes fuera del componente
+const statuses: BillingStatus[] = [
+  "CREATED",
+  "PROCESSING",
+  "IN_REVIEW",
+  "REJECTED",
+  "ACCEPTED",
+  "INVOICE",
+  "PAID",
+];
+
+const services: string[] = [
+  "Digital Marketing Service",
+  "Web Design",
+  "Web Development Service",
+  "Service not found",
+];
+
+const invoiceReference = "INV-2025-0456";
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
+
 export function BillingDetailCreateForm({
   selectedBilling,
   leads,
@@ -50,116 +83,127 @@ export function BillingDetailCreateForm({
   onBack,
   onSave,
 }: BillingDetailCreateFormProps) {
-  console.log("selectedBilling recibido:", selectedBilling);
-  console.log("leads recibidos:", leads);
-  console.log("lead recibido:", lead);
+  // Movemos los console.log dentro de un useEffect para que solo se ejecuten una vez al montar el componente
+  useEffect(() => {
+    console.log("selectedBilling recibido:", selectedBilling);
+    console.log("leads recibidos:", leads);
+    console.log("lead recibido:", lead);
+  }, []);
   const [showDocument, setShowDocument] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
+  const [popupMessage, setPopupMessage] = useState({ type: "", message: "" });
   const { createBilling, error, successMessage } = BillingViewModel();
 
   // Estados para campos editables
-  const [totalValue, setTotalValue] = useState(selectedBilling?.totalValue?.toString() || "");
+  const [title, setTitle] = useState("");
+  const [totalValue, setTotalValue] = useState(
+    selectedBilling?.totalValue?.toString() || ""
+  );
   const [estimatedTime, setEstimatedTime] = useState("");
   const [deadlineToPay, setDeadlineToPay] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
-  const [associatedLead, setAssociatedLead] = useState("");
+  const [associatedLeads, setAssociatedLeads] = useState<number[]>([]);
   const [service, setService] = useState("");
-  const [associatedPlan, setAssociatedPlan] = useState("");
+  const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [showCosts, setShowCosts] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const { toast } = useToast();
+  type ApiResponse =
+    | {
+        success: boolean;
+        data: Billing[];
+      }
+    | {
+        success: boolean;
+        error: string;
+      };
+  const [newEstimate, setNewEstimate] = useState<Billing | null>(null);
+  const [createFisrtCost, setCreateFisrtCost] = useState(false);
+
   useEffect(() => {
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLead(selectedBilling.lead_id?.toString() || "");
+      setAssociatedLeads(
+        selectedBilling.lead_id ? [selectedBilling.lead_id] : []
+      );
       setService(""); // No hay service en estos datos
     }
-  }, []);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  }, [selectedBilling]); // Agregar selectedBilling como dependencia
 
   const handleDocumentPreview = () => {
     setShowDocument(true);
   };
 
-  const statuses: BillingStatus[] = [
-    "CREATED",
-    "PROCESSING",
-    "IN_REVIEW",
-    "REJECTED",
-    "ACCEPTED",
-    "INVOICE",
-    "PAID",
-  ];
-
-  const services: string[] = [
-    "Digital Marketing Service",
-    "Web Design",
-    "Web Development Service",
-    "Service not found",
-  ];
-
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Retorna "YYYY-MM-DD"
+    return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
   };
-
-  const invoiceReference = "INV-2025-0456";
 
   const isFormValid = () => {
     return (
+      title !== "" &&
       estimatedTime !== "" &&
       description !== "" &&
       status !== "" &&
-      associatedLead !== "" &&
-      associatedPlan !== "" &&
+      associatedLeads.length > 0 &&
+      associatedPlan.length > 0 &&
       deadlineToPay !== ""
     );
   };
 
   const handleCreateBilling = async () => {
-    const billingData: CreateBillingData = {
-      totalValue: 0,
-      estimatedTime: estimatedTime,
-      description: description,
-      state: status,
-      lead_id: Number(associatedLead),
-      plan_id: Number(associatedPlan),
-      deadLineToPay: deadlineToPay,
-      invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-      invoiceReference: invoiceReference
-    };
-    
-      const result = await createBilling(billingData);
-      
-      // Verificamos si hay datos en la respuesta
-      if (result && result.data) {
-        setPopupMessage({
-          type: 'success',
-          message: 'Estimate created successfully!'
-        });
-        setShowPopup(true);
-        setTimeout(() => {
-          setShowPopup(false);
-          onSave(billingData);
-        }, 3000);
+    setIsCreating(true);
+    try {
+      const billingData: CreateBillingData = {
+        title: title,
+        totalValue: plans.find((plan) => plan.id === associatedPlan[0])?.price || 0,
+        estimatedTime: estimatedTime,
+        description: description,
+        state: status,
+        lead_id: associatedLeads[0] || 0,
+        plan_id: associatedPlan[0] || 0,
+        deadLineToPay: deadlineToPay,
+        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
+        invoiceReference: invoiceReference,
+        percentagePaid: 0,
+        remainingPercentage: 100,
+      };
+      const response = (await createBilling(billingData)) as ApiResponse;
 
-      } else {
-        setPopupMessage({
-          type: 'error',
-          message: error || 'Failed to create estimate'
+      if (response.success && "data" in response && response.data.length > 0) {
+        const newBilling = response.data[0];
+        setNewEstimate(newBilling);
+        toast({
+          title: "Billing created successfully",
+          description: "The billing has been created successfully.",
         });
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 3000);
+        if (newBilling && newBilling.id) {
+          setCreateFisrtCost(true);
+          console.log("Created billing with ID:", newBilling.id);
+        }
+      } else if ("error" in response) {
+        toast({
+          title: "Failed to create billing",
+          description: response.error || "The billing has not been created.",
+        });
       }
+    } catch (error) {
+      console.error("An error has occurred:", error);
+      toast({
+        title: "Failed to create billing",
+        description:
+          error instanceof Error
+            ? error.message
+            : "The billing has not been created.",
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (showCosts) {
@@ -167,8 +211,38 @@ export function BillingDetailCreateForm({
       <div className="">
         <CostPage
           costs={selectedBilling?.costs || []}
+          totalValue={parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
+        />
+      </div>
+    );
+  }
+
+  if (showPayments) {
+    return (
+      <div className="">
+        <PaymentPage
+          payments={selectedBilling?.payments || []}
+          estimateId={selectedBilling?.id || 0}
+          onBack={() => setShowPayments(false)}
+        />
+      </div>
+    );
+  }
+
+  if (createFisrtCost) {
+    return (
+      <div className="">
+        <CostDetailFormCreate
+          estimateId={newEstimate?.id || 0}
+          totalValue={parseInt(newEstimate?.totalValue || "0")}
+          onBack={() => setCreateFisrtCost(false)}
+          onCreateSuccess={() => {
+            setCreateFisrtCost(false);
+            onBack?.();
+          }}
+          fisrtCost={true}
         />
       </div>
     );
@@ -182,7 +256,7 @@ export function BillingDetailCreateForm({
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
             size="sm"
@@ -204,17 +278,23 @@ export function BillingDetailCreateForm({
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
-          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">                                     
-              <p>
-                Estimated Time:
-              </p>
-              <Input
-                type="text"
-                className="w-full h-7"
-                value={estimatedTime}
-                onChange={(e) => setEstimatedTime(e.target.value)}
-                placeholder="Enter estimated time in months"
-              />
+          <div className="max-w-7xl mx-auto  space-y-3 text-[#393939] text-base/4">
+            <p>Title</p>
+            <Input
+              type="text"
+              className="w-full h-7"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter title"
+            />
+            <p>Estimated Time:</p>
+            <Input
+              type="text"
+              className="w-full h-7"
+              value={estimatedTime}
+              onChange={(e) => setEstimatedTime(e.target.value)}
+              placeholder="Enter estimated time in months"
+            />
             <hr className="border-[#EBEDF2]" />
             <Label
               htmlFor="description"
@@ -251,37 +331,95 @@ export function BillingDetailCreateForm({
               </SelectContent>
             </Select>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Lead
-              <Select value={associatedLead} onValueChange={setAssociatedLead}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {leads.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id.toString()}>
-                      {lead.clientName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </p>
+            <div className="space-y-2">
+              <Label>Associated Lead</Label>
+              <MultiSelectBilling
+                value={associatedLeads}
+                onChange={(value) => {
+                  setAssociatedLeads(value);
+                }}
+                leads={leads}
+                placeholder="Select a lead..."
+                disabled={false}
+              />
+              {associatedLeads.length > 0 ? (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        leads.find((lead) => lead.id === associatedLeads[0])
+                          ?.clientName
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p className="font-bold">
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.service?.name
+                        }
+                      </p>
+                      <p>
+                        {
+                          leads.find((lead) => lead.id === associatedLeads[0])
+                            ?.description
+                        }
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a lead</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
+            </div>
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Associated Plan ID
-              <Select value={associatedPlan} onValueChange={setAssociatedPlan}>
-                <SelectTrigger className="w-full h-7 mt-3">
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {plans?.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.id.toString()}>
-                      Plan ID: {plan.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </p>
+            <div className="space-y-2">
+              <label>Associated Plan ID</label>
+              <MultiSelectPlan
+                plans={plans}
+                value={associatedPlan}
+                onChange={(value) => {
+                  setAssociatedPlan(value);
+                }}
+              />
+              {associatedPlan.length > 0 ? (
+                <Card className="w-auto text-base">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {
+                        plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.name
+                      }
+                    </CardTitle>
+                    <CardDescription>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.price
+                          ? formatCurrency(
+                              plans.find(
+                                (plan) => plan.id === associatedPlan[0]
+                              )?.price!
+                            )
+                          : "No price"}
+                      </p>
+                      <p>
+                        {plans.find((plan) => plan.id === associatedPlan[0])
+                          ?.description || "No description"}
+                      </p>
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <Card className="w-auto">
+                  <CardHeader>
+                    <CardTitle className="text-base">Select a plan</CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
+            </div>
             <hr className="border-[#EBEDF2]" />
             <p>Deadline to pay</p>
             <Input
@@ -290,22 +428,22 @@ export function BillingDetailCreateForm({
               value={deadlineToPay}
               onChange={(e) => setDeadlineToPay(e.target.value)}
             />
-
-             <Button 
-                className={`rounded-full text-3xl items-center py-2 px-4 ${
-                  isFormValid() 
-                    ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80" 
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-                onClick={handleCreateBilling}
-                disabled={!isFormValid()}>
-              Create Billing
+            <Button
+              className={`rounded-full text-3xl items-center py-2 px-4 ${
+                isFormValid() && !isCreating
+                  ? "bg-[#99CC33] text-white hover:bg-[#99CC33]/80"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              onClick={handleCreateBilling}
+              disabled={!isFormValid() || isCreating}
+            >
+              {isCreating ? "Creating..." : "Create Billing"}
             </Button>
           </div>
         </div>
       </div>
       <CardMokcup
-        type={popupMessage.type === 'success' ? 'success' : 'error'}
+        type={popupMessage.type === "success" ? "success" : "error"}
         message={popupMessage.message}
         isOpen={showPopup}
       />

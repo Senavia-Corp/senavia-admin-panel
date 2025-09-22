@@ -6,7 +6,7 @@ import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialo
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Bell } from "lucide-react";
+import { ArrowLeft, Bell } from "lucide-react";
 import { BillingManagementService } from "@/services/billing-management-service";
 import type { BillingRecord } from "@/types/billing-management";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
@@ -19,20 +19,28 @@ import { CostDetailForm } from "../organisms/cost-detail-form";
 
 interface CostPageProps {
   costs: Cost[];
+  totalValue: number;
   estimateId: number;
   onBack?: () => void;
 }
 
-export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPageProps) {
+export function CostPage({
+  costs: initialCosts,
+  totalValue,
+  estimateId,
+  onBack,
+}: CostPageProps) {
   const [costs, setCosts] = useState(initialCosts);
   const [filteredCosts, setFilteredCosts] = useState(initialCosts);
-  const [billingToDelete, setBillingToDelete] = useState<typeof costs[0] | null>(null);
+  const [billingToDelete, setBillingToDelete] = useState<
+    (typeof costs)[0] | null
+  >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [showCreateCost, setShowCreateCost] = useState(false);
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
-  const {deleteCost} = BillingViewModel();
+  const { deleteCost } = BillingViewModel();
 
   useEffect(() => {
     filterCosts();
@@ -40,16 +48,17 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
 
   const filterCosts = () => {
     let filtered = costs;
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(cost => 
-        cost.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cost.type.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (cost) =>
+          cost.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          cost.type.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (statusFilter) {
-      filtered = filtered.filter(cost => cost.type === statusFilter);
+      filtered = filtered.filter((cost) => cost.type === statusFilter);
     }
 
     setFilteredCosts(filtered);
@@ -58,11 +67,13 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
   const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
       await deleteCost(costToDelete.id);
-      setCosts(prevCosts => prevCosts.filter(cost => cost.id !== costToDelete.id));
-      toast.success('Cost deleted successfully');
+      setCosts((prevCosts) =>
+        prevCosts.filter((cost) => cost.id !== costToDelete.id)
+      );
+      toast.success("Cost deleted successfully");
     } catch (error) {
       console.error("Error deleting cost", error);
-      toast.error('Failed to delete cost');
+      toast.error("Failed to delete cost");
     }
   };
 
@@ -72,15 +83,13 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
   };
 
   const handleCostUpdate = (updatedCost: Cost) => {
-    setCosts(prevCosts => 
-      prevCosts.map(cost => 
-        cost.id === updatedCost.id ? updatedCost : cost
-      )
+    setCosts((prevCosts) =>
+      prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost))
     );
   };
 
   const handleCostCreate = (newCost: Cost) => {
-    setCosts(prevCosts => [...prevCosts, newCost]);
+    setCosts((prevCosts) => [...prevCosts, newCost]);
   };
 
   const handleCreateCost = () => {
@@ -124,28 +133,30 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
   if (showCostDetail && selectedBillingId) {
     return (
       <div className="">
-        <CostDetailForm 
-          costId={selectedBillingId} 
-          cost={costs.find(cost => cost.id === selectedBillingId)!}
+        <CostDetailForm
+          billingId={estimateId}
+          costId={selectedBillingId}
+          totalValue={totalValue}
+          cost={costs.find((cost) => cost.id === selectedBillingId)!}
           onBack={handleBackToList}
           onUpdate={handleCostUpdate}
         />
       </div>
-    )
+    );
   }
 
   if (showCreateCost) {
     return (
       <div className="">
-        <CostDetailFormCreate 
+        <CostDetailFormCreate
           estimateId={estimateId}
+          totalValue={totalValue}
           onBack={handleBackToList}
           onCreateSuccess={handleCostCreate}
         />
       </div>
     );
   }
-
 
   ("");
 
@@ -155,7 +166,15 @@ export function CostPage({ costs: initialCosts, estimateId, onBack }: CostPagePr
       <div className="flex-1 overflow-hidden">
         <div className="h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <div className="my-3">
+            <div className="my-3 flex flex-row space-x-1 items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
+                onClick={onBack}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">
                 Costs
               </h1>

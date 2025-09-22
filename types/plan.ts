@@ -3,6 +3,7 @@ export interface Plans {
     name: string;
     description: string;
     type: "SINGLEPAYMENT";
+    price: number;
     service: {
       id: number;
       active: boolean;
@@ -18,6 +19,7 @@ export interface Plan {
     name: string;
     description: string;
     type: "SINGLEPAYMENT";
+    price: number;
     serviceId: number;
     createdAt: string;
     updatedAt: string;
