@@ -172,7 +172,7 @@ export class ContractManagementService {
     //Esto no deberia ir aqui deberia ir en el servicio de clauses
     //Ademas me permite traer las clauses sin estar logueado, revisar eso
     try {
-      const response = await Axios.get(endpoints.clause.getClauses, {
+      const response = await Axios.get(endpoints.clause.getAll, {
         headers: {
           "Content-Type": "application/json",
         },
