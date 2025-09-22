@@ -11,6 +11,15 @@ export const endpoints = {
   service: {
     getAll: `${API}/service`,
   },
+  clause: {
+    getAll: `${API}/clause`,
+    getById: (id: number) => `${API}/clause?id=${id}`,
+    create: `${API}/clause`,
+    update: (id: number) => `${API}/clause?id=${id}`,
+     delete: (id: number) => `${API}/clause?id=${id}`,
+     search: (term: string, isPaginated = false, offset = 0, itemsPerPage = 10) =>
+    `${API}/clause?searchTerm=${encodeURIComponent(term)}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
+  },
 
   product: {
     getAll: `${API}/product`,
@@ -101,9 +110,6 @@ export const endpoints = {
     createPayment: `${API}/payment`,
     deletePayment: (id: number) => `${API}/payment?id=${id}`,
     updatePayment: (id: number) => `${API}/payment?id=${id}`,
-  },
-  clause: {
-    getClauses: `${API}/clause`,
   },
   contract: {
     getAllContracts: `${API}/contract`,

@@ -60,9 +60,11 @@ export function ProjectEditor({projectId,onBack,onSave,
     const loadProject = async () => {
       if (projectId) {
         try {
-          //const project = await ProjectManagementService.getProjectById(projectId);
-          const project=""
-          /*if (project) {
+          const project = await ProjectManagementService.getProjectById(
+            projectId
+          );
+          if (project) {
+            const currentPhase = getPhaseLabel(project);
             setFormData({
               name: project.name,
               description: project.description,
@@ -73,8 +75,8 @@ export function ProjectEditor({projectId,onBack,onSave,
               imagePreviewUrl: project.imagePreviewUrl || "",
               workTeam_id: project.workTeam_id?.id || 0,
               estimate_id: project.estimate_id?.id || 0,
-            });
-          }*/
+           });
+          }
         } catch (error) {
           console.error("Error loading project:", error);
           toast({
@@ -143,7 +145,6 @@ export function ProjectEditor({projectId,onBack,onSave,
     }
   };
 
-  //const phases: ProjectPhase[] = ProjectManagementService.getProjectPhases();
   const phases: ProjectPhase[] = [
     "Analysis",
     "Design",
