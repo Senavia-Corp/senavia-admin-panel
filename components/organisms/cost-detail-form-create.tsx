@@ -14,13 +14,11 @@ export function CostDetailFormCreate({
   totalValue,
   onBack,
   onCreateSuccess,
-  fisrtCost
 }: {
   estimateId: number;
   totalValue: number;
   onBack?: () => void;
   onCreateSuccess?: (newCost: Cost) => void;
-  fisrtCost?: boolean;
 }) {
   const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
@@ -59,10 +57,6 @@ export function CostDetailFormCreate({
       // Notificar al componente padre
       onCreateSuccess?.(newCost);
       
-      // Solo ejecutar onBack si NO es el primer costo
-      if (!fisrtCost) {
-        onBack?.();
-      }
     } catch (error) {
       console.error('Error creating cost:', error);
       toast({
@@ -74,12 +68,6 @@ export function CostDetailFormCreate({
     }
   };
 
-  const disableBackButton = () => {
-    if (fisrtCost) {
-      return true;
-    }
-    return false;
-  }
 
   
   const [Name, setName] = useState("");
@@ -105,7 +93,6 @@ export function CostDetailFormCreate({
             size="sm"
             className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
             onClick={onBack}
-            disabled={disableBackButton()}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -117,9 +104,6 @@ export function CostDetailFormCreate({
       <div className="bg-black rounded-lg  p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto ">
           <div className="max-w-7xl  space-y-3 text-[#393939] text-base/4 mx-auto xl:mx-44">
-            {fisrtCost && (
-              <p className="text-red-500 text-sm">Please enter at least one cost</p>
-            )}
             <p>Name</p>
             <Input
               placeholder="Name"

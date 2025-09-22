@@ -1,21 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BillingTable } from "@/components/organisms/billing-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Bell } from "lucide-react";
-import { BillingManagementService } from "@/services/billing-management-service";
-import type { BillingRecord } from "@/types/billing-management";
+import { ArrowLeft } from "lucide-react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
-import { BillingDetailForm } from "@/components/organisms/billing-detail-form";
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
-import { BillingViewModel } from "./billing/BillingViewModel";
+import { BillingViewModel, } from "./billing/BillingViewModel";
 import { toast } from "sonner";
 import type { Cost } from "@/types/cost-management";
 import { CostDetailForm } from "../organisms/cost-detail-form";
+
 
 interface CostPageProps {
   costs: Cost[];
@@ -31,6 +26,7 @@ export function CostPage({
   onBack,
 }: CostPageProps) {
   const [costs, setCosts] = useState(initialCosts);
+  const [currentTotalValue, setCurrentTotalValue] = useState(totalValue);
   const [filteredCosts, setFilteredCosts] = useState(initialCosts);
   const [billingToDelete, setBillingToDelete] = useState<
     (typeof costs)[0] | null
@@ -40,7 +36,7 @@ export function CostPage({
   const [showCreateCost, setShowCreateCost] = useState(false);
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
-  const { deleteCost } = BillingViewModel();
+  const { deleteCost, PatchBilling } = BillingViewModel();
 
   useEffect(() => {
     filterCosts();
@@ -67,9 +63,18 @@ export function CostPage({
   const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
       await deleteCost(costToDelete.id);
+      
+      // Calcular el nuevo totalValue restando el valor del costo eliminado
+      const newTotalValue = currentTotalValue - costToDelete.value;
+      
       setCosts((prevCosts) =>
         prevCosts.filter((cost) => cost.id !== costToDelete.id)
       );
+      setCurrentTotalValue(newTotalValue);
+      
+      await PatchBilling(estimateId, {
+        totalValue: newTotalValue
+      });
       toast.success("Cost deleted successfully");
     } catch (error) {
       console.error("Error deleting cost", error);
@@ -83,13 +88,21 @@ export function CostPage({
   };
 
   const handleCostUpdate = (updatedCost: Cost) => {
-    setCosts((prevCosts) =>
-      prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost))
-    );
+    setCosts((prevCosts) => {
+      const oldCost = prevCosts.find((cost) => cost.id === updatedCost.id);
+      if (oldCost) {
+        // Actualizar totalValue: restar el valor anterior y sumar el nuevo
+        const valueDifference = updatedCost.value - oldCost.value;
+        setCurrentTotalValue((prevTotal) => prevTotal + valueDifference);
+      }
+      return prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost));
+    });
   };
 
   const handleCostCreate = (newCost: Cost) => {
     setCosts((prevCosts) => [...prevCosts, newCost]);
+    // Agregar el valor del nuevo costo al totalValue
+    setCurrentTotalValue((prevTotal) => prevTotal + newCost.value);
   };
 
   const handleCreateCost = () => {
@@ -136,7 +149,7 @@ export function CostPage({
         <CostDetailForm
           billingId={estimateId}
           costId={selectedBillingId}
-          totalValue={totalValue}
+          totalValue={currentTotalValue}
           cost={costs.find((cost) => cost.id === selectedBillingId)!}
           onBack={handleBackToList}
           onUpdate={handleCostUpdate}
@@ -150,7 +163,7 @@ export function CostPage({
       <div className="">
         <CostDetailFormCreate
           estimateId={estimateId}
-          totalValue={totalValue}
+          totalValue={currentTotalValue}
           onBack={handleBackToList}
           onCreateSuccess={handleCostCreate}
         />
