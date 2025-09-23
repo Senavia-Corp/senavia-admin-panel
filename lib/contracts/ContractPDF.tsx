@@ -38,6 +38,8 @@ const pdfStyles = StyleSheet.create({
     lineHeight: 1.4,
     backgroundColor: "#FFFFFF",
     padding: 0,
+    paddingTop: 50,
+    paddingBottom: 40,
   },
   header: {
     backgroundColor: "#a7d41b",
@@ -45,6 +47,7 @@ const pdfStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
+    marginTop: -50,
     position: "relative",
   },
   headerImage: {
@@ -62,11 +65,11 @@ const pdfStyles = StyleSheet.create({
   },
   contentSignatures: {
     paddingHorizontal: 40,
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
   companyName: {
-    fontSize: 14,
-    fontWeight: "normal",
+    fontSize: 18,
+    fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
     color: "#374151",
@@ -151,8 +154,8 @@ const pdfStyles = StyleSheet.create({
     textAlign: "justify",
   },
   signaturesSection: {
-    marginTop: 30,
-    paddingTop: 20,
+    marginTop: 10,
+    marginBottom: 40,
   },
   signaturesTitle: {
     fontSize: 16,
@@ -205,6 +208,10 @@ const pdfStyles = StyleSheet.create({
     color: "#374151",
     backgroundColor: "#FFFFFF",
   },
+  pageBreak: {
+    marginBottom: 40,
+    paddingBottom: 20,
+  },
 });
 
 export const ContractPDF = (props: ContractPDFProps) => (
@@ -212,7 +219,7 @@ export const ContractPDF = (props: ContractPDFProps) => (
     <Page size="A4" style={pdfStyles.page}>
       {/* Header verde */}
       <View style={pdfStyles.header}>
-        <Image src="/lambo.png" style={pdfStyles.headerImage} />
+        <Image src="/contract-logo.png" style={pdfStyles.headerImage} />
       </View>
 
       {/* Contenido principal */}
@@ -271,7 +278,7 @@ export const ContractPDF = (props: ContractPDFProps) => (
         <View style={pdfStyles.separatorBottom} />
 
         {/* Contenido del contrato */}
-        <View style={pdfStyles.contractBody}>
+        <View style={[pdfStyles.contractBody, pdfStyles.pageBreak]}>
           <Text style={pdfStyles.contractText}>{props.contract.content}</Text>
 
           {/* Sección de servicios */}
