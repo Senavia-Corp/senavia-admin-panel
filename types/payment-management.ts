@@ -36,12 +36,7 @@ export interface PatchPaymentData {
   attachments?: string[];
 }
 
-export type PaymentState =
-  | "PENDING"
-  | "PROCESSING"
-  | "COMPLETED"
-  | "FAILED"
-  | "CANCELLED";
+export type PaymentState = "PENDING" | "PAID";
 
 export interface PaymentRecord {
   id: string;
