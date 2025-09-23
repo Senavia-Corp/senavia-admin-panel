@@ -5,14 +5,14 @@ import { contractFormSchema } from "@/components/organisms/contracs/schemas";
 import { Loader2 } from "lucide-react";
 import { ClauseMultiSelect } from "@/components/atoms/clause-multiselect";
 import { GenericDropdown } from "@/components/atoms/generic-dropdown";
-import { endpoints, useFetch } from "@/lib/services/endpoints";
+import { useFetch } from "@/lib/services/endpoints";
 import type {
   CreateContractFormValues,
   ContractStatus,
 } from "@/types/contract-management";
 
 type ContractFormMode = "create" | "edit";
-  const { fetchData } = useFetch();
+const { fetchData } = useFetch();
 
 interface ContractFormProps {
   mode: ContractFormMode;
@@ -87,19 +87,26 @@ export function ContractForm({
   }, [isDirty, onDirtyChange]);
 
   const handleSendEmail = () => {
-    fetch('https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: initialValues.companyEmail, signUrl: 'https://example.com/sign' })
-    })
-  }
+    fetch(
+      "https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: initialValues.companyEmail,
+          signUrl: "https://example.com/sign",
+        }),
+      }
+    );
+  };
 
   return (
     <FormProvider {...formMethods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className={`w-full mx-auto p-8 bg-white rounded-lg shadow-none ${isSubmitting ? "opacity-50 pointer-events-none" : ""
-          }`}
+        className={`w-full mx-auto p-8 bg-white rounded-lg shadow-none ${
+          isSubmitting ? "opacity-50 pointer-events-none" : ""
+        }`}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           {/* General Information Section */}
@@ -119,8 +126,9 @@ export function ContractForm({
             </label>
             <input
               type="text"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.title ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.title ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Contract Title"
               disabled={isSubmitting}
               {...register("title")}
@@ -135,8 +143,9 @@ export function ContractForm({
               Content *
             </label>
             <textarea
-              className={`w-full border rounded-md px-3 py-2 text-sm min-h-[100px] resize-y ${errors.content ? "border-red-500" : "border-gray-300"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full border rounded-md px-3 py-2 text-sm min-h-[100px] resize-y ${
+                errors.content ? "border-red-500" : "border-gray-300"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter contract content..."
               rows={4}
               disabled={isSubmitting}
@@ -156,8 +165,9 @@ export function ContractForm({
               control={control}
               render={({ field }) => (
                 <select
-                  className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${errors.state ? "border-red-500" : "border-gray-300"
-                    } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${
+                    errors.state ? "border-red-500" : "border-gray-300"
+                  } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   disabled={isSubmitting}
                   value={field.value || ""}
                   onChange={(e) =>
@@ -183,8 +193,9 @@ export function ContractForm({
               Clauses *
             </label>
             <div
-              className={`${errors.clauses ? "border border-red-500 rounded-md" : ""
-                }`}
+              className={`${
+                errors.clauses ? "border border-red-500 rounded-md" : ""
+              }`}
             >
               <Controller
                 name="clauses"
@@ -210,8 +221,9 @@ export function ContractForm({
             </label>
             <input
               type="date"
-              className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${errors.signedDate ? "border-red-500" : "border-gray-300"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 border rounded-md px-3 py-2 text-sm ${
+                errors.signedDate ? "border-red-500" : "border-gray-300"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               disabled={isSubmitting}
               {...register("signedDate")}
             />
@@ -301,8 +313,9 @@ export function ContractForm({
             </label>
             <input
               type="email"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.companyEmail ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.companyEmail ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client email"
               disabled={isSubmitting}
               {...register("companyEmail")}
@@ -318,8 +331,9 @@ export function ContractForm({
             </label>
             <input
               type="text"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.companyAdd ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.companyAdd ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client address"
               disabled={isSubmitting}
               {...register("companyAdd")}
@@ -336,8 +350,9 @@ export function ContractForm({
             <input
               type="tel"
               inputMode="tel"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.companyPhone ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.companyPhone ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client phone"
               disabled={isSubmitting}
               {...register("companyPhone")}
@@ -353,8 +368,9 @@ export function ContractForm({
             </label>
             <input
               type="text"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.ownerName ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.ownerName ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Owner Name"
               disabled={isSubmitting}
               {...register("ownerName")}
@@ -370,8 +386,9 @@ export function ContractForm({
             </label>
             <input
               type="date"
-              className={`w-full h-10 border rounded-md px-3 py-2 text-sm border-gray-300 ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+              className={`w-full h-10 border rounded-md px-3 py-2 text-sm border-gray-300 ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
               disabled={isSubmitting}
               {...register("ownerSignDate")}
             />
@@ -381,8 +398,9 @@ export function ContractForm({
             </label>
             <input
               type="text"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.recipientName ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.recipientName ? "border-red-500" : "border-input"
+              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder="Enter client name"
               disabled={isSubmitting}
               {...register("recipientName")}
@@ -398,8 +416,9 @@ export function ContractForm({
             </label>
             <input
               type="date"
-              className={`w-full h-10 border rounded-md px-3 py-2 text-sm border-gray-300 ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+              className={`w-full h-10 border rounded-md px-3 py-2 text-sm border-gray-300 ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
               disabled={isSubmitting}
               {...register("recipientSignDate")}
             />
@@ -425,15 +444,16 @@ export function ContractForm({
         </div>
       </form>
       <div className="flex justify-center mt-8">
-        <button className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
+        <button
+          className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
           onClick={() => {
-            handleSendEmail()
-          }}>
+            handleSendEmail();
+          }}
+        >
           Send Contract by Email
         </button>
       </div>
     </FormProvider>
-
   );
 }
 
