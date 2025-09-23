@@ -258,15 +258,22 @@ export function PaymentDetailFormCreate({
             >
               {loadingPost ? "Creating..." : "Add Payment"}
             </Button>
-
-            <button
-              className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
-              onClick={() => {
-                handleSendEmail();
-              }}
-            >
-              Send Payment by Email
-            </button>
+            <div className="flex justify-center mt-8 w-full">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap 
+               ring-offset-background transition-colors focus-visible:outline-none 
+               focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+               disabled:pointer-events-none disabled:opacity-50 
+               [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 
+               h-10 px-4 py-2 w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] 
+               text-white font-bold text-lg"
+                onClick={() => {
+                  handleSendEmail();
+                }}
+              >
+                Send Payment by Email
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ import type {
 } from "@/types/contract-management";
 
 type ContractFormMode = "create" | "edit";
-  const { fetchData } = useFetch();
+const { fetchData } = useFetch();
 
 interface ContractFormProps {
   mode: ContractFormMode;
