@@ -8,6 +8,41 @@ import {
   Image,
 } from "@react-pdf/renderer";
 
+// Función SEGURA para limpiar texto para justificación - NO modifica contenido, solo formato
+const flattenTextForJustification = (text: string): string => {
+  if (!text) return "";
+
+  return (
+    text
+      // SEGURO: Solo remover tags HTML básicos (no afecta contenido real)
+      .replace(/<\/?[^>]+(>|$)/g, "")
+
+      // SEGURO: Normalizar espacios múltiples (mejora legibilidad)
+      .replace(/[ \t]+/g, " ")
+
+      // SEGURO: Convertir saltos de línea a espacios (preserva separación)
+      .replace(/[\r\n]+/g, " ")
+
+      // SEGURO: Limpiar espacios al inicio y final
+      .trim()
+
+      // SEGURO: Solo normalizar caracteres Unicode problemáticos para PDFs
+      .normalize("NFKC")
+
+      // CONSERVADOR: Solo reemplazar comillas tipográficas comunes
+      .replace(/[""]/g, '"')
+      .replace(/['']/g, "'")
+
+      // CONSERVADOR: Mejorar espaciado después de puntuación (solo si hay 0 o muchos espacios)
+      .replace(/\.(\s{0}|\s{2,})/g, ". ")
+      .replace(/,(\s{0}|\s{2,})/g, ", ")
+
+      // FINAL: Limpiar espacios múltiples que pudieron quedar
+      .replace(/\s{2,}/g, " ")
+      .trim()
+  );
+};
+
 export type ContractPDFProps = {
   contract: {
     id: string | number;
@@ -279,7 +314,9 @@ export const ContractPDF = (props: ContractPDFProps) => (
 
         {/* Contenido del contrato */}
         <View style={[pdfStyles.contractBody, pdfStyles.pageBreak]}>
-          <Text style={pdfStyles.contractText}>{props.contract.content}</Text>
+          <Text style={pdfStyles.contractText}>
+            {flattenTextForJustification(props.contract.content)}
+          </Text>
 
           {/* Sección de servicios */}
           <Text style={pdfStyles.serviceTitle}>Service Conditions</Text>
@@ -293,7 +330,7 @@ export const ContractPDF = (props: ContractPDFProps) => (
                     {clauseLink.clause.title}:
                   </Text>
                   <Text style={pdfStyles.clauseDescription}>
-                    {clauseLink.clause.description}
+                    {flattenTextForJustification(clauseLink.clause.description)}
                   </Text>
                 </View>
               ))}
