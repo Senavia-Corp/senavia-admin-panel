@@ -148,7 +148,7 @@ export function PaymentDetailFormCreate({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={200}
+              maxLength={1000}
               className="w-full h-28 resize-none text-xs"
             />
             <hr className="border-[#EBEDF2]" />
