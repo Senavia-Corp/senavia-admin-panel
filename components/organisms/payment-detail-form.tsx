@@ -91,6 +91,20 @@ export function PaymentDetailForm({
     }));
   };
 
+  const handleSendEmail = () => {
+    fetch(
+      "https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: "client@example.com", // TODO: Get client email from billing/lead data
+          signUrl: "https://example.com/sign",
+        }),
+      }
+    );
+  };
+
   const paymentStates = PaymentManagementService.getPaymentStates();
   const paymentMethods = PaymentManagementService.getPaymentMethods();
 
@@ -135,7 +149,7 @@ export function PaymentDetailForm({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={200}
+              maxLength={1000}
               className="w-full h-28 resize-none text-xs"
             />
             <hr className="border-[#EBEDF2]" />
@@ -238,6 +252,15 @@ export function PaymentDetailForm({
             >
               {isUpdating ? "Updating..." : "Update Payment"}
             </Button>
+
+            <button
+              className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
+              onClick={() => {
+                handleSendEmail();
+              }}
+            >
+              Send Payment by Email
+            </button>
           </div>
         </div>
       </div>

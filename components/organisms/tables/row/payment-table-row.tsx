@@ -33,39 +33,33 @@ export function PaymentTableRow({
 
   const getStateColor = (state: string) => {
     switch (state) {
-      case "COMPLETED":
+      case "PAID":
         return "bg-green-100 text-green-800";
-      case "PROCESSING":
-        return "bg-yellow-100 text-yellow-800";
       case "PENDING":
         return "bg-blue-100 text-blue-800";
-      case "FAILED":
-        return "bg-red-100 text-red-800";
-      case "CANCELLED":
-        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+    <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-12">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {payment.id}
       </td>
-      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {payment.reference}
       </td>
-      <td className="w-1/4 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {payment.description}
       </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {formatCurrency(payment.amount)}
       </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {payment.percentagePaid}%
       </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${getStateColor(
             payment.state
@@ -74,13 +68,10 @@ export function PaymentTableRow({
           {payment.state}
         </span>
       </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/6 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         {formatDate(payment.paidDate)}
       </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {payment.method || "N/A"}
-      </td>
-      <td className="w-1/8 p-5 text-base font-light text-[#04081E] truncate text-center">
+      <td className="w-1/4 px-6 py-3 font-sans font-light text-base leading-relaxed tracking-normal text-center align-middle text-gray-900 truncate">
         <div className="flex space-x-2 justify-center">
           <ActionButton type="view" onClick={() => onView(payment)} />
           <ActionButton type="delete" onClick={() => onDelete(payment)} />

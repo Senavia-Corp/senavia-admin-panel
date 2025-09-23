@@ -294,14 +294,41 @@ export function GeneralTable(
               <table className="w-full min-w-[700px] table-fixed">
                 <thead className="bg-[#E1E4ED]">
                   <tr>
-                    {TableTitle.map((title, index) => (
-                      <th
-                        key={index}
-                        className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
-                      >
-                        {title}
-                      </th>
-                    ))}
+                    {TableTitle.map((title, index) => {
+                      // Special handling for payments-page to match column widths
+                      if (Page.toLowerCase() === "payments-page") {
+                        const paymentColumnWidths = [
+                          "w-1/6", // ID
+                          "w-1/6", // Reference
+                          "w-1/6", // Description
+                          "w-1/6", // Amount
+                          "w-1/6", // Percentage
+                          "w-1/6", // State
+                          "w-1/6", // Paid Date
+                          "w-1/4", // Actions
+                        ];
+                        return (
+                          <th
+                            key={index}
+                            className={`${
+                              paymentColumnWidths[index] || "w-1/6"
+                            } px-6 py-3 font-sans font-semibold text-base leading-relaxed tracking-normal text-center align-middle text-[#616774] whitespace-nowrap`}
+                          >
+                            {title}
+                          </th>
+                        );
+                      }
+
+                      // Default header style for other pages
+                      return (
+                        <th
+                          key={index}
+                          className="p-5 text-center text-base lg:text-2xl font-semibold text-[#616774] whitespace-nowrap"
+                        >
+                          {title}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
               </table>

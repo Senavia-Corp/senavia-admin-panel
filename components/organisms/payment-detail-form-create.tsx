@@ -95,6 +95,20 @@ export function PaymentDetailFormCreate({
     return firstPayment || false;
   };
 
+  const handleSendEmail = () => {
+    fetch(
+      "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: "client@example.com", // TODO: Get client email from billing/lead data
+          signUrlPayment: "https://examplePaymentPrueba.com/sign",
+        }),
+      }
+    );
+  };
+
   const paymentStates = PaymentManagementService.getPaymentStates();
   const paymentMethods = PaymentManagementService.getPaymentMethods();
 
@@ -148,7 +162,7 @@ export function PaymentDetailFormCreate({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={200}
+              maxLength={1000}
               className="w-full h-28 resize-none text-xs"
             />
             <hr className="border-[#EBEDF2]" />
@@ -244,6 +258,22 @@ export function PaymentDetailFormCreate({
             >
               {loadingPost ? "Creating..." : "Add Payment"}
             </Button>
+            <div className="flex justify-center mt-8 w-full">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap 
+               ring-offset-background transition-colors focus-visible:outline-none 
+               focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+               disabled:pointer-events-none disabled:opacity-50 
+               [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 
+               h-10 px-4 py-2 w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] 
+               text-white font-bold text-lg"
+                onClick={() => {
+                  handleSendEmail();
+                }}
+              >
+                Send Payment by Email
+              </button>
+            </div>
           </div>
         </div>
       </div>

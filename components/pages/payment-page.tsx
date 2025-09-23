@@ -83,10 +83,7 @@ export function PaymentPage({
       filtered = filtered.filter(
         (payment) =>
           payment.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          payment.method?.toLowerCase().includes(searchTerm.toLowerCase())
+          payment.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -240,7 +237,6 @@ export function PaymentPage({
                   "Percentage",
                   "State",
                   "Paid Date",
-                  "Method",
                   "Actions",
                 ],
                 filteredPayments,
