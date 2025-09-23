@@ -30,6 +30,12 @@ interface DocumentPreviewBillingProps {
   plans?: Plans[];
 }
 
+function truncateText(str: string, maxLength: number) {
+  if (str.length > maxLength) {
+    return str.slice(0, maxLength - 3) + '...';
+  }
+  return str;
+}
 /* -------------------------------------------------- *
  *  Componente principal
  * -------------------------------------------------- */
@@ -84,19 +90,39 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
             </View>
 
             <View style={pdf.summaryContainer}>
+              <Text style={pdf.sectionTitle}>{plans?.find(p => p.id === billing.plan_id)?.name || "No name detected"}</Text>
+              <Text style={[pdf.paragraph, {marginBottom: 10}]}>{formatCurrency(Number(plans?.find(p => p.id === billing.plan_id)?.price)) || "No price detected"}</Text>
+              <Text style={pdf.paragraph}>{plans?.find(p => p.id === billing.plan_id)?.description || "No description"}</Text>
+              
+            </View>
+
+            <View style={pdf.summaryContainer} break>
               <Text style={pdf.sectionTitle}>Invoice summary</Text>
               <View style={pdf.tableWrapper}>
                 <View style={[pdf.tableRow, pdf.tableHead]}>
-                  <Text style={pdf.th}>Items</Text>
-                  <Text style={pdf.th}>Price</Text>
-                  <Text style={pdf.th}>Amount</Text>
+                  <Text style={[pdf.th, {flex: 1.5}]}>Items</Text>
+                  <Text style={[pdf.th, {flex: 3}]}>Description</Text>
+                  <Text style={[pdf.th, {flex: 1}]}>Price</Text>
+                  <Text style={[pdf.th, {flex: 0.7}]}>Amount</Text>
                 </View>
 
+                {/* Plan como primer elemento */}
+                {plans?.find(p => p.id === billing.plan_id) && (
+                  <View style={pdf.tableRow}>
+                    <Text style={[pdf.td, {flex: 1.5}]}>{plans.find(p => p.id === billing.plan_id)?.name || "Plan"}</Text>
+                    <Text style={[pdf.td, {flex: 3}]}>{truncateText(plans.find(p => p.id === billing.plan_id)?.description || "", 50)}</Text>
+                    <Text style={[pdf.td, {flex: 1}]}>{formatCurrency(Number(plans.find(p => p.id === billing.plan_id)?.price) || 0)}</Text>
+                    <Text style={[pdf.td, {flex: 0.7}]}>1</Text>
+                  </View>
+                )}
+                
+                {/* Costos adicionales */}
                 {(billing.costs || []).map((cost) => (
                   <View key={cost.id} style={pdf.tableRow}>
-                    <Text style={pdf.td}>{cost.name}</Text>
-                    <Text style={pdf.td}>{formatCurrency(cost.value)}</Text>
-                    <Text style={pdf.td}>{formatCurrency(cost.value)}</Text>
+                    <Text style={[pdf.td, {flex: 1.5}]}>{cost.name}</Text>
+                    <Text style={[pdf.td, {flex: 3}]}>{truncateText(cost.description, 50)}</Text>
+                    <Text style={[pdf.td, {flex: 1}]}>{formatCurrency(cost.value)}</Text>
+                    <Text style={[pdf.td, {flex: 0.7}]}>1</Text>
                   </View>
                 ))}
               </View>
@@ -189,7 +215,7 @@ const pdf = StyleSheet.create({
     position: "relative",
     backgroundColor: "white",
     paddingTop: 100,
-    paddingBottom: 100,
+    paddingBottom: 150,
   },
 
   /* Banners */
@@ -211,7 +237,7 @@ const pdf = StyleSheet.create({
     fontSize: 36,
     fontWeight: "bold",
     color: "#04081E",
-    marginBottom: 20,
+    marginBottom: 36,
   },
 
   /* Contenido con padding para no solapar banners */

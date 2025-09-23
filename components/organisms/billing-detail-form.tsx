@@ -59,7 +59,7 @@ export function BillingDetailForm({
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const { PatchBilling } = BillingViewModel();
+  const { PatchBilling, sendToClient } = BillingViewModel();
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -144,10 +144,14 @@ export function BillingDetailForm({
     try {
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
+
+        const planPrice = Number(plans.find(plan => plan.id === associatedPlan[0])?.price) || Number(localEstimateData?.totalValue) || 0;
+        const costsTotal = selectedBilling?.costs?.reduce((sum, cost) => sum + Number(cost.value), 0) || 0;
+      
       const billingData: CreateBillingData = {
         ...localEstimateData!,
         state: status,
-        totalValue: localEstimateData?.totalValue || 0,
+        totalValue: planPrice + costsTotal,
         deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
         invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
         invoiceReference: "INV-2025-0456",
@@ -167,6 +171,13 @@ export function BillingDetailForm({
     } finally {
       setIsUpdating(false);
     }
+  };
+  const handleSendToClient = async () => {
+    await sendToClient({
+      name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
+      email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
+
+    });
   };
 
   if (showCosts) {
@@ -231,6 +242,12 @@ export function BillingDetailForm({
         >
           Document Preview
         </Button>
+        {/* <Button
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-4"
+          // onClick={handleSendToClient}
+        >
+          Send to Client
+        </Button> */}
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">

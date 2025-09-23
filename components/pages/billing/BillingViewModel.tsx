@@ -6,6 +6,7 @@ import {
   Billings,
   Cost,
   CreateBillingData,
+  SendToClientData,
 } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
@@ -482,6 +483,22 @@ export function BillingViewModel() {
       setLoading(false);
     }
   };
+  const sendToClient = async(sendToClientData: SendToClientData) => {
+    try {
+      setLoading(true);
+      setError(null);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.sendToClient, "post", sendToClientData);
+    if (status === 200 && response && response.success) {
+      toast.success("Billing sent to client successfully");} else {
+        setError(errorLogs?.message || response?.message || "Failed to send billing to client");
+        toast.error("Error sending billing to client");
+      }
+    } catch (error) {
+      setError("Error sending billing to client");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     billings,
@@ -508,5 +525,6 @@ export function BillingViewModel() {
     createPayment,
     deletePayment,
     updatePayment,
+    sendToClient
   };
 }
