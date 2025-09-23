@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 import { LeadManagementService } from "@/services/lead-management-service";
-import type { CreateLeadData, LeadStatus } from "@/types/lead-management";
+import type { LeadStatus } from "@/types/lead-management";
 import { leadFormSchema, type LeadFormValues } from "./schemas";
+import { ScheduleCalendar } from "@/components/organisms/leads/schedule-calendar/schedule-calendar";
 
 type LeadFormMode = "create" | "edit";
 
@@ -354,6 +355,18 @@ export function LeadForm({
               <p className="text-red-500 text-xs mt-1">
                 {errors.description.message as string}
               </p>
+            )}
+
+            {/* Schedule Calendar - Only show in edit mode */}
+            {mode === "edit" && (
+              <>
+                <label className="block text-sm font-medium mb-2 mt-4">
+                  Schedule Lead
+                </label>
+                <div className="p-4 ">
+                  <ScheduleCalendar onScheduleComplete={() => null} />
+                </div>
+              </>
             )}
           </div>
         </div>
