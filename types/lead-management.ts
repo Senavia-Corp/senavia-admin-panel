@@ -107,6 +107,6 @@ export interface CreateLeadData {
   state: LeadStatus;
   startDate: string;
   endDate?: string;
-  serviceId?: number;
+  serviceId: number;
   userId?: number;
 }

@@ -81,8 +81,8 @@ export function LeadForm({
       startDate:
         initialValues?.startDate ?? new Date().toISOString().split("T")[0],
       endDate: initialValues?.endDate ?? "",
-      serviceId: initialValues?.serviceId || undefined,
-      userId: initialValues?.userId || undefined,
+      serviceId: initialValues?.serviceId,
+      userId: initialValues?.userId,
       state: (initialValues?.state as LeadStatus) ?? "SEND",
     },
   });
@@ -127,7 +127,7 @@ export function LeadForm({
             )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              Service
+              Service *
             </label>
             <Controller
               name="serviceId"

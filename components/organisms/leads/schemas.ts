@@ -15,8 +15,16 @@ export const leadFormSchema = z.object({
     .max(1000, "Description cannot exceed 1000 characters"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
-  serviceId: z.number().optional(),
-  userId: z.number().optional(),
+  serviceId: z.number({
+    required_error: "Please select a service.",
+    invalid_type_error: "Please select a valid service.",
+  }),
+  userId: z
+    .number({
+      required_error: "Please select a user.",
+      invalid_type_error: "Please select a valid user.",
+    })
+    .optional(),
   state: z.enum(["SEND", "PROCESSING", "ESTIMATING", "FINISHED"] as const, {
     required_error: "Please select a status for the lead.",
   }),

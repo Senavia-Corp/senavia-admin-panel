@@ -41,8 +41,6 @@ export function CreateLeadForm({ onSuccess }: CreateLeadFormProps = {}) {
     description: "",
     startDate: new Date().toISOString().split("T")[0],
     endDate: "",
-    serviceId: undefined,
-    userId: undefined,
     state: "SEND" as const,
   };
 
