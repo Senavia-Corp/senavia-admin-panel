@@ -157,6 +157,7 @@ export function GeneralTable(
               key={item.id}
               lead={item}
               onView={() => onView(item)}
+              onEdit={onEdit ? () => onEdit(item) : undefined}
               onDelete={() => onDelete(item)}
             />
           );

@@ -10,7 +10,7 @@ import { ContractDetails } from "../organisms/contracs/contract-details";
 import EditContractForm from "../organisms/contracs/edit-contract-form";
 import { CreateContractForm } from "../organisms/contracs/create-contract-form";
 import { useToast } from "@/hooks/use-toast";
-import { ContractTableRowSkeleton } from "../atoms/contract-table-row-skeleton";
+import { TableRowSkeleton } from "../atoms/table-row-skeleton";
 
 // Campos de búsqueda para contratos
 const SEARCHABLE_FIELDS = ["title", "recipientName", "companyEmail"] as const;
@@ -230,7 +230,9 @@ export function ContractsPage() {
                     searchTerm || statusFilter
                       ? "No contracts match your current filters. Try adjusting your search criteria."
                       : "No contracts have been created in the system yet. Click the '+' button to create the first contract.",
-                  skeletonComponent: ContractTableRowSkeleton,
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={3} />
+                  ),
                   skeletonCount: 5,
                 }
               )}

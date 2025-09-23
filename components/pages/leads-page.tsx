@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateLeadForm } from "@/components/organisms/leads/create-lead-form";
 import { EditLeadForm } from "@/components/organisms/leads/edit-lead-form";
 import { DetailTabs } from "@/components/molecules/detail-tabs";
+import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 
 export function LeadsPage() {
   const { toast } = useToast();
@@ -59,6 +60,11 @@ export function LeadsPage() {
     setShowEditorForm(true);
   };
 
+  const handleEditLead = (lead: Lead) => {
+    setSelectedLead(lead);
+    setShowEditorForm(true);
+  };
+
   const handleDeleteLead = async (lead: Lead) => {
     try {
       await LeadManagementService.deleteLead(lead.id);
@@ -96,6 +102,7 @@ export function LeadsPage() {
   const handlers = {
     onCreate: handleCreateLead,
     onView: handleViewLead,
+    onEdit: handleEditLead,
     onDelete: (lead: Lead) => setLeadToDelete(lead),
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
@@ -178,6 +185,10 @@ export function LeadsPage() {
                     searchTerm || statusFilter
                       ? "No leads match your current filters. Try adjusting your search criteria."
                       : "No leads have been created yet. Click the '+' button to create the first lead.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={2} />
+                  ),
+                  skeletonCount: 5,
                 }
               )}
             </div>
