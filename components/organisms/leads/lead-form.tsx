@@ -358,13 +358,13 @@ export function LeadForm({
             )}
 
             {/* Schedule Calendar - Only show in edit mode */}
-            {mode === "edit" && (
+            {mode === "edit" && initialValues?.id && (
               <>
                 <label className="block text-sm font-medium mb-2 mt-4">
                   Schedule Lead
                 </label>
-                <div className="p-4 ">
-                  <ScheduleCalendar onScheduleComplete={() => null} />
+                <div className="p-4">
+                  <ScheduleCalendar leadId={initialValues.id} />
                 </div>
               </>
             )}

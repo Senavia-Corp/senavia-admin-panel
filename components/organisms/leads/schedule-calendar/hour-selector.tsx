@@ -150,6 +150,7 @@ export function HourSelector({ onSelectionChange, onBack }: HourSelectorProps) {
     <Card className="bg-white w-72 h-80 border-[#E4E4E7] h-[370px]">
       <CardHeader className="items-start text-center p-0">
         <Button
+          type="button"
           className="bg-white hover:bg-[#8bb82e] w-3 h-6 mt-4 ml-2 text-black border border-black"
           onClick={onBack}
         >
@@ -205,6 +206,7 @@ export function HourSelector({ onSelectionChange, onBack }: HourSelectorProps) {
               {displayTimes.map((timeObj) => (
                 <Button
                   key={timeObj.original}
+                  type="button"
                   variant={
                     selection.hour === timeObj.original ? "default" : "outline"
                   }
