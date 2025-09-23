@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 import { LeadManagementService } from "@/services/lead-management-service";
 import type { CreateLeadData, LeadStatus } from "@/types/lead-management";
 import { leadFormSchema, type LeadFormValues } from "./schemas";
@@ -12,10 +13,45 @@ type LeadFormMode = "create" | "edit";
 
 interface LeadFormProps {
   mode?: LeadFormMode;
-  initialValues?: Partial<CreateLeadData>;
+  initialValues?: Partial<LeadFormValues>;
   submitLabel?: string;
-  onSubmit: (values: CreateLeadData) => Promise<void> | void;
+  onSubmit: (values: LeadFormValues) => Promise<void> | void;
   onDirtyChange?: (isDirty: boolean) => void;
+  leadId?: number;
+  // Dropdown data provided by wrappers
+  userOptions: Array<{
+    id: number;
+    name: string;
+    subtitle?: string;
+    address?: string;
+    phone?: string;
+  }>;
+  isUsersLoading?: boolean;
+  usersError?: string | null;
+  serviceOptions: Array<{
+    id: number;
+    name: string;
+    subtitle?: string;
+  }>;
+  isServicesLoading?: boolean;
+  servicesError?: string | null;
+  // Optional lazy loaders
+  userLoadOptions?: () => Promise<
+    {
+      id: number;
+      name: string;
+      subtitle?: string;
+      address?: string;
+      phone?: string;
+    }[]
+  >;
+  serviceLoadOptions?: () => Promise<
+    {
+      id: number;
+      name: string;
+      subtitle?: string;
+    }[]
+  >;
 }
 
 export function LeadForm({
@@ -24,10 +60,19 @@ export function LeadForm({
   submitLabel,
   onSubmit,
   onDirtyChange,
+  userOptions,
+  isUsersLoading,
+  usersError,
+  serviceOptions,
+  isServicesLoading,
+  servicesError,
+  userLoadOptions,
+  serviceLoadOptions,
 }: LeadFormProps) {
   const formMethods = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
+      id: initialValues?.id,
       clientName: initialValues?.clientName ?? "",
       clientEmail: initialValues?.clientEmail ?? "",
       clientPhone: initialValues?.clientPhone ?? "",
@@ -38,7 +83,6 @@ export function LeadForm({
       endDate: initialValues?.endDate ?? "",
       serviceId: initialValues?.serviceId || undefined,
       userId: initialValues?.userId || undefined,
-      workTeamId: initialValues?.workTeamId || undefined,
       state: (initialValues?.state as LeadStatus) ?? "SEND",
     },
   });
@@ -47,6 +91,7 @@ export function LeadForm({
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = formMethods;
 
@@ -55,20 +100,7 @@ export function LeadForm({
   }, [isDirty, onDirtyChange]);
 
   const onSubmitInternal = async (values: LeadFormValues) => {
-    const cleanData: CreateLeadData = {
-      clientName: values.clientName.trim(),
-      clientEmail: values.clientEmail.trim(),
-      clientPhone: values.clientPhone.trim(),
-      clientAddress: values.clientAddress.trim(),
-      description: values.description.trim(),
-      startDate: values.startDate.trim(),
-      endDate: values.endDate?.trim() || "",
-      serviceId: values.serviceId,
-      userId: values.userId,
-      workTeamId: values.workTeamId,
-      state: values.state,
-    };
-    await onSubmit(cleanData);
+    await onSubmit(values);
   };
 
   const leadStatuses = LeadManagementService.getLeadStatuses();
@@ -88,44 +120,83 @@ export function LeadForm({
               Lead Information
             </h3>
 
-            <label className="block text-sm font-medium mb-2 mt-4">
-              Service ID
-            </label>
-            <input
-              type="number"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.serviceId ? "border-red-500" : "border-input"
-              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              placeholder="0000"
-              disabled={isSubmitting}
-              {...register("serviceId", { valueAsNumber: true })}
-            />
+            {mode === "edit" && (
+              <label className="block text-sm font-medium mb-2 mt-4">
+                Lead ID : {initialValues?.id}
+              </label>
+            )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              User ID
+              Service
             </label>
-            <input
-              type="number"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.userId ? "border-red-500" : "border-input"
-              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              placeholder="0000"
-              disabled={isSubmitting}
-              {...register("userId", { valueAsNumber: true })}
+            <Controller
+              name="serviceId"
+              control={control}
+              render={({ field }) => (
+                <GenericDropdown
+                  value={(field.value ?? undefined) as number | undefined}
+                  onChange={(value) => {
+                    field.onChange(value);
+                  }}
+                  placeholder="Select a service..."
+                  className={`w-full ${
+                    errors.serviceId ? "border-red-500" : ""
+                  }`}
+                  disabled={isSubmitting}
+                  options={serviceOptions}
+                  isLoading={isServicesLoading}
+                  error={servicesError}
+                  loadOptions={serviceLoadOptions}
+                  hasError={Boolean(errors.serviceId)}
+                  searchFields={["name", "subtitle"]}
+                  displayField="name"
+                  subtitleField="subtitle"
+                  errorLabel="services"
+                />
+              )}
             />
+            {errors.serviceId && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.serviceId.message as string}
+              </p>
+            )}
 
-            <label className="block text-sm font-medium mb-2 mt-4">
-              Work Team ID
-            </label>
-            <input
-              type="number"
-              className={`w-full h-10 rounded-md border px-3 py-2 text-sm md:text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                errors.workTeamId ? "border-red-500" : "border-input"
-              } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              placeholder="0000"
-              disabled={isSubmitting}
-              {...register("workTeamId", { valueAsNumber: true })}
+            <label className="block text-sm font-medium mb-2 mt-4">User</label>
+            <Controller
+              name="userId"
+              control={control}
+              render={({ field }) => (
+                <GenericDropdown
+                  value={(field.value ?? undefined) as number | undefined}
+                  onChange={(value, selectedOption) => {
+                    field.onChange(value);
+                    if (selectedOption) {
+                      setValue("clientEmail", selectedOption.subtitle || "");
+                      setValue("clientName", selectedOption.name || "");
+                      setValue("clientAddress", selectedOption.address || "");
+                      setValue("clientPhone", selectedOption.phone || "");
+                    }
+                  }}
+                  placeholder="Select a user..."
+                  className={`w-full ${errors.userId ? "border-red-500" : ""}`}
+                  disabled={isSubmitting}
+                  options={userOptions}
+                  isLoading={isUsersLoading}
+                  error={usersError}
+                  loadOptions={userLoadOptions}
+                  hasError={Boolean(errors.userId)}
+                  searchFields={["name", "subtitle"]}
+                  displayField="name"
+                  subtitleField="subtitle"
+                  errorLabel="users"
+                />
+              )}
             />
+            {errors.userId && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.userId.message as string}
+              </p>
+            )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
               Client Name *
@@ -277,7 +348,7 @@ export function LeadForm({
               {...register("description")}
             />
             <div className="text-xs text-gray-500 text-right mt-1">
-              {(formMethods.watch("description") || "").length}/200
+              {(formMethods.watch("description") || "").length}/1000
             </div>
             {errors.description && (
               <p className="text-red-500 text-xs mt-1">

@@ -1,8 +1,10 @@
 import React from "react";
 import type { CreateLeadData } from "@/types/lead-management";
 import { LeadManagementService } from "@/services/lead-management-service";
+import { UserManagementService } from "@/services/user-management-service";
 import { useToast } from "@/hooks/use-toast";
 import LeadForm from "@/components/organisms/leads/lead-form";
+import type { LeadFormValues } from "@/components/organisms/leads/schemas";
 
 interface CreateLeadFormProps {
   onSuccess?: () => void;
@@ -11,7 +13,27 @@ interface CreateLeadFormProps {
 export function CreateLeadForm({ onSuccess }: CreateLeadFormProps = {}) {
   const { toast } = useToast();
 
-  const initialValues: Partial<CreateLeadData> = {
+  const loadUserOptions = async () => {
+    const fetched = await UserManagementService.getUsers();
+    return fetched.map((u: any) => ({
+      id: parseInt(u.id),
+      name: u.name,
+      subtitle: u.email,
+      phone: u.phone,
+      address: u.address,
+    }));
+  };
+
+  const loadServiceOptions = async () => {
+    const fetched = await LeadManagementService.getServices();
+    return fetched.map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      subtitle: s.description,
+    }));
+  };
+
+  const initialValues = {
     clientName: "",
     clientEmail: "",
     clientPhone: "",
@@ -21,13 +43,25 @@ export function CreateLeadForm({ onSuccess }: CreateLeadFormProps = {}) {
     endDate: "",
     serviceId: undefined,
     userId: undefined,
-    workTeamId: undefined,
-    state: "SEND",
+    state: "SEND" as const,
   };
 
-  const handleCreate = async (data: CreateLeadData) => {
+  const handleCreate = async (values: LeadFormValues) => {
     try {
-      await LeadManagementService.createLead(data);
+      const cleanData: CreateLeadData = {
+        clientName: values.clientName.trim(),
+        clientEmail: values.clientEmail.trim(),
+        clientPhone: values.clientPhone.trim(),
+        clientAddress: values.clientAddress.trim(),
+        description: values.description.trim(),
+        startDate: values.startDate.trim(),
+        endDate: values.endDate?.trim() || "",
+        serviceId: values.serviceId,
+        userId: values.userId,
+        state: values.state,
+      };
+
+      await LeadManagementService.createLead(cleanData);
       toast({
         title: "Success",
         description: "Lead created successfully!",
@@ -53,6 +87,15 @@ export function CreateLeadForm({ onSuccess }: CreateLeadFormProps = {}) {
         initialValues={initialValues}
         onSubmit={handleCreate}
         submitLabel="Create Lead"
+        onDirtyChange={() => {}}
+        userOptions={[]}
+        isUsersLoading={false}
+        usersError={null}
+        serviceOptions={[]}
+        isServicesLoading={false}
+        servicesError={null}
+        userLoadOptions={loadUserOptions}
+        serviceLoadOptions={loadServiceOptions}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const leadFormSchema = z.object({
+  id: z.number().optional(),
   clientName: z.string().min(2, "Client name must be at least 2 characters"),
   clientEmail: z.string().email("Invalid email address"),
   clientPhone: z
@@ -11,12 +12,11 @@ export const leadFormSchema = z.object({
   description: z
     .string()
     .min(10, "Description must be at least 10 characters")
-    .max(200, "Description cannot exceed 200 characters"),
+    .max(1000, "Description cannot exceed 1000 characters"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
   serviceId: z.number().optional(),
   userId: z.number().optional(),
-  workTeamId: z.number().optional(),
   state: z.enum(["SEND", "PROCESSING", "ESTIMATING", "FINISHED"] as const, {
     required_error: "Please select a status for the lead.",
   }),
