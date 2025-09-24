@@ -81,7 +81,7 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
     }))
   };
 
-  const Types = ["LICENSE"]
+  const Types = ["LICENSE", "MANPOWER", "TECHNOLOGIES","OTHERS"]
   
   return (
     <div className="flex flex-col">

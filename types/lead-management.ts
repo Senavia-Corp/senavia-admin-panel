@@ -1,5 +1,14 @@
 export type LeadStatus = "SEND" | "PROCESSING" | "ESTIMATING" | "FINISHED";
 
+export interface Service {
+  id: number;
+  active: boolean;
+  description: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Leads {
   id: number;
   clientName: string;
@@ -46,17 +55,12 @@ export interface Lead {
   clientName: string;
   clientEmail: string;
   clientPhone: string;
+  clientAddress: string;
   description: string;
   state: LeadStatus;
-  endDate: string;
   startDate: string;
-  clientAddress: string;
-  workTeamId: number;
-  userId: number;
-  serviceId: number;
-  createdAt: string;
-  updatedAt: string;
-  user: {
+  endDate: string;
+  user?: {
     id: number;
     name: string;
     email: string;
@@ -68,12 +72,21 @@ export interface Lead {
     updatedAt: string;
     address: string;
   };
-  service: {
+  service?: {
     id: number;
     active: boolean;
     createdAt: string;
     description: string;
     name: string;
+    updatedAt: string;
+  };
+  WorkTeam?: {
+    id: number;
+    name: string;
+    description: string;
+    state: string;
+    area: string;
+    createdAt: string;
     updatedAt: string;
   };
 }
@@ -94,7 +107,15 @@ export interface CreateLeadData {
   state: LeadStatus;
   startDate: string;
   endDate?: string;
-  workTeamId?: number;
-  serviceId?: number;
+  serviceId: number;
   userId?: number;
+}
+
+///////////Nuevas Interfaces////////////////////
+export interface ScheduleData {
+  date: string;
+  //timezone: string;
+  timeRange: string;
+  title?: string;
+  description?: string;
 }

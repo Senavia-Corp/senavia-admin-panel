@@ -78,3 +78,9 @@ export interface CreateBillingData {
   invoiceDateCreated: string,
   invoiceReference: string
 }
+
+export interface SendToClientData {
+  name: string;
+  email: string;
+  document?: string;
+}

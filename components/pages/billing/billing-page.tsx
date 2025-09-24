@@ -7,6 +7,7 @@ import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { BillingViewModel } from "./BillingViewModel"
 import { BillingDetailCreateForm } from "@/components/organisms/billing-detail-form-create"
 import { useToast } from "@/hooks/use-toast";
+import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 
 export function BillingPage() {
   const [billingRecords, setBillingRecords] = useState<Billings[]>([])
@@ -18,6 +19,8 @@ export function BillingPage() {
   const [showBillingDetail, setShowBillingDetail] = useState(false)
   const { billings, getBillings, getLeads, leads, getLeadById, lead, deleteBilling, getPlans, plans } = BillingViewModel()
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast()
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export function BillingPage() {
 
   const loadBillingRecords = React.useCallback(async () => {
     try {
+      setIsLoading(true)
       let filteredData = [...billings]
       
       // Aplicar filtro de búsqueda
@@ -49,17 +53,24 @@ export function BillingPage() {
           billing.state.toLowerCase() === statusFilter.toLowerCase()
         )
       }
-
       // Ordenar por ID de menor a mayor
       const sortedData = filteredData.sort((a, b) => a.id - b.id);
       setBillingRecords(sortedData)
     } catch (error) {
-      console.error("Error loading billing records:", error)
+      setHasError(true);
+      toast({
+        title: "Error",
+        description: "Failed to load billing records. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false)
     }
   }, [billings, searchTerm, statusFilter]) // Solo se recrea cuando estas dependencias cambien
 
   const handleDeleteBilling = useCallback(async (billing: Billings) => {
     try {
+      setIsLoading(true)
       const res =await deleteBilling(billing.id)
       if (res) {
         toast({
@@ -77,6 +88,9 @@ export function BillingPage() {
       }
     } catch (error) {
       console.error("Error deleting billing:", error);
+    } finally {
+      loadBillingRecords()
+      setIsLoading(false)
     }
   }, [deleteBilling, getBillings])
 
@@ -174,7 +188,21 @@ export function BillingPage() {
                 "Description",
                 ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],
                 billingRecords,
-                handlers
+                handlers,
+                {
+                  isLoading,
+                  hasError,
+                  onRetry: loadBillingRecords,
+                  emptyStateTitle: "No billing records found",
+                  emptyStateDescription:
+                    searchTerm || statusFilter
+                      ? "No billing records match your current filters. Try adjusting your search criteria."
+                      : "No billing records have been created yet. Click the '+' button to create the first billing record.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={2} />
+                  ),
+                  skeletonCount: 5,
+                }
               )}
             </div>
           </div>
