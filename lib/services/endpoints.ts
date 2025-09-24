@@ -109,7 +109,7 @@ export const endpoints = {
     updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
     deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
     patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
-    sendToClient: 'https://damddev.app.n8n.cloud/webhook-test/a7bc5d49-a603-4741-9cae-f62bc7ce98d3',
+    sendToClient: 'https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3',
   },
   plan: {
     getPlans: `${API}/plan`,
