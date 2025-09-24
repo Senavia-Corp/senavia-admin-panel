@@ -41,14 +41,15 @@ export const ClauseViewModel = ({
       );
 
       if (status === 201 || status === 200) {
-        if (!clauseId) {
+        await getAllClauses();
+        /*if (!clauseId) {
           setClauses((prev) => [...prev, response.data]);
           return true;
         } else {
           setClauses((prev) =>
             prev.map((p) => (p.id === response.data.id ? response.data : p))
           );
-        }
+        }*/
         return true;
       } else {
         const errorMessage =

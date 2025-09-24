@@ -15,6 +15,7 @@ interface EditorProps {
   entityId?: number;
   onBack: () => void;
   onSave: () => void;
+  onDelete: (id: number) => Promise<boolean>;
 }
 
 type ClauseFormData = {
@@ -22,11 +23,12 @@ type ClauseFormData = {
   description: string;
 };
 
-export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
+export function ClauseEditor({ entityId, onBack, onSave,onDelete }: EditorProps) {
   const {
     register,
     handleSubmit,
-    setValue, // ⬅️ para precargar datos cuando editamos
+    setValue, 
+    watch,
     formState: { errors },
   } = useForm<ClauseFormData>({
     defaultValues: { title: "", description: "" }, // ⬅️ ya no uso jsonData aquí
@@ -35,8 +37,10 @@ export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { getClauseById, saveClause, deleteClause } = ClauseViewModel();
+  const { getClauseById, saveClause } = ClauseViewModel();
   const { toast } = useToast();
+  const descriptionValue = watch("description", "");
+
   useEffect(() => {
     if (entityId) {
       handleView(entityId);
@@ -64,12 +68,7 @@ export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
             ? "Clause updated successfully!"
             : "Clause created successfully!",
         });
-        toast({
-          title: "Success",
-          description: entityId
-            ? "Clause updated successfully!"
-            : "Clause created successfully!",
-        });
+
         console.log("✅ Cláusula guardada correctamente");
         onSave?.();
       } else {
@@ -89,13 +88,16 @@ export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
   };
 
   const handleDelete = async () => {
-    console.log("deberia funcionar")
+    console.log("deberia funcionar");
     try {
       if (entityId) {
-        const success = await deleteClause(entityId);
+        const success = await onDelete(entityId);
         if (success) {
           console.log(`✅ Clause ${entityId} eliminado correctamente`);
-          toast({ title: "Success", description: "Clause deleted successfully" });
+          toast({
+            title: "Success",
+            description: "Clause deleted successfully",
+          });
           onBack?.();
         } else {
           console.error(`❌ No se pudo eliminar el Clause ${entityId}`);
@@ -139,7 +141,7 @@ export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
               {...register("title", { required: "Title is required" })}
               placeholder="Enter the clause title"
               disabled={isLoading}
-              className={`text-2xl font-bold ${
+              className={` ${
                 errors.title
                   ? "border-red-500 focus-visible:ring-red-500"
                   : "focus-visible:ring-blue-500"
@@ -151,73 +153,71 @@ export function ClauseEditor({ entityId, onBack, onSave }: EditorProps) {
               </p>
             )}
           </div>
+
+          {/* Description */}
+
+          <CardHeader className="p-0">
+            <CardTitle className="text-lg">Description *</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Textarea
+              {...register("description", {
+                required: "Description is required",
+                maxLength: {
+                  value: 1000,
+                  message: "Max 1000 characters",
+                },
+              })}
+              placeholder="Lorem ipsum dolor sit amet..."
+              rows={4}
+              maxLength={1000}
+              className={`${
+                errors.description
+                  ? "border-red-500 focus-visible:ring-red-500"
+                  : "focus-visible:ring-blue-500"
+              }`}
+            />
+            <div className="text-right text-sm text-gray-500 mt-2">
+                        {descriptionValue.length}/1000
+                      </div>
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.description.message}
+              </p>
+            )}
+          </CardContent>
+          <div className="flex justify-center my-4">
+            
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
+            >
+              {entityId
+                ? isLoading
+                  ? "Updating..."
+                  : "Update Clause"
+                : isLoading
+                ? "Saving..."
+                : "Publish Clause"}
+            </Button>
+          </div>
+
+          {entityId && (
+            <div className="flex justify-end my-4">
+              <Button
+                type="button"
+                onClick={() => setShowDeleteDialog(true)}
+                variant="destructive"
+                className="rounded-full bg-[#C61417] text-white font-bold text-base items-center py-2 px-4"
+              >
+                Delete Clause
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right Column - Metadata */}
-        <div className="w-96 bg-white rounded-lg space-y-6 flex-shrink-0 p-4">
-          {/* Description */}
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Description *</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                {...register("description", {
-                  required: "Description is required",
-                  maxLength: {
-                    value: 200,
-                    message: "Max 200 characters",
-                  },
-                })}
-                placeholder="Lorem ipsum dolor sit amet..."
-                rows={4}
-                className={`${
-                  errors.description
-                    ? "border-red-500 focus-visible:ring-red-500"
-                    : "focus-visible:ring-blue-500"
-                }`}
-              />
-              {errors.description && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.description.message}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <div className="flex justify-center my-4">
-              {/* ⬅️ ahora el botón es type="submit" */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
-              >
-                {entityId
-                  ? isLoading
-                    ? "Updating..."
-                    : "Update Clause"
-                  : isLoading
-                  ? "Saving..."
-                  : "Publish Clause"}
-              </Button>
-            </div>
-
-            {entityId && (
-              <div className="flex justify-end my-4">
-                <Button
-                  type="button"
-                  onClick={() => setShowDeleteDialog(true)}
-                  variant="destructive"
-                  className="rounded-full bg-[#C61417] text-white font-bold text-base items-center py-2 px-4"
-                >
-                  Delete Clause
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
       </form>
 
       <DeleteConfirmDialog
