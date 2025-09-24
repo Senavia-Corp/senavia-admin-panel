@@ -28,6 +28,7 @@ import { Progress } from "../ui/progress";
 import { pdf as pdfRenderer } from "@react-pdf/renderer";
 import { InvoicePDFDocument } from "@/lib/billing/invoice-pdf-document";
 
+
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
   billingId: number;
