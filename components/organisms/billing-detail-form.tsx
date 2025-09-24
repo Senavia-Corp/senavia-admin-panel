@@ -252,7 +252,7 @@ export function BillingDetailForm({
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center mb-6">
         <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
@@ -266,18 +266,20 @@ export function BillingDetailForm({
             Billing Details
           </h1>
         </div>
+        <div className="flex flex-col lg:flex-row lg:justify-end gap-3 ml-auto">
         <Button
-          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-4"
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
           onClick={handleDocumentPreview}
         >
           Document Preview
         </Button>
         <Button
-          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-4"
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
           onClick={handleSendToClient}
         >
-          Send to Client
+          Send To Client
         </Button>
+        </div>
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
