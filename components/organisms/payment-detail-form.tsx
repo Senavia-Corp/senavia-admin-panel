@@ -93,13 +93,13 @@ export function PaymentDetailForm({
 
   const handleSendEmail = () => {
     fetch(
-      "https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e",
+      "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: "client@example.com", // TODO: Get client email from billing/lead data
-          signUrl: "https://example.com/sign",
+          paymentsignUrl: "https://example.com/sign",
         }),
       }
     );
