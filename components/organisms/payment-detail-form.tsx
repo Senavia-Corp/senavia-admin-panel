@@ -254,7 +254,7 @@ export function PaymentDetailForm({
             </Button>
 
             <button
-              className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
+              className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={() => {
                 handleSendEmail();
               }}
