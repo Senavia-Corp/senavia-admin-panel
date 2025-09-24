@@ -12,15 +12,24 @@ interface HourSelection {
   hour: string;
 }
 interface ScheduleCalendarProps {
-  leadId?: number;
   onCancel?: () => void;
   disabled?: boolean;
+  // Lead data for creating complete calendar events (includes leadId)
+  leadData?: {
+    id?: number;
+    clientName?: string;
+    clientEmail?: string;
+    clientPhone?: string;
+    clientAddress?: string;
+    description?: string;
+    serviceId?: number;
+  };
 }
 
 export function ScheduleCalendar({
-  leadId,
   onCancel,
   disabled = false,
+  leadData,
 }: ScheduleCalendarProps) {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -29,27 +38,32 @@ export function ScheduleCalendar({
   );
   const [isScheduling, setIsScheduling] = useState(false);
 
+  console.log("render por cambio de leadData");
   const handleScheduleClick = async () => {
-    if (!leadId) {
+    /*  if (!leadData?.id) {
       toast({
         title: "Error",
         description: "Lead ID is required to create a schedule",
         variant: "destructive",
       });
       return;
-    }
+    } */
 
     if (selectedDate && hourSelection) {
       setIsScheduling(true);
 
       try {
         const scheduleData = {
-          leadId: leadId,
           date: selectedDate.toISOString(),
-          timezone: hourSelection.timezone,
+          //timezone: hourSelection.timezone,
           timeRange: hourSelection.hour,
-          title: `Meeting for Lead #${leadId}`,
-          description: "Scheduled meeting with client",
+          description: leadData?.description || "Scheduled meeting with client", //No lo tengo
+          // Additional client data for the calendar event
+          clientName: leadData?.clientName || "",
+          clientEmail: leadData?.clientEmail || "",
+          clientPhone: leadData?.clientPhone || "",
+          clientAddress: leadData?.clientAddress || "",
+          serviceId: leadData?.serviceId || "",
         };
 
         await LeadManagementService.createSchedule(scheduleData);
@@ -98,6 +112,7 @@ export function ScheduleCalendar({
                 onDateChange={(date) => {
                   console.log("Date selected:", date);
                   setSelectedDate(date);
+                  setHourSelection(null); // Reset hour selection when date changes
                 }}
               />
             </div>
@@ -105,14 +120,6 @@ export function ScheduleCalendar({
             /* Show hour selector once date is selected */
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(undefined)}
-                  className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 w-fit"
-                  disabled={disabled || isScheduling}
-                >
-                  ← Back to calendar
-                </button>
                 <span className="text-sm text-gray-600">
                   Selected: {selectedDate.toLocaleDateString()}
                 </span>

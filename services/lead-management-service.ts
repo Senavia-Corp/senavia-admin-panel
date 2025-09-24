@@ -3,7 +3,6 @@ import type {
   CreateLeadData,
   LeadStatus,
   Service,
-  CreateScheduleData,
   ScheduleData,
 } from "@/types/lead-management";
 import Axios from "axios";
@@ -220,136 +219,62 @@ export class LeadManagementService {
         scheduleData.timeRange
       );
 
-      const createData: CreateScheduleData = {
-        leadId: scheduleData.leadId,
-        date: scheduleData.date,
-        timezone: scheduleData.timezone,
+      // Prepare payload for calendar event endpoint
+      const payload = {
+        name: (scheduleData as any).clientName || "",
+        phone: (scheduleData as any).clientPhone || "",
+        email: (scheduleData as any).clientEmail || "",
+        address: (scheduleData as any).clientAddress || "",
+        service: (scheduleData as any).serviceId || "", // Use selected service or default
+        about: scheduleData.description || "Scheduled meeting with client", //No lo tengo
         timeStart,
         timeFinish,
-        title: scheduleData.title,
-        description: scheduleData.description,
+        isLoggedIn: true, // Since this is from admin panel
+        reminder: true, // Enable reminder by default
       };
 
-      const response = await fetch(endpoints.lead.createSchedule, {
+      const response = await fetch(endpoints.lead.creatCalendarEvent, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(createData),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const status = response.status;
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error creating schedule");
-      }
-
-      return data.data;
-    } catch (error) {
-      console.error("Error creating schedule:", error);
-      throw error;
-    }
-  }
-
-  static async getSchedules(leadId: number): Promise<any[]> {
-    try {
-      const response = await Axios.get(endpoints.lead.getSchedules(leadId), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Error fetching schedules");
-      }
-
-      return response.data.data;
-    } catch (error: any) {
-      console.error("Error fetching schedules:", error);
-
-      if (error.response?.status === 401) {
-        throw new Error("No autorizado. Por favor, inicie sesión nuevamente.");
-      } else if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      } else {
-        throw new Error(
-          "Error al obtener schedules. Por favor, intente nuevamente."
-        );
-      }
-    }
-  }
-
-  static async updateSchedule(
-    scheduleId: number,
-    updates: Partial<ScheduleData>
-  ): Promise<any> {
-    try {
-      let updateData: any = { ...updates };
-
-      // If timeRange is being updated, convert it to timeStart and timeFinish
-      if (updates.timeRange && updates.date) {
-        const { timeStart, timeFinish } = this.convertTimeRangeToTimes(
-          updates.date,
-          updates.timeRange
-        );
-        updateData = {
-          ...updateData,
-          timeStart,
-          timeFinish,
+      // Handle successful responses
+      if (status === 200 || status === 201) {
+        return {
+          success: true,
+          message: "Schedule created successfully",
+          status: status,
         };
-        delete updateData.timeRange; // Remove timeRange from update data
       }
 
-      const response = await fetch(endpoints.lead.updateSchedule(scheduleId), {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Handle time conflict
+      if (status === 409) {
+        throw new Error("The selected time is already booked");
       }
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error updating schedule");
+      // Handle other errors
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.message || `Error ${status}: Could not create schedule`
+      );
+    } catch (error: any) {
+      console.error("Error creating schedule:", error);
+
+      // Re-throw with appropriate message
+      if (error.message.includes("already booked")) {
+        throw new Error(
+          "The selected time is already booked. Please choose a different time."
+        );
       }
 
-      return data.data;
-    } catch (error) {
-      console.error("Error updating schedule:", error);
-      throw error;
-    }
-  }
-
-  static async deleteSchedule(scheduleId: number): Promise<boolean> {
-    try {
-      const response = await fetch(endpoints.lead.deleteSchedule(scheduleId), {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || "Error deleting schedule");
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error deleting schedule:", error);
-      throw error;
+      throw new Error(
+        error.message || "Failed to create schedule. Please try again."
+      );
     }
   }
 }

@@ -113,20 +113,9 @@ export interface CreateLeadData {
 
 ///////////Nuevas Interfaces////////////////////
 export interface ScheduleData {
-  leadId: number;
   date: string;
-  timezone: string;
+  //timezone: string;
   timeRange: string;
-  title?: string;
-  description?: string;
-}
-
-export interface CreateScheduleData {
-  leadId: number;
-  date: string;
-  timezone: string;
-  timeStart: string;
-  timeFinish: string;
   title?: string;
   description?: string;
 }

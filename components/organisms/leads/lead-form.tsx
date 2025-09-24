@@ -364,7 +364,16 @@ export function LeadForm({
                   Schedule Lead
                 </label>
                 <div className="p-4">
-                  <ScheduleCalendar leadId={initialValues.id} />
+                  <ScheduleCalendar
+                    leadData={{
+                      clientName: formMethods.watch("clientName"),
+                      clientEmail: formMethods.watch("clientEmail"),
+                      clientPhone: formMethods.watch("clientPhone"),
+                      clientAddress: formMethods.watch("clientAddress"),
+                      //description: formMethods.watch("description"),
+                      serviceId: formMethods.watch("serviceId"),
+                    }}
+                  />
                 </div>
               </>
             )}

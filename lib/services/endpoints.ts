@@ -66,6 +66,7 @@ export const endpoints = {
       `${API}/lead/schedule?id=${scheduleId}`,
     deleteSchedule: (scheduleId: number) =>
       `${API}/lead/schedule?id=${scheduleId}`,
+    creatCalendarEvent: `https://damddev.app.n8n.cloud/webhook/4e962737-09f2-461d-9f4b-5264f424ea39`,
   },
   project: {
     getPosts: `${API}/project`,
