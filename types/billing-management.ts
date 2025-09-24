@@ -82,5 +82,5 @@ export interface CreateBillingData {
 export interface SendToClientData {
   name: string;
   email: string;
-  document?: File;
+  document?: string;
 }

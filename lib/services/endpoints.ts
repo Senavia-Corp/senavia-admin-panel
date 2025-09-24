@@ -189,8 +189,9 @@ export const useFetch = () => {
         axiosConfig = { ...axiosConfig, data: formFiles };
       }
 
-      // Siempre mantener withCredentials en true para las llamadas API
-      axiosConfig = { ...axiosConfig, withCredentials: true };
+      // Siempre mantener withCredentials en true para las llamadas API, excepto para webhooks externos
+      const isExternalWebhook = url.includes('n8n.cloud') || url.includes('webhook');
+      axiosConfig = { ...axiosConfig, withCredentials: !isExternalWebhook };
 
       if (isValidHttpMethod(method)) {
         const res: AxiosResponse<T> = await Axios[method](

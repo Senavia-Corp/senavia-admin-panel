@@ -13,8 +13,10 @@ import {
   StyleSheet,
   PDFDownloadLink,
   PDFViewer,
-  Font
+  Font,
+  pdf as pdfRenderer
 } from "@react-pdf/renderer";
+
 
 
 /* -------------------------------------------------- *
@@ -45,6 +47,9 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
    family: "Inter",
     src: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
   });
+
+
+
 
   /* -------- PDF inline -------- */
   const PDFDoc = () => {
