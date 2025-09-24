@@ -16,9 +16,16 @@ export const endpoints = {
     getById: (id: number) => `${API}/clause?id=${id}`,
     create: `${API}/clause`,
     update: (id: number) => `${API}/clause?id=${id}`,
-     delete: (id: number) => `${API}/clause?id=${id}`,
-     search: (term: string, isPaginated = false, offset = 0, itemsPerPage = 10) =>
-    `${API}/clause?searchTerm=${encodeURIComponent(term)}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
+    delete: (id: number) => `${API}/clause?id=${id}`,
+    search: (
+      term: string,
+      isPaginated = false,
+      offset = 0,
+      itemsPerPage = 10
+    ) =>
+      `${API}/clause?searchTerm=${encodeURIComponent(
+        term
+      )}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
   },
 
   product: {
@@ -52,6 +59,14 @@ export const endpoints = {
     createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
     deleteLead: (id: number) => `${API}/lead?id=${id}`,
+    ////////////////////////Nuevos endpoints//////////////////////
+    createSchedule: `${API}/lead/schedule`,
+    getSchedules: (leadId: number) => `${API}/lead/${leadId}/schedules`,
+    updateSchedule: (scheduleId: number) =>
+      `${API}/lead/schedule?id=${scheduleId}`,
+    deleteSchedule: (scheduleId: number) =>
+      `${API}/lead/schedule?id=${scheduleId}`,
+    creatCalendarEvent: `https://damddev.app.n8n.cloud/webhook/4e962737-09f2-461d-9f4b-5264f424ea39`,
   },
   project: {
     getPosts: `${API}/project`,

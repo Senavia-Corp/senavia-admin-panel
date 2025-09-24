@@ -8,6 +8,41 @@ import {
   Image,
 } from "@react-pdf/renderer";
 
+// Función SEGURA para limpiar texto para justificación - NO modifica contenido, solo formato
+const flattenTextForJustification = (text: string): string => {
+  if (!text) return "";
+
+  return (
+    text
+      // SEGURO: Solo remover tags HTML básicos (no afecta contenido real)
+      .replace(/<\/?[^>]+(>|$)/g, "")
+
+      // SEGURO: Normalizar espacios múltiples (mejora legibilidad)
+      .replace(/[ \t]+/g, " ")
+
+      // SEGURO: Convertir saltos de línea a espacios (preserva separación)
+      .replace(/[\r\n]+/g, " ")
+
+      // SEGURO: Limpiar espacios al inicio y final
+      .trim()
+
+      // SEGURO: Solo normalizar caracteres Unicode problemáticos para PDFs
+      .normalize("NFKC")
+
+      // CONSERVADOR: Solo reemplazar comillas tipográficas comunes
+      .replace(/[""]/g, '"')
+      .replace(/['']/g, "'")
+
+      // CONSERVADOR: Mejorar espaciado después de puntuación (solo si hay 0 o muchos espacios)
+      .replace(/\.(\s{0}|\s{2,})/g, ". ")
+      .replace(/,(\s{0}|\s{2,})/g, ", ")
+
+      // FINAL: Limpiar espacios múltiples que pudieron quedar
+      .replace(/\s{2,}/g, " ")
+      .trim()
+  );
+};
+
 export type ContractPDFProps = {
   contract: {
     id: string | number;
@@ -38,6 +73,8 @@ const pdfStyles = StyleSheet.create({
     lineHeight: 1.4,
     backgroundColor: "#FFFFFF",
     padding: 0,
+    paddingTop: 50,
+    paddingBottom: 40,
   },
   header: {
     backgroundColor: "#a7d41b",
@@ -45,6 +82,7 @@ const pdfStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
+    marginTop: -50,
     position: "relative",
   },
   headerImage: {
@@ -62,11 +100,11 @@ const pdfStyles = StyleSheet.create({
   },
   contentSignatures: {
     paddingHorizontal: 40,
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
   companyName: {
-    fontSize: 14,
-    fontWeight: "normal",
+    fontSize: 18,
+    fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
     color: "#374151",
@@ -151,8 +189,8 @@ const pdfStyles = StyleSheet.create({
     textAlign: "justify",
   },
   signaturesSection: {
-    marginTop: 30,
-    paddingTop: 20,
+    marginTop: 10,
+    marginBottom: 40,
   },
   signaturesTitle: {
     fontSize: 16,
@@ -205,6 +243,10 @@ const pdfStyles = StyleSheet.create({
     color: "#374151",
     backgroundColor: "#FFFFFF",
   },
+  pageBreak: {
+    marginBottom: 40,
+    paddingBottom: 20,
+  },
 });
 
 export const ContractPDF = (props: ContractPDFProps) => (
@@ -212,7 +254,7 @@ export const ContractPDF = (props: ContractPDFProps) => (
     <Page size="A4" style={pdfStyles.page}>
       {/* Header verde */}
       <View style={pdfStyles.header}>
-        <Image src="/lambo.png" style={pdfStyles.headerImage} />
+        <Image src="/contract-logo.png" style={pdfStyles.headerImage} />
       </View>
 
       {/* Contenido principal */}
@@ -271,8 +313,10 @@ export const ContractPDF = (props: ContractPDFProps) => (
         <View style={pdfStyles.separatorBottom} />
 
         {/* Contenido del contrato */}
-        <View style={pdfStyles.contractBody}>
-          <Text style={pdfStyles.contractText}>{props.contract.content}</Text>
+        <View style={[pdfStyles.contractBody, pdfStyles.pageBreak]}>
+          <Text style={pdfStyles.contractText}>
+            {flattenTextForJustification(props.contract.content)}
+          </Text>
 
           {/* Sección de servicios */}
           <Text style={pdfStyles.serviceTitle}>Service Conditions</Text>
@@ -286,7 +330,7 @@ export const ContractPDF = (props: ContractPDFProps) => (
                     {clauseLink.clause.title}:
                   </Text>
                   <Text style={pdfStyles.clauseDescription}>
-                    {clauseLink.clause.description}
+                    {flattenTextForJustification(clauseLink.clause.description)}
                   </Text>
                 </View>
               ))}
