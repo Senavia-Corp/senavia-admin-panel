@@ -430,7 +430,7 @@ export function ContractForm({
             handleSendEmail()
           }}>
           Send Contract by Email
-        </button>
+        </button> 
       </div>
     </FormProvider>
 
