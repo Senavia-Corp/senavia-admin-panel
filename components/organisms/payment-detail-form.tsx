@@ -24,6 +24,7 @@ interface PaymentDetailFormProps {
   payment: Payment;
   onBack?: () => void;
   onUpdate?: (updatedPayment: Payment) => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentDetailForm({
@@ -31,6 +32,7 @@ export function PaymentDetailForm({
   payment,
   onBack,
   onUpdate,
+  onRedirectToBillingDetails,
 }: PaymentDetailFormProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
@@ -65,6 +67,11 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Redirigir a la tabla de billing details después de actualizar
+        if (onRedirectToBillingDetails) {
+          onRedirectToBillingDetails();
+        }
       } else {
         throw new Error(response.message || "Failed to update payment");
       }
@@ -91,18 +98,37 @@ export function PaymentDetailForm({
     }));
   };
 
-  const handleSendEmail = () => {
-    fetch(
-      "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "client@example.com", // TODO: Get client email from billing/lead data
-          paymentsignUrl: "https://example.com/sign",
-        }),
+  const handleSendEmail = async () => {
+    try {
+      const response = await fetch(
+        "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: "client@example.com", // TODO: Get client email from billing/lead data
+            paymentsignUrl: "https://example.com/sign",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: "Email sent successfully",
+          description: "The payment notification has been sent to the client.",
+        });
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    );
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Failed to send email",
+        description:
+          "There was an error sending the payment notification. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const paymentStates = PaymentManagementService.getPaymentStates();

@@ -173,6 +173,7 @@ export function PaymentPage({
           }
           onBack={handleBackToList}
           onUpdate={handlePaymentUpdate}
+          onRedirectToBillingDetails={onRedirectToBillingDetails}
         />
       </div>
     );
