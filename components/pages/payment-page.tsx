@@ -16,12 +16,14 @@ interface PaymentPageProps {
   payments: Payment[];
   estimateId: number;
   onBack?: () => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentPage({
   payments: initialPayments,
   estimateId,
   onBack,
+  onRedirectToBillingDetails,
 }: PaymentPageProps) {
   const [payments, setPayments] = useState(initialPayments);
   const [filteredPayments, setFilteredPayments] = useState(initialPayments);
@@ -183,6 +185,7 @@ export function PaymentPage({
           estimateId={estimateId}
           onBack={handleBackToList}
           onCreateSuccess={handlePaymentCreate}
+          onRedirectToBillingDetails={onRedirectToBillingDetails}
         />
       </div>
     );

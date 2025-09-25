@@ -23,11 +23,13 @@ export function PaymentDetailFormCreate({
   estimateId,
   onBack,
   onCreateSuccess,
+  onRedirectToBillingDetails,
   firstPayment,
 }: {
   estimateId: number;
   onBack?: () => void;
   onCreateSuccess?: (newPayment: Payment) => void;
+  onRedirectToBillingDetails?: () => void;
   firstPayment?: boolean;
 }) {
   const [loadingPost, setLoadingPost] = useState(false);
@@ -70,8 +72,11 @@ export function PaymentDetailFormCreate({
         // Notificar al componente padre
         onCreateSuccess?.(newPayment);
 
-        // Solo ejecutar onBack si NO es el primer pago
-        if (!firstPayment) {
+        // Redirigir a la tabla de billing details después de crear un payment
+        if (onRedirectToBillingDetails) {
+          onRedirectToBillingDetails();
+        } else if (!firstPayment) {
+          // Fallback: solo ejecutar onBack si NO es el primer pago y no hay callback de redirección
           onBack?.();
         }
       } else {
