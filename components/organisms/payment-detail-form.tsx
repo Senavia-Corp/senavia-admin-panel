@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import axios from "axios";
 
 interface PaymentDetailFormProps {
   paymentId: number;
@@ -93,12 +94,13 @@ export function PaymentDetailForm({
 
   const handleSendEmail = () => {
     fetch(
-      "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
+      "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: "client@example.com", // TODO: Get client email from billing/lead data
+          name: "Juan Jose Jimenez",
+          email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
           paymentsignUrl: "https://example.com/sign",
         }),
       }
