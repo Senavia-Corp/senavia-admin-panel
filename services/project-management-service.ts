@@ -8,16 +8,31 @@ import { endpoints } from "@/lib/services/endpoints";
 
 function getCurrentPhaseName(phases: Phase[] | undefined): string {
   if (!phases || phases.length === 0) return "-";
-  const last = [...phases].sort((a, b) => {
+
+  const lastPhase = [...phases].sort((a, b) => {
     const aTime = new Date(a.startDate || a.createdAt || "").getTime();
     const bTime = new Date(b.startDate || b.createdAt || "").getTime();
     return aTime - bTime;
   })[phases.length - 1];
 
-  // Names come as enum uppercase: ANALYSIS, DESIGN, DEVELOPMENT, DEPLOY
-  const pretty = last.name?.toString().toLowerCase();
-  if (!pretty) return "-";
-  return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+  if (!lastPhase?.name) return "-";
+
+  // Handle enum values properly
+  const name = lastPhase.name.toString().toUpperCase();
+  switch (name) {
+    case "ANALYSIS":
+      return "Analysis";
+    case "DESIGN":
+      return "Design";
+    case "DEVELOPMENT":
+      return "Development";
+    case "DEPLOY":
+      return "Deployment"; // Map DEPLOY to Deployment for consistency with UI
+    default:
+      // Fallback: capitalize first letter
+      const pretty = lastPhase.name.toString().toLowerCase();
+      return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+  }
 }
 
 export class ProjectManagementService {
@@ -135,6 +150,7 @@ export class ProjectManagementService {
       formData.append("estimate_id", estimateId.toString());
 
       // Agregar phases como JSON string
+      console.log("Phases being sent to API:", projectData.phases);
       formData.append("phases", JSON.stringify(projectData.phases));
 
       const response = await fetch("http://localhost:3000/api/project", {
@@ -154,6 +170,10 @@ export class ProjectManagementService {
 
       const data = await response.json();
       console.log("Create response:", data);
+
+      if (data.data && data.data[0]) {
+        console.log("Created project phases:", data.data[0].phases);
+      }
 
       if (!data.success) {
         throw new Error(data.message || "Error creating project");

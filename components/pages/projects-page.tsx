@@ -80,7 +80,11 @@ export function ProjectsPage() {
   const handleSaveSuccess = () => {
     setSelectedProjectId(null);
     setShowEditorForm(false);
-    loadProjects();
+    // Add a small delay to ensure the project is fully saved
+    setTimeout(() => {
+      console.log("Reloading projects after save...");
+      loadProjects();
+    }, 1000);
   };
 
   const handleViewTasks = (project: Project) => {

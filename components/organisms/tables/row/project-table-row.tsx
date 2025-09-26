@@ -22,14 +22,13 @@ export function ProjectTableRow({
   const router = useRouter();
 
   // Debug logging - remove in production
-  console.log("Project data:", {
-    id: project.id,
-    name: project.name,
-    startDate: project.startDate,
-    phases: project.phases,
-    Phase: (project as any).Phase,
-    allKeys: Object.keys(project),
-  });
+  console.log(`=== PROJECT ${project.id} (${project.name}) DEBUG ===`);
+  console.log("Full project data:", project);
+  console.log("Phases array:", project.phases);
+  console.log("Phases length:", project.phases?.length);
+  console.log("First phase:", project.phases?.[0]);
+  console.log("All keys:", Object.keys(project));
+  console.log("=== END DEBUG ===");
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
@@ -78,7 +77,7 @@ export function ProjectTableRow({
     const name = lastPhase.name;
     console.log("Phase name:", name, "Type:", typeof name);
 
-    // Handle both enum and string formats
+    // Handle enum values properly - match the service logic
     const nameStr = String(name).toUpperCase();
     switch (nameStr) {
       case "ANALYSIS":
@@ -88,20 +87,11 @@ export function ProjectTableRow({
       case "DEVELOPMENT":
         return "Development";
       case "DEPLOY":
-      case "DEPLOYMENT":
-        return "Deploy";
-      case "PLANNING":
-        return "Planning";
-      case "INPROCESS":
-      case "IN_PROCESS":
-        return "In Process";
-      case "TESTING":
-        return "Testing";
-      case "FINISHED":
-        return "Finished";
+        return "Deployment"; // Map DEPLOY to Deployment for consistency
       default:
-        // Return the original name if no match found
-        return String(name);
+        // Fallback: capitalize first letter
+        const pretty = String(name).toLowerCase();
+        return pretty.charAt(0).toUpperCase() + pretty.slice(1);
     }
   };
 
