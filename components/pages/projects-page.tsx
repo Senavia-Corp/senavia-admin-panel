@@ -147,6 +147,7 @@ export function ProjectsPage() {
                   "Project ID",
                   "Name",
                   "Start Date",
+                  "Expected Duration",
                   "Current Phase",
                   "Tasks",
                   "Actions",

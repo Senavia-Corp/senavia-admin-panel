@@ -314,7 +314,7 @@ export function ProjectEditor({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                placeholder="Briefly describe your project. "
                 className="mt-1 min-h-[100px]"
                 maxLength={200}
               />
@@ -348,21 +348,23 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Expected Duration
+                Expected Duration (in months)
               </Label>
               <Input
+                type="number"
                 value={formData.expectedDuration}
                 onChange={(e) =>
                   setFormData({ ...formData, expectedDuration: e.target.value })
                 }
-                placeholder="Attendant"
+                placeholder="Enter duration in months (e.g., 6)"
                 className="mt-1"
+                min="1"
               />
             </div>
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Expected Duration
+                Start Date / End Date
               </Label>
               <div className="flex items-center gap-2 mt-1">
                 <Input
