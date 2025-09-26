@@ -20,10 +20,28 @@ export function ProjectTableRow({
   onViewTasks,
 }: ProjectTableRowProps) {
   const router = useRouter();
+  
+  // Debug logging - remove in production
+  console.log('Project data:', {
+    id: project.id,
+    name: project.name,
+    startDate: project.startDate,
+    phases: project.phases
+  });
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
-    return dateString;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch {
+      return dateString; // Fallback to original string if parsing fails
+    }
   };
 
   const handleViewTasks = () => {
@@ -31,15 +49,24 @@ export function ProjectTableRow({
   };
 
   const getPhaseLabel = (): string => {
-    const lastPhase = (project.phases || [])
-      .slice()
+    if (!project.phases || project.phases.length === 0) {
+      return "-";
+    }
+    
+    // Get the most recent phase (last in chronological order)
+    const lastPhase = [...project.phases]
       .sort((a, b) => {
-        const aTime = new Date(a.startDate || "").getTime();
-        const bTime = new Date(b.startDate || "").getTime();
+        const aTime = new Date(a.startDate || a.createdAt || "").getTime();
+        const bTime = new Date(b.startDate || b.createdAt || "").getTime();
         return aTime - bTime;
       })
       .pop();
-    const name = lastPhase?.name as PhaseName | undefined;
+    
+    if (!lastPhase?.name) {
+      return "-";
+    }
+    
+    const name = lastPhase.name as PhaseName;
     switch (name) {
       case "ANALYSIS":
         return "Analysis";
@@ -50,25 +77,31 @@ export function ProjectTableRow({
       case "DEPLOY":
         return "Deploy";
       default:
-        return "-";
+        // Handle string version of phase names
+        const phaseName = String(name).toUpperCase();
+        if (phaseName === "ANALYSIS") return "Analysis";
+        if (phaseName === "DESIGN") return "Design";
+        if (phaseName === "DEVELOPMENT") return "Development";
+        if (phaseName === "DEPLOY") return "Deploy";
+        return String(name);
     }
   };
 
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="w-32 px-6 py-4 text-sm text-gray-900 truncate">
+      <td className="px-6 py-4 text-sm text-gray-900 truncate text-center">
         {project.id}
       </td>
-      <td className="flex-1 px-6 py-4 text-sm text-gray-900 truncate">
+      <td className="px-6 py-4 text-sm text-gray-900 truncate text-center">
         {project.name}
       </td>
-      <td className="w-32 px-6 py-4 text-sm text-gray-900">
+      <td className="px-6 py-4 text-sm text-gray-900 text-center">
         {formatDate(project.startDate)}
       </td>
-      <td className="w-32 px-6 py-4">
+      <td className="px-6 py-4 text-center">
         <StatusBadge status={getPhaseLabel()} />
       </td>
-      <td className="w-32 px-6 py-4">
+      <td className="px-6 py-4 text-center">
         <Button
           onClick={handleViewTasks}
           className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2"
@@ -76,8 +109,8 @@ export function ProjectTableRow({
           Tasks
         </Button>
       </td>
-      <td className="w-32 px-6 py-4">
-        <div className="flex space-x-2">
+      <td className="px-6 py-4 text-center">
+        <div className="flex space-x-2 justify-center">
           <ActionButton type="view" onClick={() => onView(project)} />
           <ActionButton type="delete" onClick={() => onDelete(project)} />
         </div>
