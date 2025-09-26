@@ -341,7 +341,7 @@ export function BillingDetailForm({
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
-                maxLength={200}
+                maxLength={5000}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">

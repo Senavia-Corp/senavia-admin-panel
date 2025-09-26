@@ -79,7 +79,7 @@ export const InvoicePDFDocument = ({
           </View>
         </View>
 
-        {/* <Image src={"senaviaLogo.png"} style={styles.headerImage} /> */}
+        <Image src="/contract-logo.png" />
 
         <View style={styles.inner}>
           {/* Marca */}
@@ -423,7 +423,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 10,        // Justo encima del banner inferior (que tiene height: 80)
     left: 10,          // Al lado izquierdo con padding       // Por encima del banner azul inferior
-    padding: 12,
     width: 300,     // Ancho máximo
 
   },
