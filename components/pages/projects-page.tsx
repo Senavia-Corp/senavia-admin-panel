@@ -108,7 +108,9 @@ export function ProjectsPage() {
         <main className="flex-1 bg-gray-50 overflow-auto">
           <div className="p-6 h-full w-full">
             <ProjectEditor
-              projectId={selectedProjectId || undefined}
+              projectId={
+                selectedProjectId ? parseInt(selectedProjectId) : undefined
+              }
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />

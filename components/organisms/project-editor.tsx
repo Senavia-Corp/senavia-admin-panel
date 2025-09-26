@@ -40,7 +40,10 @@ interface ProjectFormData {
   estimate_id: number;
 }
 
-export function ProjectEditor({projectId,onBack,onSave,
+export function ProjectEditor({
+  projectId,
+  onBack,
+  onSave,
 }: ProjectEditorProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
@@ -75,7 +78,7 @@ export function ProjectEditor({projectId,onBack,onSave,
               imagePreviewUrl: project.imagePreviewUrl || "",
               workTeam_id: project.workTeam_id?.id || 0,
               estimate_id: project.estimate_id?.id || 0,
-           });
+            });
           }
         } catch (error) {
           console.error("Error loading project:", error);
@@ -194,15 +197,18 @@ export function ProjectEditor({projectId,onBack,onSave,
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="bg-white rounded-lg p-8">
           <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">ID</Label>
-              <Input
-                value={projectId || "0000"}
-                disabled
-                placeholder="0000"
-                className="mt-1"
-              />
-            </div>
+            {/* Solo mostrar el campo ID cuando se está editando un proyecto existente */}
+            {projectId && (
+              <div>
+                <Label className="text-sm font-medium text-gray-700">ID</Label>
+                <Input
+                  value={projectId}
+                  disabled
+                  placeholder="0000"
+                  className="mt-1"
+                />
+              </div>
+            )}
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
