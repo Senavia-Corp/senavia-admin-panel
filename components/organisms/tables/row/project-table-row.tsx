@@ -20,13 +20,15 @@ export function ProjectTableRow({
   onViewTasks,
 }: ProjectTableRowProps) {
   const router = useRouter();
-  
+
   // Debug logging - remove in production
-  console.log('Project data:', {
+  console.log("Project data:", {
     id: project.id,
     name: project.name,
     startDate: project.startDate,
-    phases: project.phases
+    phases: project.phases,
+    Phase: (project as any).Phase,
+    allKeys: Object.keys(project),
   });
 
   const formatDate = (dateString: string) => {
@@ -34,10 +36,10 @@ export function ProjectTableRow({
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return "-";
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+      return date.toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       });
     } catch {
       return dateString; // Fallback to original string if parsing fails
@@ -49,25 +51,36 @@ export function ProjectTableRow({
   };
 
   const getPhaseLabel = (): string => {
-    if (!project.phases || project.phases.length === 0) {
+    // Try to get phases from different possible property names
+    const phases = project.phases || (project as any).Phase || [];
+
+    console.log("Phases found:", phases);
+
+    if (!phases || phases.length === 0) {
       return "-";
     }
-    
+
     // Get the most recent phase (last in chronological order)
-    const lastPhase = [...project.phases]
+    const lastPhase = [...phases]
       .sort((a, b) => {
         const aTime = new Date(a.startDate || a.createdAt || "").getTime();
         const bTime = new Date(b.startDate || b.createdAt || "").getTime();
         return aTime - bTime;
       })
       .pop();
-    
+
+    console.log("Last phase:", lastPhase);
+
     if (!lastPhase?.name) {
       return "-";
     }
-    
-    const name = lastPhase.name as PhaseName;
-    switch (name) {
+
+    const name = lastPhase.name;
+    console.log("Phase name:", name, "Type:", typeof name);
+
+    // Handle both enum and string formats
+    const nameStr = String(name).toUpperCase();
+    switch (nameStr) {
       case "ANALYSIS":
         return "Analysis";
       case "DESIGN":
@@ -75,14 +88,19 @@ export function ProjectTableRow({
       case "DEVELOPMENT":
         return "Development";
       case "DEPLOY":
+      case "DEPLOYMENT":
         return "Deploy";
+      case "PLANNING":
+        return "Planning";
+      case "INPROCESS":
+      case "IN_PROCESS":
+        return "In Process";
+      case "TESTING":
+        return "Testing";
+      case "FINISHED":
+        return "Finished";
       default:
-        // Handle string version of phase names
-        const phaseName = String(name).toUpperCase();
-        if (phaseName === "ANALYSIS") return "Analysis";
-        if (phaseName === "DESIGN") return "Design";
-        if (phaseName === "DEVELOPMENT") return "Development";
-        if (phaseName === "DEPLOY") return "Deploy";
+        // Return the original name if no match found
         return String(name);
     }
   };
