@@ -100,22 +100,66 @@ export class ProjectManagementService {
 
   static async createProject(projectData: CreateProjectData): Promise<Project> {
     try {
+      console.log("Creating project with data:", projectData);
+
+      // Validar datos requeridos
+      if (!projectData.name || !projectData.description) {
+        throw new Error("Name and description are required");
+      }
+
+      if (!projectData.workTeam_id || !projectData.estimate_id) {
+        throw new Error("WorkTeam ID and Estimate ID are required");
+      }
+
+      // Crear FormData en lugar de JSON
+      const formData = new FormData();
+      formData.append("name", projectData.name);
+      formData.append("description", projectData.description);
+      formData.append("expectedDuration", projectData.expectedDuration || "");
+      formData.append("startDate", projectData.startDate);
+      formData.append("endDate", projectData.endDate || "");
+      formData.append("imagePreviewUrl", projectData.imagePreviewUrl || "");
+
+      // Validar que los IDs sean números válidos
+      const workTeamId = Number(projectData.workTeam_id);
+      const estimateId = Number(projectData.estimate_id);
+
+      if (isNaN(workTeamId) || workTeamId <= 0) {
+        throw new Error("Valid WorkTeam ID is required");
+      }
+      if (isNaN(estimateId) || estimateId <= 0) {
+        throw new Error("Valid Estimate ID is required");
+      }
+
+      formData.append("workTeam_id", workTeamId.toString());
+      formData.append("estimate_id", estimateId.toString());
+
+      // Agregar phases como JSON string
+      formData.append("phases", JSON.stringify(projectData.phases));
+
       const response = await fetch("http://localhost:3000/api/project", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(projectData),
+        // No establecer Content-Type para FormData, el browser lo hace automáticamente
+        credentials: "include",
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Create response error:", errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status} - ${errorText}`
+        );
       }
 
       const data = await response.json();
+      console.log("Create response:", data);
+
       if (!data.success) {
         throw new Error(data.message || "Error creating project");
       }
 
-      return data.data[0];
+      return data.data[0] || data.data;
     } catch (error) {
       console.error("Error creating project:", error);
       throw error;
@@ -124,28 +168,63 @@ export class ProjectManagementService {
 
   static async updateProject(
     id: string,
-    updates: Partial<Project>
+    updates: Partial<CreateProjectData>
   ): Promise<Project | null> {
     try {
+      console.log("Updating project with data:", updates);
+
+      // Crear FormData para el PATCH también
+      const formData = new FormData();
+
+      if (updates.name) formData.append("name", updates.name);
+      if (updates.description)
+        formData.append("description", updates.description);
+      if (updates.expectedDuration)
+        formData.append("expectedDuration", updates.expectedDuration);
+      if (updates.startDate) formData.append("startDate", updates.startDate);
+      if (updates.endDate) formData.append("endDate", updates.endDate);
+      if (updates.imagePreviewUrl)
+        formData.append("imagePreviewUrl", updates.imagePreviewUrl);
+      if (updates.workTeam_id) {
+        const workTeamId = Number(updates.workTeam_id);
+        if (!isNaN(workTeamId) && workTeamId > 0) {
+          formData.append("workTeam_id", workTeamId.toString());
+        }
+      }
+      if (updates.estimate_id) {
+        const estimateId = Number(updates.estimate_id);
+        if (!isNaN(estimateId) && estimateId > 0) {
+          formData.append("estimate_id", estimateId.toString());
+        }
+      }
+      if (updates.phases)
+        formData.append("phases", JSON.stringify(updates.phases));
+
       const response = await fetch(
         `http://localhost:3000/api/project?id=${id}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updates),
+          credentials: "include",
+          body: formData,
         }
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Update response error:", errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status} - ${errorText}`
+        );
       }
 
       const data = await response.json();
+      console.log("Update response:", data);
+
       if (!data.success) {
         throw new Error(data.message || "Error updating project");
       }
 
-      return data.data[0];
+      return data.data[0] || data.data;
     } catch (error) {
       console.error("Error updating project:", error);
       throw error;
@@ -178,10 +257,10 @@ export class ProjectManagementService {
     }
   }
 
-/*  static getProjectPhases(): ProjectPhase[] {
+  /*  static getProjectPhases(): ProjectPhase[] {
     return ["Analysis", "Design", "Development", "Deployment"];
   }*/
- 
+
   static async getProjectsByUser(
     userId: string | number,
     search?: string,

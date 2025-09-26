@@ -23,6 +23,7 @@ export interface Project {
   id: number;
   name: string;
   description: string;
+  expectedDuration?: string;
   startDate: string;
   endDate?: string;
   imagePreviewUrl?: string;
@@ -42,6 +43,7 @@ export interface Project {
 export interface CreateProjectData {
   name: string;
   description: string;
+  expectedDuration?: string;
   startDate: string;
   endDate?: string;
   imagePreviewUrl?: string;
