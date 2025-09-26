@@ -194,6 +194,8 @@ export function BillingDetailForm({
 
       await sendToClient({
         name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
+        title: localEstimateData?.title || "",
+        description: localEstimateData?.description || "",
         email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
         document: base64String,
       });
