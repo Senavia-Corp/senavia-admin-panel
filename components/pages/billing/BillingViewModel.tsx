@@ -7,6 +7,7 @@ import {
   Cost,
   CreateBillingData,
   SendToClientData,
+  CheckoutSession,
 } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
@@ -81,6 +82,29 @@ export function BillingViewModel() {
       const message = error instanceof Error ? error.message : "Failed to create billing";
       setError(message);
       return { success: false, error: message };
+    }
+  }
+
+  const createStripeSession = async (reference: string, amount: number, id: number) => {
+    setError(null);
+    setSuccessMessage(null);
+
+    if (!reference || !amount) {
+      setError("Reference and amount are required to create a checkout session");
+      return null;
+    }
+
+    const { response, status, errorLogs } = await fetchData<apiResponse<CheckoutSession>>(
+      endpoints.stripe.createCheckoutSession,
+      "post",
+      { reference, amount, id }
+    );
+    if (status === 200 && response && response.success) {
+      const url = response.data;
+      return url;
+    } else {
+      setError(errorLogs?.message || response?.message || "Failed to create checkout session");
+      return null;
     }
   }
 
@@ -443,12 +467,13 @@ export function BillingViewModel() {
       };
     }
   };
-  const sendToClient = async(sendToClientData: SendToClientData) => {
+  const sendToClient = async (sendToClientData: SendToClientData) => {
     try {
       setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.sendToClient, "post", sendToClientData);
-    if (status === 200 && response && response.success) {
-      toast.success("Billing sent to client successfully");} else {
+      const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.sendToClient, "post", sendToClientData);
+      if (status === 200 && response && response.success) {
+        toast.success("Billing sent to client successfully");
+      } else {
         setError(errorLogs?.message || response?.message || "Failed to send billing to client");
         toast.error("Error sending billing to client");
       }
@@ -481,6 +506,7 @@ export function BillingViewModel() {
     createPayment,
     deletePayment,
     updatePayment,
-    sendToClient
+    sendToClient,
+    createStripeSession
   };
 }

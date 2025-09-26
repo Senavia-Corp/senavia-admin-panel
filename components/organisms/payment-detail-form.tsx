@@ -36,7 +36,7 @@ export function PaymentDetailForm({
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment } = BillingViewModel();
+  const { updatePayment, createStripeSession } = BillingViewModel();
 
   const handleUpdatePayment = async () => {
     try {
@@ -92,19 +92,26 @@ export function PaymentDetailForm({
     }));
   };
 
-  const handleSendEmail = () => {
-    fetch(
-      "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Juan Jose Jimenez",
-          email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
-          paymentsignUrl: "https://example.com/sign",
-        }),
-      }
-    );
+  const handleSendEmail = async () => {
+    //Usar localPayment para obtener los datos necesarios
+    const realAmount = localPayment.amount * 100;
+    const response = await createStripeSession(localPayment.reference, realAmount, localPayment.id);
+    if (response) {
+      fetch(
+        "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Juan Jose Jimenez",
+            email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
+            paymentsignUrl: response,
+          }),
+        }
+      );
+    } else {
+      console.error("Error creating checkout session");
+    }
   };
 
   const paymentStates = PaymentManagementService.getPaymentStates();
@@ -164,11 +171,11 @@ export function PaymentDetailForm({
               value={
                 localPayment.amount
                   ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    }).format(localPayment.amount)
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(localPayment.amount)
                   : ""
               }
               onChange={(e) => {

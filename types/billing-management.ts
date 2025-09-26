@@ -32,6 +32,13 @@ export interface Billing {
   payments?: Payment[] // Pagos asociados al billing
 }
 
+export interface CheckoutSession {
+  success: boolean
+  data: string
+  message: string
+  errors: string[]
+}
+
 export interface Cost {
   id: number
   name: string
