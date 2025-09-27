@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect, useCallback } from "react"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import type { BillingRecord, Billings, Billing } from "@/types/billing-management"
+import type { Billings, Billing } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { BillingViewModel } from "./BillingViewModel"
@@ -40,10 +40,11 @@ export function BillingPage() {
       setIsLoading(true)
       let filteredData = [...billings]
       
-      // Aplicar filtro de búsqueda
+      // Aplicar filtro de búsqueda por ID y título
       if (searchTerm) {
         filteredData = filteredData.filter(billing => 
-          billing.id.toString().includes(searchTerm)
+          billing.id.toString().includes(searchTerm) ||
+          billing.title?.toLowerCase().includes(searchTerm.toLowerCase())
         )
       }
 
@@ -111,10 +112,23 @@ export function BillingPage() {
     setShowCreateBilling(false)
   }
 
-  const handleSaveSuccess = () => {
+  const handleSaveSuccess = async () => {
     setShowBillingDetail(false)
     setShowCreateBilling(false)
-    loadBillingRecords()
+    setIsLoading(true)
+    try {
+      await getBillings()
+    } catch (error) {
+      setHasError(true)
+      toast({
+        title: "Error",
+        description: "Failed to refresh billings. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleFilterChange = (filter: string) => {
@@ -202,6 +216,7 @@ export function BillingPage() {
                     <TableRowSkeleton columns={4} actions={2} />
                   ),
                   skeletonCount: 5,
+                  searchPlaceholder: "Search by ID or title...",
                 }
               )}
             </div>

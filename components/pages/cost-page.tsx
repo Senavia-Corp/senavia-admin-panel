@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
 import { BillingViewModel, } from "./billing/BillingViewModel";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import type { Cost } from "@/types/cost-management";
 import { CostDetailForm } from "../organisms/cost-detail-form";
 
@@ -37,7 +37,7 @@ export function CostPage({
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
   const { deleteCost, PatchBilling } = BillingViewModel();
-
+  const { toast } = useToast();
   useEffect(() => {
     filterCosts();
   }, [searchTerm, statusFilter, costs]);
@@ -75,10 +75,17 @@ export function CostPage({
       await PatchBilling(estimateId, {
         totalValue: newTotalValue
       });
-      toast.success("Cost deleted successfully");
+      toast({
+        title: "Cost deleted successfully",
+        duration: 3000,
+      });
     } catch (error) {
       console.error("Error deleting cost", error);
-      toast.error("Failed to delete cost");
+      toast({
+        title: "Failed to delete cost",
+        duration: 3000,
+        variant: "destructive",
+      });
     }
   };
 

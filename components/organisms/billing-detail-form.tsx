@@ -170,15 +170,18 @@ export function BillingDetailForm({
       toast({
         title: "Billing updated successfully",
         description: "The billing has been updated successfully.",
+        duration: 3000,
       });
     } catch (error) {
       console.log("An error has occured " + error);
       toast({
         title: "Failed to update billing",
         description: "The billing has not been updated.",
+        duration: 3000,
       });
     } finally {
       setIsUpdating(false);
+      onSave();
     }
   };
   const handleSendToClient = async () => {
@@ -203,12 +206,10 @@ export function BillingDetailForm({
       );
 
       await sendToClient({
-        name:
-          leads.find((lead) => lead.id === associatedLeads[0])?.clientName ||
-          "",
-        email:
-          leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail ||
-          "",
+        name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
+        title: localEstimateData?.title || "",
+        description: localEstimateData?.description || "",
+        email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
         document: base64String,
       });
 
@@ -358,7 +359,7 @@ export function BillingDetailForm({
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
-                maxLength={200}
+                maxLength={5000}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">

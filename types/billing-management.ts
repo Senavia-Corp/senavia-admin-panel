@@ -81,6 +81,8 @@ export interface CreateBillingData {
 
 export interface SendToClientData {
   name: string;
+  title: string;
+  description: string;
   email: string;
   document?: string;
 }

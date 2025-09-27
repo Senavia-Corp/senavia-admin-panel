@@ -60,7 +60,8 @@ export function GeneralTable(
     emptyStateDescription?: string;
     skeletonComponent?: React.ComponentType;
     skeletonCount?: number;
-    pagination?:React.ReactNode,
+    searchPlaceholder?: string;
+    pagination?:React.ReactNode
   },
 ) {
   const {
@@ -81,6 +82,7 @@ export function GeneralTable(
     emptyStateDescription = "No records found to display.",
     skeletonComponent: SkeletonComponent,
     skeletonCount = 5,
+    searchPlaceholder = "Search",
     pagination
   } = options || {};
 
@@ -284,7 +286,7 @@ export function GeneralTable(
                 />
                 <Input
                   className="pl-10 xl:w-80 bg-white border-gray-700 text-black rounded-md"
-                  placeholder="Search"
+                  placeholder={searchPlaceholder}
                   onChange={(e) => onSearch(e.target.value)}
                 />
               </div>
