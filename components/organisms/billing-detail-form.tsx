@@ -348,7 +348,7 @@ export function BillingDetailForm({
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                {localEstimateData?.description?.length || 0}/200
+                {localEstimateData?.description?.length || 0}/5000
               </div>
             </div>
             <hr className="border-[#EBEDF2]" />
