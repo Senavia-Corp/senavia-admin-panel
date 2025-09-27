@@ -9,7 +9,6 @@ import ClauseViewModel from "./clause/ClauseViewModel";
 import { useToast } from "@/hooks/use-toast";
 import { PaginationControl } from "../molecules/Pagination-control";
 import { Pagination } from "../ui/pagination";
-import { ContractTableRowSkeleton } from "../atoms/contract-table-row-skeleton";
 import { ClauseTableRowSkeleton } from "../atoms/clause-table-row-skeleton";
 
 export function ClausePage() {
@@ -63,6 +62,7 @@ export function ClausePage() {
         //setDataProducts((prev) => prev.filter((p) => p.id !== id));
       } else {
         console.error(`❌ No se pudo eliminar el producto ${id}`);
+         toast({ title: "Error", description: "The product could not be deleted; it is associated with a contract." });
       }
     } catch (error) {
       console.error("Error eliminando producto:", error);
