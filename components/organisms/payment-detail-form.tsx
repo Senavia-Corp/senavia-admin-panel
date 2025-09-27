@@ -77,7 +77,7 @@ export function PaymentDetailForm({
           onRedirectToBillingDetails();
         }
       } else {
-        throw new Error(response.message || "Failed to update payment");
+        throw new Error("Failed to update payment");
       }
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -103,24 +103,49 @@ export function PaymentDetailForm({
   };
 
   const handleSendEmail = async () => {
-    //Usar localPayment para obtener los datos necesarios
-    const realAmount = localPayment.amount * 100;
-    const response = await createStripeSession(localPayment.reference, realAmount, localPayment.id);
-    if (response) {
-      fetch(
-        "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: lead[0].clientName,
-            email: lead[0].clientEmail, // TODO: Get client email from billing/lead data
-            paymentsignUrl: response,
-          }),
-        }
+    try {
+      //Usar localPayment para obtener los datos necesarios
+      const realAmount = localPayment.amount * 100;
+      const response = await createStripeSession(
+        localPayment.reference,
+        realAmount,
+        localPayment.id
       );
-    } else {
-      console.error("Error creating checkout session");
+
+      if (response) {
+        const emailResponse = await fetch(
+          "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: lead?.[0]?.clientName || "Cliente",
+              email: lead?.[0]?.clientEmail || "client@example.com",
+              paymentsignUrl: response,
+            }),
+          }
+        );
+
+        if (emailResponse.ok) {
+          toast({
+            title: "Envío exitoso",
+            description:
+              "La notificación de pago ha sido enviada al cliente exitosamente.",
+          });
+        } else {
+          throw new Error(`HTTP error! status: ${emailResponse.status}`);
+        }
+      } else {
+        throw new Error("Error creating checkout session");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Error en el envío",
+        description:
+          "Hubo un error al enviar la notificación de pago. Por favor intenta de nuevo.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -181,11 +206,11 @@ export function PaymentDetailForm({
               value={
                 localPayment.amount
                   ? new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(localPayment.amount)
+                      style: "currency",
+                      currency: "USD",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    }).format(localPayment.amount)
                   : ""
               }
               onChange={(e) => {
@@ -278,7 +303,7 @@ export function PaymentDetailForm({
                 handleSendEmail();
               }}
             >
-              Enviar Pago por Email
+              Send Payment by Email
             </button>
           </div>
         </div>
