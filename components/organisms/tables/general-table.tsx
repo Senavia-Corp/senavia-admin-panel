@@ -61,7 +61,8 @@ export function GeneralTable(
     skeletonComponent?: React.ComponentType;
     skeletonCount?: number;
     searchPlaceholder?: string;
-  }
+    pagination?:React.ReactNode
+  },
 ) {
   const {
     onCreate,
