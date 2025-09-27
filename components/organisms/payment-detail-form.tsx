@@ -128,9 +128,9 @@ export function PaymentDetailForm({
 
         if (emailResponse.ok) {
           toast({
-            title: "Envío exitoso",
+            title: "Successful submission",
             description:
-              "La notificación de pago ha sido enviada al cliente exitosamente.",
+              "The payment notification has been sent to the client successfully.",
           });
         } else {
           throw new Error(`HTTP error! status: ${emailResponse.status}`);
@@ -141,9 +141,9 @@ export function PaymentDetailForm({
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
-        title: "Error en el envío",
+        title: "Error sending email",
         description:
-          "Hubo un error al enviar la notificación de pago. Por favor intenta de nuevo.",
+          "There was an error sending the payment notification. Please try again.",
         variant: "destructive",
       });
     }
