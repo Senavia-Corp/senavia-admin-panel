@@ -228,6 +228,7 @@ export function BillingDetailCreateForm({
           payments={selectedBilling?.payments || []}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
+          onRedirectToBillingDetails={() => setShowPayments(false)}
         />
       </div>
     );

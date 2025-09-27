@@ -14,7 +14,7 @@ const mockPayments: Payment[] = [
     description: "Initial payment for web development project",
     amount: 5000,
     percentagePaid: 50,
-    state: "COMPLETED",
+    state: "PAID",
     paidDate: "2025-01-15",
     method: "Bank Transfer",
     attachments: [],
@@ -42,7 +42,7 @@ const mockPayments: Payment[] = [
     description: "Final payment for project completion",
     amount: 2000,
     percentagePaid: 20,
-    state: "PROCESSING",
+    state: "PENDING",
     paidDate: "2025-01-18",
     method: "Credit Card",
     attachments: ["receipt_001.pdf"],
@@ -57,7 +57,7 @@ const mockPayments: Payment[] = [
     description: "Marketing campaign payment",
     amount: 1500,
     percentagePaid: 100,
-    state: "COMPLETED",
+    state: "PAID",
     paidDate: "2025-01-10",
     method: "Wire Transfer",
     attachments: [],
@@ -71,7 +71,7 @@ const mockPayments: Payment[] = [
     description: "Design services payment",
     amount: 2500,
     percentagePaid: 75,
-    state: "COMPLETED",
+    state: "PAID",
     paidDate: "2025-01-12",
     method: "Credit Card",
     attachments: [],
@@ -226,7 +226,7 @@ export class PaymentManagementService {
    * Obtiene los estados de pago disponibles
    */
   static getPaymentStates(): PaymentState[] {
-    return ["PENDING", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"];
+    return ["PENDING", "PAID"];
   }
 
   /**

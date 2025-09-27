@@ -18,12 +18,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import axios from "axios";
 
 interface PaymentDetailFormProps {
   paymentId: number;
   payment: Payment;
   onBack?: () => void;
   onUpdate?: (updatedPayment: Payment) => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentDetailForm({
@@ -31,6 +33,7 @@ export function PaymentDetailForm({
   payment,
   onBack,
   onUpdate,
+  onRedirectToBillingDetails,
 }: PaymentDetailFormProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
@@ -65,6 +68,11 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Redirigir a la tabla de billing details después de actualizar
+        if (onRedirectToBillingDetails) {
+          onRedirectToBillingDetails();
+        }
       } else {
         throw new Error(response.message || "Failed to update payment");
       }
@@ -89,6 +97,21 @@ export function PaymentDetailForm({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleSendEmail = () => {
+    fetch(
+      "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Juan Jose Jimenez",
+          email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
+          paymentsignUrl: "https://example.com/sign",
+        }),
+      }
+    );
   };
 
   const paymentStates = PaymentManagementService.getPaymentStates();
@@ -135,7 +158,7 @@ export function PaymentDetailForm({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={200}
+              maxLength={1000}
               className="w-full h-28 resize-none text-xs"
             />
             <hr className="border-[#EBEDF2]" />
@@ -238,6 +261,15 @@ export function PaymentDetailForm({
             >
               {isUpdating ? "Updating..." : "Update Payment"}
             </Button>
+
+            <button
+              className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
+              onClick={() => {
+                handleSendEmail();
+              }}
+            >
+              Enviar Pago por Email
+            </button>
           </div>
         </div>
       </div>

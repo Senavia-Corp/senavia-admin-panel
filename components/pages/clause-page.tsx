@@ -7,6 +7,9 @@ import { ClauseEditor } from "../organisms/clause-editor";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import ClauseViewModel from "./clause/ClauseViewModel";
 import { useToast } from "@/hooks/use-toast";
+import { PaginationControl } from "../molecules/Pagination-control";
+import { Pagination } from "../ui/pagination";
+import { ClauseTableRowSkeleton } from "../atoms/clause-table-row-skeleton";
 
 export function ClausePage() {
   const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
@@ -25,6 +28,7 @@ export function ClausePage() {
     getClauseById,
     deleteClause,
   } = ClauseViewModel({ isPaginated: true, offset, itemsPerPage, searchTerm });
+  const clauseVM = ClauseViewModel();
   const [entityToDelete, setEntityToDelete] = useState<Clause | null>(null);
   const [dataClauses, setDataClauses] = useState<Clause[]>([]);
   const { toast } = useToast();
@@ -51,20 +55,33 @@ export function ClausePage() {
     onFilter: handleFilterChange,
   };
   const handleDelete = async (id: number) => {
-    console.log("deberia funcionar: " + id);
     try {
       const success = await deleteClause(id);
       if (success) {
-        console.log(`✅ Clause ${id} eliminado correctamente`);
-           toast({ title: "Success", description: "Clause deleted successfully" });
+        toast({ title: "Success", description: "Clause deleted successfully" });
         //setDataProducts((prev) => prev.filter((p) => p.id !== id));
       } else {
         console.error(`❌ No se pudo eliminar el producto ${id}`);
+         toast({ title: "Error", description: "The product could not be deleted; it is associated with a contract." });
       }
     } catch (error) {
       console.error("Error eliminando producto:", error);
     }
   };
+  const PaginadoComponent = () => (
+    <PaginationControl
+      offset={offset}
+      itemsPerPage={itemsPerPage}
+      totalItems={pageInfo?.totalClauses || 0}
+      loading={loading}
+      onPrev={() => setOffset((prev) => Math.max(prev - itemsPerPage, 0))}
+      onNext={() => {
+        if (!pageInfo || offset + itemsPerPage < pageInfo.totalClauses) {
+          setOffset((prev) => prev + itemsPerPage);
+        }
+      }}
+    />
+  );
 
   if (showEditor) {
     return (
@@ -74,11 +91,17 @@ export function ClausePage() {
           <div className="p-6 h-full">
             <ClauseEditor
               entityId={editingClauseId ?? undefined}
-              onBack={() => setShowEditor(false)}
-              onSave={() => {
+              onBack={() => {
                 setShowEditor(false);
-                //loadBlogs()
+                getAllClauses();
               }}
+              onSave={() => {
+                {
+                  setShowEditor(false);
+                  getAllClauses();
+                }
+              }}
+              onDelete={deleteClause}
             />
           </div>
         </main>
@@ -105,19 +128,18 @@ export function ClausePage() {
                 "Description",
                 ["Clause ID", "Title", "Description", "Actions"],
                 clauses,
-                handlers
+                handlers,
+                {
+                  isLoading: loading,
+                  pagination: <PaginadoComponent />,
+                  skeletonComponent: ClauseTableRowSkeleton, // 👈 tu componente de fila de skeleton
+                  skeletonCount: 5,
+                }
               )}
             </div>
           </div>
         </div>
       </main>
-      {/*
-      <CreateBlogDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={loadBlog}
-        themes={themes}
-      />*/}
 
       <DeleteConfirmDialog
         open={!!clauseToDelete}
@@ -126,37 +148,6 @@ export function ClausePage() {
         title="Delete Clause"
         description={`Are you sure you want to delete "${clauseToDelete?.title}"? This action cannot be undone.`}
       />
-      {/* Controles de paginación */}
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={
-            () => setOffset((prev) => Math.max(prev - itemsPerPage, 0))
-            //setOffset((prev) => prev + itemsPerPage)
-          }
-          disabled={offset === 0 || loading}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-        >
-          ⬅️ Anterior
-        </button>
-
-        <span>Página {Math.floor(offset / itemsPerPage) + 1}</span>
-
-        <button
-          onClick={() => {
-            console.log("deberia fun: " + pageInfo.totalClauses);
-            if (!pageInfo || offset + itemsPerPage < pageInfo.totalClauses) {
-              setOffset((prev) => prev + itemsPerPage);
-            }
-          }}
-          disabled={
-            loading ||
-            (pageInfo && offset + itemsPerPage >= pageInfo.totalClauses)
-          }
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-        >
-          Siguiente ➡️
-        </button>
-      </div>
     </div>
   );
 }
