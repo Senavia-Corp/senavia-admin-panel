@@ -16,12 +16,14 @@ interface PaymentPageProps {
   payments: Payment[];
   estimateId: number;
   onBack?: () => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentPage({
   payments: initialPayments,
   estimateId,
   onBack,
+  onRedirectToBillingDetails,
 }: PaymentPageProps) {
   const [payments, setPayments] = useState(initialPayments);
   const [filteredPayments, setFilteredPayments] = useState(initialPayments);
@@ -31,6 +33,8 @@ export function PaymentPage({
   const [showCreatePayment, setShowCreatePayment] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number>();
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const {
     deletePayment,
     getPayments,
@@ -51,10 +55,15 @@ export function PaymentPage({
 
   const loadPayments = async () => {
     try {
+      setIsLoading(true);
+      setHasError(false);
       await getPayments();
     } catch (error) {
       console.error("Error loading payments", error);
-      toast.error("Failed to load payments");
+      setHasError(true);
+      toast.error("Failed to load payments. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,10 +92,7 @@ export function PaymentPage({
       filtered = filtered.filter(
         (payment) =>
           payment.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          payment.method?.toLowerCase().includes(searchTerm.toLowerCase())
+          payment.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -101,12 +107,9 @@ export function PaymentPage({
     try {
       const success = await deletePayment(paymentToDelete.id);
       if (success) {
-        const updatedPayments = payments.filter(
-          (payment) => payment.id !== paymentToDelete.id
-        );
-        setPayments(updatedPayments);
-        setFilteredPayments(updatedPayments);
         setPaymentToDelete(null);
+        // Reload payments to refresh the table
+        loadPayments();
         // El toast ya se muestra en el BillingViewModel
       }
     } catch (error) {
@@ -121,15 +124,14 @@ export function PaymentPage({
   };
 
   const handlePaymentUpdate = (updatedPayment: Payment) => {
-    // El BillingViewModel ya actualiza su estado interno
-    // Solo necesitamos forzar una re-renderización si es necesario
-    // Los cambios se reflejarán automáticamente a través del efecto que sincroniza billingPayments
+    // Reload payments to ensure data consistency
+    loadPayments();
   };
 
   const handlePaymentCreate = (newPayment: Payment) => {
-    // El BillingViewModel ya actualiza su estado interno cuando se crea un payment
-    // Los cambios se reflejarán automáticamente a través del efecto que sincroniza billingPayments
     setShowCreatePayment(false);
+    // Reload payments to refresh the table with the new payment
+    loadPayments();
   };
 
   const handleCreatePayment = () => {
@@ -140,6 +142,8 @@ export function PaymentPage({
   const handleBackToList = () => {
     setShowPaymentDetail(false);
     setShowCreatePayment(false);
+    // Reload payments to ensure fresh data when returning to list
+    loadPayments();
   };
 
   const handleFilterChange = (filter: string) => {
@@ -174,6 +178,7 @@ export function PaymentPage({
           }
           onBack={handleBackToList}
           onUpdate={handlePaymentUpdate}
+          onRedirectToBillingDetails={onRedirectToBillingDetails}
         />
       </div>
     );
@@ -186,12 +191,13 @@ export function PaymentPage({
           estimateId={estimateId}
           onBack={handleBackToList}
           onCreateSuccess={handlePaymentCreate}
+          onRedirectToBillingDetails={onRedirectToBillingDetails}
         />
       </div>
     );
   }
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <div className="flex-1 flex items-center justify-center">
@@ -240,11 +246,18 @@ export function PaymentPage({
                   "Percentage",
                   "State",
                   "Paid Date",
-                  "Method",
                   "Actions",
                 ],
                 filteredPayments,
-                handlers
+                handlers,
+                {
+                  isLoading,
+                  hasError,
+                  onRetry: loadPayments,
+                  emptyStateTitle: "No payments found",
+                  emptyStateDescription:
+                    "No payment records available to display.",
+                }
               )}
             </div>
           </div>

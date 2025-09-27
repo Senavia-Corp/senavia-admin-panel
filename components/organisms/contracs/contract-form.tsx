@@ -451,7 +451,7 @@ export function ContractForm({
           }}
         >
           Send Contract by Email
-        </button>
+        </button> 
       </div>
     </FormProvider>
   );
