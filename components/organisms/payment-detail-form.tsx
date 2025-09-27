@@ -18,11 +18,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import { Lead } from "@/types/lead-management";
 import axios from "axios";
 
 interface PaymentDetailFormProps {
   paymentId: number;
   payment: Payment;
+  lead?: Lead[];
   onBack?: () => void;
   onUpdate?: (updatedPayment: Payment) => void;
 }
@@ -30,6 +32,7 @@ interface PaymentDetailFormProps {
 export function PaymentDetailForm({
   paymentId,
   payment,
+  lead,
   onBack,
   onUpdate,
 }: PaymentDetailFormProps) {
@@ -103,8 +106,8 @@ export function PaymentDetailForm({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "Juan Jose Jimenez",
-            email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
+            name: lead[0].clientName,
+            email: lead[0].clientEmail, // TODO: Get client email from billing/lead data
             paymentsignUrl: response,
           }),
         }

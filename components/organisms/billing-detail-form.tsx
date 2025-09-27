@@ -229,6 +229,7 @@ export function BillingDetailForm({
       <div className="">
         <PaymentPage
           payments={selectedBilling?.payments || []}
+          lead = {lead}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
         />
