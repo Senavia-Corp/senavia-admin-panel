@@ -36,6 +36,10 @@ export const endpoints = {
     update: (id: number) => `${API}/product?id=${id}`,
   },
 
+  stripe : {
+    createCheckoutSession: `${API}/checkout`,
+  },
+
   blog: {
     getPosts: `${API}/blog`,
     getPost: (id: number) => `${API}/blog?id=${id}`,
