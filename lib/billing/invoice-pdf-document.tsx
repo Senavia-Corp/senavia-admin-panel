@@ -138,7 +138,7 @@ export const InvoicePDFDocument = ({
                 Number(plans?.find((p) => p.id === billing.plan_id)?.price)
               ) || "No price detected"}
             </Text>
-            <Text style={styles.paragraph}>
+            <Text style={[styles.paragraph, { fontSize: 10 }]}>
               {plans?.find((p) => p.id === billing.plan_id)?.description ||
                 "No description"}
             </Text>
