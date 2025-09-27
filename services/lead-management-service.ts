@@ -291,15 +291,20 @@ export class LeadManagementService {
 
       // Prepare guests data
       const guests = scheduleData.guests || [];
-      const guestEmails = guests.map((guest: any) => guest.email).join(",");
-      const guestNames = guests.map((guest: any) => guest.name).join(", ");
+      const guestEmails = guests.map((guest: any) => guest.email);
+      const guestNames = guests.map((guest: any) => guest.name);
+
+      // Combine all emails (client + guests)
+      const allEmails = [scheduleData.clientEmail || "", ...guestEmails].filter(
+        Boolean
+      );
 
       // Prepare payload for multi-guest calendar event endpoint
       const payload = {
         // Main client data
         name: scheduleData.clientName || "",
         phone: scheduleData.clientPhone || "",
-        email: scheduleData.clientEmail || "",
+        email: allEmails, // Todos los correos como array
         address: scheduleData.clientAddress || "",
         service: scheduleData.serviceId || "",
         about:
@@ -309,9 +314,9 @@ export class LeadManagementService {
         isLoggedIn: true,
         reminder: true,
         // Multi-guest specific fields
-        guests: guests,
-        guestEmails: guestEmails,
-        guestNames: guestNames,
+        guests: guests, // Ya es un array
+        guestEmail: guestEmails, // Array de emails de invitados
+        guestNames: guestNames, // Array de nombres de invitados
         totalGuests: guests.length,
         isMultiGuest: true,
       };

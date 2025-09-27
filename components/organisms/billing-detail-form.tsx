@@ -28,7 +28,6 @@ import { Progress } from "../ui/progress";
 import { pdf as pdfRenderer } from "@react-pdf/renderer";
 import { InvoicePDFDocument } from "@/lib/billing/invoice-pdf-document";
 
-
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
   billingId: number;
@@ -148,9 +147,16 @@ export function BillingDetailForm({
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
 
-        const planPrice = Number(plans.find(plan => plan.id === associatedPlan[0])?.price) || Number(localEstimateData?.totalValue) || 0;
-        const costsTotal = selectedBilling?.costs?.reduce((sum, cost) => sum + Number(cost.value), 0) || 0;
-      
+      const planPrice =
+        Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) ||
+        Number(localEstimateData?.totalValue) ||
+        0;
+      const costsTotal =
+        selectedBilling?.costs?.reduce(
+          (sum, cost) => sum + Number(cost.value),
+          0
+        ) || 0;
+
       const billingData: CreateBillingData = {
         ...localEstimateData!,
         state: status,
@@ -178,23 +184,31 @@ export function BillingDetailForm({
   const handleSendToClient = async () => {
     try {
       const pdfBlob = await pdfRenderer(
-        <InvoicePDFDocument 
-          lead={lead} 
-          billing={{
-            ...selectedBilling,
-            description: selectedBilling?.description || '',
-            totalValue: selectedBilling?.totalValue || '0'
-          } as Billing} 
+        <InvoicePDFDocument
+          lead={lead}
+          billing={
+            {
+              ...selectedBilling,
+              description: selectedBilling?.description || "",
+              totalValue: selectedBilling?.totalValue || "0",
+            } as Billing
+          }
           plans={plans}
         />
-      ).toBlob(); 
-      
+      ).toBlob();
+
       const arrayBuffer = await pdfBlob.arrayBuffer();
-      const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const base64String = btoa(
+        String.fromCharCode(...new Uint8Array(arrayBuffer))
+      );
 
       await sendToClient({
-        name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
-        email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
+        name:
+          leads.find((lead) => lead.id === associatedLeads[0])?.clientName ||
+          "",
+        email:
+          leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail ||
+          "",
         document: base64String,
       });
 
@@ -216,7 +230,7 @@ export function BillingDetailForm({
       <div className="">
         <CostPage
           costs={selectedBilling?.costs || []}
-          totalValue= {parseInt(selectedBilling?.totalValue || "0")}
+          totalValue={parseInt(selectedBilling?.totalValue || "0")}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowCosts(false)}
         />
@@ -238,17 +252,21 @@ export function BillingDetailForm({
   }
 
   if (showDocument && selectedBilling) {
-    return <DocumentPreviewBilling 
-      billing={{
-        ...selectedBilling,
-        description: selectedBilling.description || '',
-        totalValue: selectedBilling.totalValue || '0'
-      } as Billing} 
-      lead={lead} 
-      costs={selectedBilling.costs}
-      plans={plans}
-      onBack={() => setShowDocument(false)} 
-    />
+    return (
+      <DocumentPreviewBilling
+        billing={
+          {
+            ...selectedBilling,
+            description: selectedBilling.description || "",
+            totalValue: selectedBilling.totalValue || "0",
+          } as Billing
+        }
+        lead={lead}
+        costs={selectedBilling.costs}
+        plans={plans}
+        onBack={() => setShowDocument(false)}
+      />
+    );
   }
 
   return (
@@ -269,18 +287,18 @@ export function BillingDetailForm({
           </h1>
         </div>
         <div className="flex flex-col lg:flex-row lg:justify-end gap-3 ml-auto">
-        <Button
-          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
-          onClick={handleDocumentPreview}
-        >
-          Document Preview
-        </Button>
-        <Button
-          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
-          onClick={handleSendToClient}
-        >
-          Send To Client
-        </Button>
+          <Button
+            className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
+            onClick={handleDocumentPreview}
+          >
+            Document Preview
+          </Button>
+          <Button
+            className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
+            onClick={handleSendToClient}
+          >
+            Send To Client
+          </Button>
         </div>
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
