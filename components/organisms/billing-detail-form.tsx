@@ -25,6 +25,9 @@ import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
 import { Progress } from "../ui/progress";
+import { pdf as pdfRenderer } from "@react-pdf/renderer";
+import { InvoicePDFDocument } from "@/lib/billing/invoice-pdf-document";
+
 
 interface BillingDetailFormProps {
   selectedBilling: (Billings & Partial<Billing>) | null;
@@ -59,7 +62,7 @@ export function BillingDetailForm({
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const { PatchBilling } = BillingViewModel();
+  const { PatchBilling, sendToClient } = BillingViewModel();
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -144,10 +147,14 @@ export function BillingDetailForm({
     try {
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
+
+        const planPrice = Number(plans.find(plan => plan.id === associatedPlan[0])?.price) || Number(localEstimateData?.totalValue) || 0;
+        const costsTotal = selectedBilling?.costs?.reduce((sum, cost) => sum + Number(cost.value), 0) || 0;
+      
       const billingData: CreateBillingData = {
         ...localEstimateData!,
         state: status,
-        totalValue: localEstimateData?.totalValue || 0,
+        totalValue: planPrice + costsTotal,
         deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
         invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
         invoiceReference: "INV-2025-0456",
@@ -166,6 +173,41 @@ export function BillingDetailForm({
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+  const handleSendToClient = async () => {
+    try {
+      const pdfBlob = await pdfRenderer(
+        <InvoicePDFDocument 
+          lead={lead} 
+          billing={{
+            ...selectedBilling,
+            description: selectedBilling?.description || '',
+            totalValue: selectedBilling?.totalValue || '0'
+          } as Billing} 
+          plans={plans}
+        />
+      ).toBlob(); 
+      
+      const arrayBuffer = await pdfBlob.arrayBuffer();
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+
+      await sendToClient({
+        name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
+        email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
+        document: base64String,
+      });
+
+      toast({
+        title: "Billing sent to client successfully",
+        description: "The billing has been sent to the client.",
+      });
+    } catch (error) {
+      console.error("Error sending to client:", error);
+      toast({
+        title: "Failed to send to client",
+        description: "The billing has not been sent to the client.",
+      });
     }
   };
 
@@ -212,7 +254,7 @@ export function BillingDetailForm({
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center mb-6">
         <div className="flex space-x-4 items-center">
           <Button
             variant="ghost"
@@ -226,12 +268,20 @@ export function BillingDetailForm({
             Billing Details
           </h1>
         </div>
+        <div className="flex flex-col lg:flex-row lg:justify-end gap-3 ml-auto">
         <Button
-          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-4"
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
           onClick={handleDocumentPreview}
         >
           Document Preview
         </Button>
+        <Button
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
+          onClick={handleSendToClient}
+        >
+          Send To Client
+        </Button>
+        </div>
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">

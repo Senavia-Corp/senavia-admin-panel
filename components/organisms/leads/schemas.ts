@@ -1,0 +1,33 @@
+import { z } from "zod";
+
+export const leadFormSchema = z.object({
+  id: z.number().optional(),
+  clientName: z.string().min(2, "Client name must be at least 2 characters"),
+  clientEmail: z.string().email("Invalid email address"),
+  clientPhone: z
+    .string()
+    .min(10, "Phone number must be at least 10 characters")
+    .regex(/^[\+]?[1-9][\d\-\s\(\)]{8,}$/i, "Invalid phone number format"),
+  clientAddress: z.string().min(5, "Address must be at least 5 characters"),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description cannot exceed 1000 characters"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  serviceId: z.number({
+    required_error: "Please select a service.",
+    invalid_type_error: "Please select a valid service.",
+  }),
+  userId: z
+    .number({
+      required_error: "Please select a user.",
+      invalid_type_error: "Please select a valid user.",
+    })
+    .optional(),
+  state: z.enum(["SEND", "PROCESSING", "ESTIMATING", "FINISHED"] as const, {
+    required_error: "Please select a status for the lead.",
+  }),
+});
+
+export type LeadFormValues = z.infer<typeof leadFormSchema>;

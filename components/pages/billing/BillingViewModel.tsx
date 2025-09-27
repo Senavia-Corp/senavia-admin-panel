@@ -6,6 +6,7 @@ import {
   Billings,
   Cost,
   CreateBillingData,
+  SendToClientData,
 } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Plans, Plan } from "@/types/plan";
@@ -23,7 +24,6 @@ export function BillingViewModel() {
   const { fetchData } = useFetch();
   const [billing, setBilling] = useState<Billing[]>([]);
   const [leads, setLeads] = useState<Leads[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [billings, setBillings] = useState<Billings[]>([]);
@@ -34,7 +34,6 @@ export function BillingViewModel() {
   const [payments, setPayments] = useState<Payment[]>([]);
 
   const getBillings = async () => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Billings>>(endpoints.estimate.getEstimates, "get");
     if (status === 200 && response && response.success) {
@@ -42,11 +41,9 @@ export function BillingViewModel() {
     } else {
       setError(errorLogs?.message || response?.message || "Failed to fetch billings");
     }
-    setLoading(false);
   }
 
   const getBilling = async (id: number) => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.getEstimate(id), "get");
     if (status === 200 && response && response.success) {
@@ -54,12 +51,10 @@ export function BillingViewModel() {
     } else {
       setError(errorLogs?.message || response?.message || "Failed to fetch billing");
     }
-    setLoading(false);
   }
 
   const createBilling = async (billing: CreateBillingData) => {
     try {
-      setLoading(true);
       setError(null);
       setSuccessMessage(null);
 
@@ -86,14 +81,11 @@ export function BillingViewModel() {
       const message = error instanceof Error ? error.message : "Failed to create billing";
       setError(message);
       return { success: false, error: message };
-    } finally {
-      setLoading(false);
     }
   }
 
   const PatchBilling = async (id: number, billing: Partial<CreateBillingData>) => {
     try {
-      setLoading(true);
       setError(null);
       const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(
         endpoints.estimate.updateEstimate(id),
@@ -109,13 +101,10 @@ export function BillingViewModel() {
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to update billing");
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const getLeads = async () => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Lead>>(endpoints.lead.getLeads, "get");
     if (status === 200 && response && response.success) {
@@ -123,12 +112,10 @@ export function BillingViewModel() {
     } else {
       setError(errorLogs?.message || response?.message || "Failed to fetch leads");
     }
-    setLoading(false);
   };
 
   const deleteBilling = async (id: number) => {
     try {
-      setLoading(true);
       setError(null);
       const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.deleteEstimate(id), "delete");
       if (status === 200 && response && response.success) {
@@ -142,13 +129,10 @@ export function BillingViewModel() {
     } catch (error) {
       setError("Error deleting billing");
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
   const getLeadById = async (id: number) => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Lead>>(
       endpoints.lead.getLead(id),
@@ -161,11 +145,9 @@ export function BillingViewModel() {
         errorLogs?.message || response?.message || "Failed to fetch lead"
       );
     }
-    setLoading(false);
   };
 
   const getPlans = async () => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Plan>>(
       endpoints.plan.getPlans,
@@ -178,27 +160,22 @@ export function BillingViewModel() {
         errorLogs?.message || response?.message || "Failed to fetch plans"
       );
     }
-    setLoading(false);
   };
 
   const createCost = async (cost: CreateCostData) => {
-    setLoading(true);
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(endpoints.cost.createCost, "post", cost);
     if (status === 201 && response && response.success) {
       setCost(response.data);
-      setLoading(false);
       return true;
     } else {
       setError(errorLogs?.message || response?.message || "Failed to create cost");
-      setLoading(false);
       return false;
     }
   };
 
   const deleteCost = async (id: number) => {
     try {
-      setLoading(true);
       setError(null);
       const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(endpoints.cost.deleteCost(id), "delete");
       if (status === 200 && response && response.success) {
@@ -210,14 +187,11 @@ export function BillingViewModel() {
     } catch (error) {
       setError("Error deleting cost");
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
   const updateCost = async (id: number, PatchCost: PatchCost) => {
     try {
-      setLoading(true)
       setError(null)
       const { response, status, errorLogs } = await fetchData<apiResponse<PatchCost>>(endpoints.cost.updateCost(id), "patch", PatchCost);
       if (status === 200) {
@@ -228,13 +202,11 @@ export function BillingViewModel() {
       }
     } catch (error) {
       setError("error un updateCost BillingViewModel")
-
-    } finally { (setLoading(false)) }
+    }
   };
 
   // ===== PAYMENT FUNCTIONS =====
   const getPayments = async () => {
-    setLoading(true);
     setError(null);
 
     try {
@@ -256,12 +228,9 @@ export function BillingViewModel() {
       const mockPayments = await PaymentManagementService.getPayments();
       setPayments(mockPayments);
     }
-
-    setLoading(false);
   };
 
   const createPayment = async (payment: CreatePaymentData) => {
-    setLoading(true);
     setError(null);
 
     try {
@@ -320,14 +289,11 @@ export function BillingViewModel() {
           errors: [error instanceof Error ? error.message : "Unknown error"],
         };
       }
-    } finally {
-      setLoading(false);
     }
   };
 
   const deletePayment = async (id: number) => {
     try {
-      setLoading(true);
       setError(null);
 
       try {
@@ -379,14 +345,11 @@ export function BillingViewModel() {
     } catch (error) {
       setError("Error deleting payment");
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
   const updatePayment = async (id: number, PatchPayment: PatchPaymentData) => {
     try {
-      setLoading(true);
       setError(null);
 
       try {
@@ -478,15 +441,25 @@ export function BillingViewModel() {
         message: "Error updating payment",
         errors: [error instanceof Error ? error.message : "Unknown error"],
       };
-    } finally {
-      setLoading(false);
+    }
+  };
+  const sendToClient = async(sendToClientData: SendToClientData) => {
+    try {
+      setError(null);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.sendToClient, "post", sendToClientData);
+    if (status === 200 && response && response.success) {
+      toast.success("Billing sent to client successfully");} else {
+        setError(errorLogs?.message || response?.message || "Failed to send billing to client");
+        toast.error("Error sending billing to client");
+      }
+    } catch (error) {
+      setError("Error sending billing to client");
     }
   };
 
   return {
     billings,
     billing,
-    loading,
     error,
     successMessage,
     getBillings,
@@ -508,5 +481,6 @@ export function BillingViewModel() {
     createPayment,
     deletePayment,
     updatePayment,
+    sendToClient
   };
 }

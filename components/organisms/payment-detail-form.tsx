@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import axios from "axios";
 
 interface PaymentDetailFormProps {
   paymentId: number;
@@ -98,38 +99,19 @@ export function PaymentDetailForm({
     }));
   };
 
-  const handleSendEmail = async () => {
-    try {
-      const response = await fetch(
-        "https://damddev.app.n8n.cloud/webhook-test/70363524-d32d-43e8-99b5-99035a79daa8",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: "client@example.com", // TODO: Get client email from billing/lead data
-            paymentsignUrl: "https://example.com/sign",
-          }),
-        }
-      );
-
-      if (response.ok) {
-        toast({
-          title: "Envío exitoso",
-          description:
-            "La notificación de pago ha sido enviada al cliente exitosamente.",
-        });
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const handleSendEmail = () => {
+    fetch(
+      "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Juan Jose Jimenez",
+          email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
+          paymentsignUrl: "https://example.com/sign",
+        }),
       }
-    } catch (error) {
-      console.error("Error sending email:", error);
-      toast({
-        title: "Error en el envío",
-        description:
-          "Hubo un error al enviar la notificación de pago. Por favor intenta de nuevo.",
-        variant: "destructive",
-      });
-    }
+    );
   };
 
   const paymentStates = PaymentManagementService.getPaymentStates();

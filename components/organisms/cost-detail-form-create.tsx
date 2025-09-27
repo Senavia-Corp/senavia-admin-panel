@@ -75,7 +75,7 @@ export function CostDetailFormCreate({
   const [type, setType] = useState("");
   const [value, setValue] = useState(0);
 
-  const Types = ["LICENSE"]
+  const Types = ["LICENSE", "MANPOWER", "TECHNOLOGIES","OTHERS"]
   
   const isFormValid =
     Name.trim().length > 0 &&
