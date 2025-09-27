@@ -82,14 +82,11 @@ export const InvoicePDFDocument = ({
         <Image src="/senaviaLogo.png" style={styles.headerImage} />
 
         <View style={styles.inner}>
-          {/* Marca */}
-          <Text style={styles.brandTitle}>Senavia Corp</Text>
-
+        
           {/* Servicios */}
           <View style={styles.serviceSection}>
             <Text style={styles.serviceText}>
-              {plans?.find((p) => p.id === billing.plan_id)?.service?.name ||
-                "No service selected"}
+              {billing.title}
             </Text>
           </View>
           <Text style={styles.paragraph}>{billing.description}</Text>
@@ -275,7 +272,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "bold",
     color: "#04081E",
-    marginBottom: 36,
+    marginBottom: 1,
     textAlign: "center",
   },
 
@@ -289,10 +286,10 @@ const styles = StyleSheet.create({
 
   /* Sección de servicios */
   serviceSection: {
-    paddingLeft: 4,
+    paddingBottom: 8,
   },
   serviceText: {
-    fontSize: 26,
+    fontSize: 24,
     color: "black",
     fontWeight: "semibold",
     lineHeight: 1.6,
