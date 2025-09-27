@@ -6,25 +6,19 @@ import type {
   ProjectUpdate,
   ChatMessage,
   CreateUserData,
+  Permission,
 } from "@/types/user-management";
+import Axios from "axios";
+import { endpoints } from "@/lib/services/endpoints";
 
 // Mock data
-const mockRoles: UserRole[] = [
-  { id: "1", name: "Administrator", color: "#99CC33", permissions: ["all"] },
-  { id: "2", name: "Customer", color: "#A133CC", permissions: ["view_own"] },
-  {
-    id: "3",
-    name: "Developer",
-    color: "#33CCCC",
-    permissions: ["manage_projects"],
-  },
-  {
-    id: "4",
-    name: "Designer",
-    color: "#F59E0B",
-    permissions: ["manage_design"],
-  },
-];
+const defaultRole: UserRole = {
+  id: 1,
+  name: "User",
+  description: "Default user role",
+  active: true,
+  color: "#A133CC",
+};
 
 const mockUsers: User[] = [
   {
@@ -33,7 +27,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -43,7 +37,7 @@ const mockUsers: User[] = [
     email: "jane@example.com",
     phone: "(555) 987-6543",
     address: "456 Oak Ave, City, State",
-    role: mockRoles[1],
+    role: defaultRole,
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-18"),
   },
@@ -53,7 +47,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -63,7 +57,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -73,7 +67,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -83,7 +77,7 @@ const mockUsers: User[] = [
     email: "john@example.com",
     phone: "(555) 123-4567",
     address: "123 Main St, City, State",
-    role: mockRoles[0],
+    role: defaultRole,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -118,71 +112,324 @@ const mockProjects: UserProject[] = [
 
 export class UserManagementService {
   static async getUsers(search?: string, roleFilter?: string): Promise<User[]> {
-    let filteredUsers = [...mockUsers];
+    try {
+      const response = await Axios.get(endpoints.user.getUsers, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
-    if (search) {
-      filteredUsers = filteredUsers.filter(
-        (user) =>
-          user.name.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase())
-      );
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching users");
+      }
+
+      let users = response.data.data;
+
+      // Transform users data to match User interface
+      users = users.map((user: any) => ({
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        imageUrl: user.imageUrl,
+        role: user.role,
+        permissions:
+          user.permissions?.map((userPerm: any) => userPerm.permission) || [],
+        createdAt: new Date(user.createdAt || Date.now()),
+        updatedAt: new Date(user.updatedAt || Date.now()),
+      }));
+
+      // Apply client-side filtering if needed
+      if (search) {
+        users = users.filter(
+          (user: User) =>
+            user.name?.toLowerCase().includes(search.toLowerCase()) ||
+            user.email?.toLowerCase().includes(search.toLowerCase()) ||
+            user.phone?.includes(search)
+        );
+      }
+
+      if (roleFilter && roleFilter !== "all") {
+        users = users.filter(
+          (user: User) => user.role.id === parseInt(roleFilter)
+        );
+      }
+
+      return users;
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error fetching users. Please try again.");
+      }
     }
-
-    if (roleFilter) {
-      filteredUsers = filteredUsers.filter(
-        (user) => user.role.id === roleFilter
-      );
-    }
-
-    return filteredUsers;
   }
 
   static async getUserById(id: string): Promise<User | null> {
-    return mockUsers.find((user) => user.id === id) || null;
+    try {
+      const response = await Axios.get(
+        `${endpoints.user.getUser(parseInt(id))}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching user");
+      }
+
+      const user = response.data.data;
+
+      // Transform user data to match User interface
+      return {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        imageUrl: user.imageUrl,
+        role: user.role,
+        permissions:
+          user.permissions?.map((userPerm: any) => userPerm.permission) || [],
+        createdAt: new Date(user.createdAt || Date.now()),
+        updatedAt: new Date(user.updatedAt || Date.now()),
+      };
+    } catch (error: any) {
+      console.error("Error fetching user by ID:", error);
+      return null;
+    }
   }
 
   static async createUser(userData: CreateUserData): Promise<User> {
-    const newUser: User = {
-      id: (mockUsers.length + 1).toString().padStart(4, "0"),
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      address: userData.address,
-      role:
-        mockRoles.find((role) => role.id === userData.roleId) || mockRoles[1],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    try {
+      const formData = new FormData();
 
-    mockUsers.push(newUser);
-    return newUser;
+      // Agregar todos los campos requeridos al FormData
+      formData.append("email", userData.email);
+      formData.append("password", userData.password);
+      formData.append("name", userData.name);
+      formData.append("phone", userData.phone);
+      formData.append("address", userData.address);
+      formData.append("roleId", userData.roleId.toString());
+
+      // Agregar imagen si existe
+      if (userData.imageUrl) {
+        formData.append("imageUrl", userData.imageUrl);
+      }
+
+      // Agregar permisos si existen
+      if (userData.permissions && userData.permissions.length > 0) {
+        formData.append("permissions", userData.permissions.join(","));
+      }
+
+      const response = await Axios.post(endpoints.auth.register, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error creating user");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error creating user. Please try again.");
+      }
+    }
   }
 
-  static async updateUser(
+  static async patchUser(
     id: string,
-    updates: Partial<User>
-  ): Promise<User | null> {
-    const userIndex = mockUsers.findIndex((user) => user.id === id);
-    if (userIndex === -1) return null;
+    userData: {
+      name?: string;
+      phone?: string;
+      password?: string;
+      imageUrl?: File;
+      address?: string;
+      roleId?: number;
+    }
+  ): Promise<User> {
+    try {
+      const formData = new FormData();
 
-    mockUsers[userIndex] = {
-      ...mockUsers[userIndex],
-      ...updates,
-      updatedAt: new Date(),
-    };
-    return mockUsers[userIndex];
+      // Add all provided fields to FormData
+      Object.entries(userData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(
+            key,
+            value instanceof File ? value : value.toString()
+          );
+        }
+      });
+
+      const response = await Axios.patch(
+        `${endpoints.user.updateUser}?id=${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error updating user");
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error updating user. Please try again.");
+      }
+    }
   }
 
   static async deleteUser(id: string): Promise<boolean> {
-    const userIndex = mockUsers.findIndex((user) => user.id === id);
-    if (userIndex === -1) return false;
+    try {
+      const response = await Axios.delete(
+        endpoints.user.deleteUser(parseInt(id)),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
-    mockUsers.splice(userIndex, 1);
-    return true;
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error deleting user");
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error deleting user. Please try again.");
+      }
+    }
   }
 
   static async getUserRoles(): Promise<UserRole[]> {
-    return mockRoles;
+    try {
+      const response = await Axios.get(endpoints.user.getRoles, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching roles");
+      }
+
+      // Usar directamente la respuesta del backend y agregar colores
+      const userRoles: UserRole[] = response.data.data
+        .filter((role: UserRole) => role.active) // Solo roles activos
+        .map((role: UserRole) => ({
+          ...role,
+          color: this.getDefaultRoleColor(role.name), // TODO: No tan necesario
+        }));
+
+      return userRoles;
+    } catch (error: any) {
+      console.error("Error fetching roles:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error fetching roles. Please try again.");
+      }
+    }
+  }
+
+  static async getPermissions(): Promise<Permission[]> {
+    try {
+      const response = await Axios.get(endpoints.user.getPermissions, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Error fetching permissions");
+      }
+
+      // Filtrar solo permisos activos
+      const permissions: Permission[] = response.data.data.filter(
+        (permission: Permission) => permission.active
+      );
+
+      return permissions;
+    } catch (error: any) {
+      console.error("Error fetching permissions:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Unauthorized. Please log in again.");
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("Error fetching permissions. Please try again.");
+      }
+    }
+  }
+
+  // Método para obtener un rol por ID
+  static async getRoleById(roleId: number): Promise<UserRole> {
+    // TODO: Remove this
+    const roles = await this.getUserRoles();
+    const role = roles.find((r) => r.id === roleId);
+    if (!role) {
+      throw new Error(`Role with ID ${roleId} not found`);
+    }
+    return role;
+  }
+
+  // Método auxiliar para asignar colores por defecto a los roles
+  private static getDefaultRoleColor(roleName: string): string {
+    const colorMap: Record<string, string> = {
+      Administrador: "#99CC33",
+      SUPERADMINISTRAITOR: "#FF6B6B",
+      User: "#A133CC",
+      Client: "#33CCCC",
+      GORDO: "#F59E0B",
+      STAKEOLDER: "#8B5CF6",
+      STAKEOLDERTHEENTERPRISE: "#10B981",
+    };
+
+    return colorMap[roleName] || "#6B7280"; // Color gris por defecto
   }
 
   static async getUserRequests(userId: string): Promise<UserRequest[]> {

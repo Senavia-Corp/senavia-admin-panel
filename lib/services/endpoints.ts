@@ -8,6 +8,38 @@ const API_LOCAL = "http://localhost:3000/api";
 const API = "http://localhost:3000/api";
 
 export const endpoints = {
+  service: {
+    getAll: `${API}/service`,
+  },
+  clause: {
+    getAll: `${API}/clause`,
+    getById: (id: number) => `${API}/clause?id=${id}`,
+    create: `${API}/clause`,
+    update: (id: number) => `${API}/clause?id=${id}`,
+    delete: (id: number) => `${API}/clause?id=${id}`,
+    search: (
+      term: string,
+      isPaginated = false,
+      offset = 0,
+      itemsPerPage = 10
+    ) =>
+      `${API}/clause?searchTerm=${encodeURIComponent(
+        term
+      )}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
+  },
+
+  product: {
+    getAll: `${API}/product`,
+    getById: (id: number) => `${API}/product?id=${id}`,
+    delete: (id: number) => `${API}/product?id=${id}`,
+    create: `${API}/product`,
+    update: (id: number) => `${API}/product?id=${id}`,
+  },
+
+  stripe : {
+    createCheckoutSession: `${API}/checkout`,
+  },
+
   blog: {
     getPosts: `${API}/blog`,
     getPost: (id: number) => `${API}/blog?id=${id}`,
@@ -24,16 +56,89 @@ export const endpoints = {
   lead: {
     getPosts: `${API}/lead`,
     getPost: (id: number) => `${API}/lead?id=${id}`,
+    getPostsByUser: (userId: string | number) => `${API}/lead?userId=${userId}`,
     createPost: `${API}/lead`,
+    getLeads: `${API}/lead`,
+    getLead: (id: number) => `${API}/lead?id=${id}`,
+    createLead: `${API}/lead`,
     updatePost: (id: number) => `${API}/lead?id=${id}`,
-    deletePost: (id: number) => `${API}/lead?id=${id}`,
+    deleteLead: (id: number) => `${API}/lead?id=${id}`,
+    ////////////////////////Nuevos endpoints//////////////////////
+    createSchedule: `${API}/lead/schedule`,
+    getSchedules: (leadId: number) => `${API}/lead/${leadId}/schedules`,
+    updateSchedule: (scheduleId: number) =>
+      `${API}/lead/schedule?id=${scheduleId}`,
+    deleteSchedule: (scheduleId: number) =>
+      `${API}/lead/schedule?id=${scheduleId}`,
+    creatCalendarEvent: `https://damddev.app.n8n.cloud/webhook/4e962737-09f2-461d-9f4b-5264f424ea39`,
+    createMultiGuestCalendarEvent: `https://damddev.app.n8n.cloud/webhook/a2d1235a-74bb-4349-bf50-e041978b11fe`,
   },
-  project: {    
+  project: {
+    getPosts: `${API}/project`,
+    getPost: (id: number) => `${API}/project?id=${id}`,
+    getPostsByUser: (userId: string | number) =>
+      `${API}/project?userId=${userId}`,
+    createPost: `${API}/project`,
+    updatePost: (id: number) => `${API}/project?id=${id}`,
+    deletePost: (id: number) => `${API}/project?id=${id}`,
     getAll: `${API}/project`,
     getById: (id: number) => `${API}/project?id=${id}`,
     create: `${API}/project`,
     update: (id: number) => `${API}/project?id=${id}`,
     remove: (id: number) => `${API}/project?id=${id}`,
+  },
+  studycases: {
+    getPosts: `${API}/studycase`,
+    getPost: (id: string | number) => `${API}/studycase?id=${id}`,
+    createPost: `${API}/studycase`,
+    updatePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    deletePost: (id: string | number) => `${API}/studycase?id=${id}`,
+    upload: `${API}/studycase/upload`,
+  },
+  user: {
+    getUsers: `${API}/user`,
+    getUser: (id: number) => `${API}/user?id=${id}`,
+    createUser: `${API}/user`,
+    updateUser: `${API}/user`,
+    deleteUser: (id: number) => `${API}/user?id=${id}`,
+    getRoles: `${API}/role`,
+    getPermissions: `${API}/permission`,
+  },
+  auth: {
+    register: `${API}/auth/register-simple`,
+  },
+  estimate: {
+    getEstimates: `${API}/estimate`,
+    getEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    createEstimate: `${API}/estimate`,
+    updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
+    sendToClient:
+      "https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3",
+  },
+  plan: {
+    getPlans: `${API}/plan`,
+    getPlan: (id: number) => `${API}/plan?id=${id}`,
+  },
+  cost: {
+    createCost: `${API}/cost`,
+    deleteCost: (id: number) => `${API}/cost?id=${id}`,
+    updateCost: (id: number) => `${API}/cost?id=${id}`,
+  },
+  payment: {
+    getPayments: `${API}/payment`,
+    getPayment: (id: number) => `${API}/payment?id=${id}`,
+    createPayment: `${API}/payment`,
+    deletePayment: (id: number) => `${API}/payment?id=${id}`,
+    updatePayment: (id: number) => `${API}/payment?id=${id}`,
+  },
+  contract: {
+    getAllContracts: `${API}/contract`,
+    deleteContract: (id: number) => `${API}/contract?id=${id}`,
+    createContract: `${API}/contract`,
+    updateContract: (id: number) => `${API}/contract?id=${id}`,
+    sendEmail: `https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e`,
   },
 };
 
@@ -105,8 +210,10 @@ export const useFetch = () => {
         axiosConfig = { ...axiosConfig, data: formFiles };
       }
 
-      // Siempre mantener withCredentials en true para las llamadas API
-      axiosConfig = { ...axiosConfig, withCredentials: true };
+      // Siempre mantener withCredentials en true para las llamadas API, excepto para webhooks externos
+      const isExternalWebhook =
+        url.includes("n8n.cloud") || url.includes("webhook");
+      axiosConfig = { ...axiosConfig, withCredentials: !isExternalWebhook };
 
       if (isValidHttpMethod(method)) {
         const res: AxiosResponse<T> = await Axios[method](

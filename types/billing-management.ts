@@ -1,3 +1,5 @@
+import type { Payment } from "./payment-management";
+
 export interface BillingRecord {
   id: string
   estimatedTime: number // in months
@@ -10,13 +12,84 @@ export interface BillingRecord {
   updatedAt: Date
 }
 
-export type BillingStatus = "Created" | "Processing" | "InReview" | "Rejected" | "Accepted" | "Invoice" | "Paid"
+export interface Billing {
+  id: number
+  title: string
+  estimatedTime: number
+  description: string
+  state: string
+  totalValue: string
+  percentagePaid: number
+  remainingPercentage: number
+  lead_id: number
+  plan_id: number
+  deadLineToPay: string
+  invoiceDateCreated: string
+  invoiceReference: string
+  createdAt: string
+  Project: any[] // TODO: Definir interfaz específica para Project
+  costs: Cost[]
+  payments?: Payment[] // Pagos asociados al billing
+}
+
+export interface CheckoutSession {
+  success: boolean
+  data: string
+  message: string
+  errors: string[]
+}
+
+export interface Cost {
+  id: number
+  name: string
+  description: string
+  type: string
+  value: number
+  estimateId: number
+  createdAt: string
+  updatedAt: string
+}
+
+
+export interface Billings{
+  id: number
+  title: string
+  estimatedTime: number
+  state: string
+  totalValue: string
+}
+
+export interface apiResponse<T> {
+  success: boolean;
+  data: T[];
+  message: string;
+  errors: string[];
+}
+
+export type BillingStatus = "CREATED" | "PROCESSING" | "IN_REVIEW" | "REJECTED" | "ACCEPTED" | "INVOICE" | "PAID"
+
+
+export type PatchBillingData = Partial<CreateBillingData>;
 
 export interface CreateBillingData {
-  estimatedTime: number
-  status: BillingStatus
-  totalValue: number
-  description: string
-  associatedLead: string
-  service: string
+  title: string,
+  estimatedTime: string,
+  description: string,
+  state: string,
+  totalValue: number,
+  percentagePaid: number,
+  remainingPercentage: number,
+  lead_id: number,
+  plan_id: number,
+  deadLineToPay: string,
+  invoiceDateCreated: string,
+  invoiceReference: string
+}
+
+export interface SendToClientData {
+  name: string;
+  title: string;
+  description: string;
+  email: string;
+  document?: string;
 }

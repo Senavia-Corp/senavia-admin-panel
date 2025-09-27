@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import { ContractManagementService } from "@/services/contract-management-service";
 import type { Contract } from "@/types/contract-management";
 import { DetailTabs } from "../molecules/detail-tabs";
 import { ContractDetails } from "../organisms/contracs/contract-details";
+import EditContractForm from "../organisms/contracs/edit-contract-form";
+import { CreateContractForm } from "../organisms/contracs/create-contract-form";
+import { useToast } from "@/hooks/use-toast";
+import { TableRowSkeleton } from "../atoms/table-row-skeleton";
+
+// Campos de búsqueda para contratos
+const SEARCHABLE_FIELDS = ["title", "recipientName", "companyEmail"] as const;
 
 export function ContractsPage() {
+  const { toast } = useToast();
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(
     null
   );
@@ -19,30 +28,83 @@ export function ContractsPage() {
     null
   );
   const [showEditPage, setShowEditPage] = useState(false);
+  const [showCreatePage, setShowCreatePage] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     loadContracts();
-  }, [searchTerm, statusFilter]);
+  }, []); // Solo cargar una vez al montar
+
+  // Función para verificar si un contrato coincide con el término de búsqueda
+  const matchesSearchTerm = useCallback(
+    (contract: Contract, searchTerm: string): boolean => {
+      if (!searchTerm) return true;
+
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      return SEARCHABLE_FIELDS.some((field) =>
+        (contract[field] as string).toLowerCase().includes(lowerSearchTerm)
+      );
+    },
+    []
+  );
+
+  // Función para filtrar contratos
+  const filterContracts = useCallback(
+    (
+      contracts: Contract[],
+      searchTerm: string,
+      statusFilter: string
+    ): Contract[] => {
+      return contracts.filter((contract) => {
+        const matchesSearch = matchesSearchTerm(contract, searchTerm);
+        const matchesStatus = !statusFilter || contract.state === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      });
+    },
+    [matchesSearchTerm]
+  );
+
+  // Filtrar contratos localmente
+  useEffect(() => {
+    const filtered = filterContracts(contracts, searchTerm, statusFilter);
+    setFilteredContracts(filtered);
+  }, [contracts, searchTerm, statusFilter, filterContracts]);
 
   const loadContracts = async () => {
     try {
-      const contractsData = await ContractManagementService.getContracts(
-        searchTerm,
-        statusFilter
-      );
+      setIsLoading(true);
+      setHasError(false);
+      const contractsData = await ContractManagementService.getContracts();
       setContracts(contractsData);
+      setFilteredContracts(contractsData); // Inicializar filtrados con todos los contratos
     } catch (error) {
       console.error("Error loading contracts:", error);
+      setHasError(true);
+      toast({
+        title: "Error",
+        description: "Failed to load contracts. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteContract = async (contract: Contract) => {
     try {
-      await ContractManagementService.deleteContract(contract.id);
+      await ContractManagementService.deleteContract(String(contract.id));
       setContractToDelete(null);
       loadContracts();
+      toast({ title: "Success", description: "Contract deleted successfully" });
     } catch (error) {
       console.error("Error deleting contract:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete contract. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -51,8 +113,16 @@ export function ContractsPage() {
   };
 
   const handleCreateContract = () => {
-    console.log("Create new contract");
-    // TODO: Implement contract creation
+    setShowCreatePage(true);
+  };
+
+  const handleFormSuccess = () => {
+    // Navigate back to the contracts list
+    setShowCreatePage(false);
+    setShowEditPage(false);
+    setSelectedContract(null);
+    // Reload contracts to ensure data is up to date
+    loadContracts();
   };
 
   const handleFilterChange = (filter: string) => {
@@ -62,7 +132,22 @@ export function ContractsPage() {
     }
   };
 
-  if (selectedContract) {
+  if (showCreatePage) {
+    return (
+      <div className="min-h-screen w-full bg-white">
+        <div className="p-6">
+          <DetailTabs
+            title="Create Contract"
+            onBack={() => setShowCreatePage(false)}
+          >
+            <CreateContractForm onSuccess={handleFormSuccess} />
+          </DetailTabs>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedContract && !showEditPage) {
     return (
       <div className="min-h-screen w-full bg-white">
         <div className="p-6">
@@ -70,7 +155,7 @@ export function ContractsPage() {
             title="Contract Details"
             onBack={() => setSelectedContract(null)}
           >
-            <ContractDetails />
+            <ContractDetails contract={selectedContract} />
           </DetailTabs>
         </div>
       </div>
@@ -83,9 +168,17 @@ export function ContractsPage() {
         <div className="p-6">
           <DetailTabs
             title="Edit Contract"
-            onBack={() => setShowEditPage(false)}
+            onBack={() => {
+              setShowEditPage(false);
+              setSelectedContract(null);
+            }}
           >
-            <ContractDetails />
+            {selectedContract && (
+              <EditContractForm
+                contract={selectedContract}
+                onSuccess={handleFormSuccess}
+              />
+            )}
           </DetailTabs>
         </div>
       </div>
@@ -96,7 +189,10 @@ export function ContractsPage() {
   const handlers = {
     onCreate: handleCreateContract,
     onView: handleViewContract,
-    onEdit: () => setShowEditPage(true),
+    onEdit: (contract: Contract) => {
+      setSelectedContract(contract);
+      setShowEditPage(true);
+    },
     onDelete: setContractToDelete,
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
@@ -122,16 +218,23 @@ export function ContractsPage() {
                 "Create new contracts and agreements with clients",
                 "All Contracts",
                 "View and manage all contracts in the system",
-                [
-                  "Contract ID",
-                  "Title",
-                  "Client",
-                  "Status",
-                  "Value",
-                  "Actions",
-                ],
-                contracts,
-                handlers
+                ["Contract ID", "Title", "Client", "Status", "Actions"],
+                filteredContracts,
+                handlers,
+                {
+                  isLoading,
+                  hasError,
+                  onRetry: loadContracts,
+                  emptyStateTitle: "No contracts found",
+                  emptyStateDescription:
+                    searchTerm || statusFilter
+                      ? "No contracts match your current filters. Try adjusting your search criteria."
+                      : "No contracts have been created in the system yet. Click the '+' button to create the first contract.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={3} />
+                  ),
+                  skeletonCount: 5,
+                }
               )}
             </div>
           </div>

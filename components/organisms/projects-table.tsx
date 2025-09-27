@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { ProjectTableRow } from "@/components/molecules/project-table-row";
 import { Plus, Search, Filter } from "lucide-react";
-import type { ProjectRecord, ProjectPhase } from "@/types/project-management";
+import type { Project, ProjectPhase } from "@/types/project-management";
 import {
   Popover,
   PopoverContent,
@@ -28,11 +28,11 @@ import {
 import { ProjectEditor } from "./project-editor";
 
 interface ProjectsTableProps {
-  projects: ProjectRecord[];
+  projects: Project[];
   onAddProject: () => void;
-  onViewProject: (project: ProjectRecord) => void;
-  onDeleteProject: (project: ProjectRecord) => void;
-  onViewTasks: (project: ProjectRecord) => void;
+  onViewProject: (project: Project) => void;
+  onDeleteProject: (project: Project) => void;
+  onViewTasks: (project: Project) => void;
   onSearch: (search: string) => void;
   onPhaseFilter: (phase: string) => void;
   onStatusFilter: (status: string) => void;
@@ -51,9 +51,7 @@ export function ProjectsTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPhase, setSelectedPhase] = useState<string>("all");
   const [showEditor, setShowEditor] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectRecord | null>(
-    null
-  );
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -70,7 +68,7 @@ export function ProjectsTable({
     setShowEditor(true);
   };
 
-  const handleEditProject = (project: ProjectRecord) => {
+  const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     setShowEditor(true);
   };

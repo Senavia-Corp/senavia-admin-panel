@@ -1,7 +1,57 @@
 export type LeadStatus = "SEND" | "PROCESSING" | "ESTIMATING" | "FINISHED";
 
+export interface Service {
+  id: number;
+  active: boolean;
+  description: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Leads {
+  id: number;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  description: string;
+  state: LeadStatus;
+  startDate: string;
+  endDate: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    imageUrl: string;
+    createdAt: string;
+    roleId: number;
+    updatedAt: string;
+    address: string;
+  };
+  service?: {
+    id: number;
+    active: boolean;
+    createdAt: string;
+    description: string;
+    name: string;
+    updatedAt: string;
+  };
+  WorkTeam?: {
+    id: number;
+    name: string;
+    description: string;
+    state: string;
+    area: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  clientAddress?: string;
+}
+
 export interface Lead {
-  id: string;
+  id: number;
   clientName: string;
   clientEmail: string;
   clientPhone: string;
@@ -10,23 +60,42 @@ export interface Lead {
   state: LeadStatus;
   startDate: string;
   endDate: string;
-  workTeamId?: string;
-  serviceId?: string;
-  userId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
   user?: {
     id: number;
     name: string;
+    email: string;
+    password: string;
+    phone: string;
+    imageUrl: string;
+    createdAt: string;
+    roleId: number;
+    updatedAt: string;
+    address: string;
   };
   service?: {
     id: number;
+    active: boolean;
+    createdAt: string;
+    description: string;
     name: string;
+    updatedAt: string;
   };
   WorkTeam?: {
     id: number;
     name: string;
+    description: string;
+    state: string;
+    area: string;
+    createdAt: string;
+    updatedAt: string;
   };
+}
+
+export interface apiResponse<T> {
+  success: boolean;
+  data: T[];
+  message: string;
+  errors: string[];
 }
 
 export interface CreateLeadData {
@@ -38,7 +107,26 @@ export interface CreateLeadData {
   state: LeadStatus;
   startDate: string;
   endDate?: string;
-  workTeamId?: number;
-  serviceId?: number;
+  serviceId: number;
   userId?: number;
+}
+
+///////////Nuevas Interfaces////////////////////
+export interface Guest {
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string; // e.g., "Client", "Team Member", "Stakeholder"
+}
+
+export interface ScheduleData {
+  date: string;
+  //timezone: string;
+  timeRange: string;
+  title?: string;
+  description?: string;
+}
+
+export interface MultiGuestScheduleData extends ScheduleData {
+  guests: Guest[];
 }
