@@ -60,6 +60,7 @@ export function GeneralTable(
     emptyStateDescription?: string;
     skeletonComponent?: React.ComponentType;
     skeletonCount?: number;
+    searchPlaceholder?: string;
   }
 ) {
   const {
@@ -80,6 +81,7 @@ export function GeneralTable(
     emptyStateDescription = "No records found to display.",
     skeletonComponent: SkeletonComponent,
     skeletonCount = 5,
+    searchPlaceholder = "Search",
   } = options || {};
 
   const tableRows = data
@@ -281,7 +283,7 @@ export function GeneralTable(
 
                 <Input
                   className="pl-10 xl:w-80 bg-white border-gray-700 text-black rounded-md"
-                  placeholder="Search"
+                  placeholder={searchPlaceholder}
                   onChange={(e) => onSearch(e.target.value)}
                 />
               </div>

@@ -40,10 +40,11 @@ export function BillingPage() {
       setIsLoading(true)
       let filteredData = [...billings]
       
-      // Aplicar filtro de búsqueda
+      // Aplicar filtro de búsqueda por ID y título
       if (searchTerm) {
         filteredData = filteredData.filter(billing => 
-          billing.id.toString().includes(searchTerm)
+          billing.id.toString().includes(searchTerm) ||
+          billing.title?.toLowerCase().includes(searchTerm.toLowerCase())
         )
       }
 
@@ -215,6 +216,7 @@ export function BillingPage() {
                     <TableRowSkeleton columns={4} actions={2} />
                   ),
                   skeletonCount: 5,
+                  searchPlaceholder: "Search by ID or title...",
                 }
               )}
             </div>
