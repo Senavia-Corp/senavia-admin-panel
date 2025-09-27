@@ -32,7 +32,7 @@ interface BillingDetailCreateFormProps {
   lead: Lead[];
   plans: Plans[];
   onBack: () => void;
-  onSave: (billingData: CreateBillingData) => void;
+  onSave: () => void;
 }
 
 // Mover la función fuera del componente para evitar recreaciones
@@ -180,6 +180,7 @@ export function BillingDetailCreateForm({
         toast({
           title: "Billing created successfully",
           description: "The billing has been created successfully.",
+          duration: 3000,
         });
         if (newBilling && newBilling.id) {
           console.log("Created billing with ID:", newBilling.id);
@@ -188,6 +189,7 @@ export function BillingDetailCreateForm({
         toast({
           title: "Failed to create billing",
           description: response.error || "The billing has not been created.",
+          duration: 3000,
         });
       }
     } catch (error) {
@@ -198,9 +200,11 @@ export function BillingDetailCreateForm({
           error instanceof Error
             ? error.message
             : "The billing has not been created.",
+          duration: 3000,
       });
     } finally {
       setIsCreating(false);
+      onSave();
     }
   };
 

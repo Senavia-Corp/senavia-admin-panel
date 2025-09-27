@@ -6,7 +6,6 @@ import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { Cost, PatchCost } from "@/types/cost-management";
-import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
@@ -59,7 +58,8 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
       
       toast({
         title: 'Cost updated successfully',
-        description: `The cost "${costData.name}" has been updated.`
+        description: `The cost "${costData.name}" has been updated.`,
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error updating cost:', error);
@@ -67,7 +67,10 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
       setLocalCost(cost);
       toast({
         title: 'Failed to update cost',
-        description: 'The cost has not been updated.'
+        description: 'The cost has not been updated.',
+        duration: 3000,
+        variant: "destructive",
+
       });
     } finally {
       setIsUpdating(false);

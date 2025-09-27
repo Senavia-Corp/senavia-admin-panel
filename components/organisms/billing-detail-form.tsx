@@ -164,15 +164,18 @@ export function BillingDetailForm({
       toast({
         title: "Billing updated successfully",
         description: "The billing has been updated successfully.",
+        duration: 3000,
       });
     } catch (error) {
       console.log("An error has occured " + error);
       toast({
         title: "Failed to update billing",
         description: "The billing has not been updated.",
+        duration: 3000,
       });
     } finally {
       setIsUpdating(false);
+      onSave();
     }
   };
   const handleSendToClient = async () => {

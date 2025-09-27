@@ -51,7 +51,8 @@ export function CostDetailFormCreate({
       
       toast({
         title: 'Cost created successfully',
-        description: 'The cost has been created successfully.'
+        description: 'The cost has been created successfully.',
+        duration: 3000,
       });
 
       // Notificar al componente padre
@@ -61,7 +62,10 @@ export function CostDetailFormCreate({
       console.error('Error creating cost:', error);
       toast({
         title: 'Failed to create cost',
-        description: 'The cost has not been created.'
+        description: 'The cost has not been created.',
+        duration: 3000,
+        variant: "destructive",
+
       });
     } finally {
       setLoadingPost(false);
