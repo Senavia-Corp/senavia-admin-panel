@@ -25,6 +25,7 @@ interface PaymentDetailFormProps {
   payment: Payment;
   onBack?: () => void;
   onUpdate?: (updatedPayment: Payment) => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentDetailForm({
@@ -32,6 +33,7 @@ export function PaymentDetailForm({
   payment,
   onBack,
   onUpdate,
+  onRedirectToBillingDetails,
 }: PaymentDetailFormProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
@@ -66,6 +68,11 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Redirigir a la tabla de billing details después de actualizar
+        if (onRedirectToBillingDetails) {
+          onRedirectToBillingDetails();
+        }
       } else {
         throw new Error(response.message || "Failed to update payment");
       }
@@ -261,7 +268,7 @@ export function PaymentDetailForm({
                 handleSendEmail();
               }}
             >
-              Send Payment by Email
+              Enviar Pago por Email
             </button>
           </div>
         </div>

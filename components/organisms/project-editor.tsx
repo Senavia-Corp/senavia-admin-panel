@@ -14,11 +14,8 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
-import type {
-  Project,
-  ProjectPhase,
-  PhaseName,
-} from "@/types/project-management";
+import type { Project, ProjectPhase } from "@/types/project-management";
+import { PhaseName } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectEditorProps {
@@ -40,7 +37,10 @@ interface ProjectFormData {
   estimate_id: number;
 }
 
-export function ProjectEditor({projectId,onBack,onSave,
+export function ProjectEditor({
+  projectId,
+  onBack,
+  onSave,
 }: ProjectEditorProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
@@ -61,21 +61,22 @@ export function ProjectEditor({projectId,onBack,onSave,
       if (projectId) {
         try {
           const project = await ProjectManagementService.getProjectById(
-            projectId
+            projectId.toString()
           );
           if (project) {
             const currentPhase = getPhaseLabel(project);
             setFormData({
-              name: project.name,
-              description: project.description,
+              name: project.name || "",
+              description: project.description || "",
+              expectedDuration: project.expectedDuration || "",
               currentPhase: currentPhase as ProjectPhase,
               status: "Active",
-              startDate: project.startDate,
-              endDate: project.endDate,
+              startDate: project.startDate || "",
+              endDate: project.endDate || "",
               imagePreviewUrl: project.imagePreviewUrl || "",
               workTeam_id: project.workTeam_id?.id || 0,
               estimate_id: project.estimate_id?.id || 0,
-           });
+            });
           }
         } catch (error) {
           console.error("Error loading project:", error);
@@ -94,25 +95,68 @@ export function ProjectEditor({projectId,onBack,onSave,
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Validar campos requeridos
+      if (!formData.name.trim()) {
+        toast({
+          title: "Error",
+          description: "Project name is required",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!formData.description.trim()) {
+        toast({
+          title: "Error",
+          description: "Project description is required",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!formData.workTeam_id || formData.workTeam_id === 0) {
+        toast({
+          title: "Error",
+          description: "WorkTeam ID is required",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (!formData.estimate_id || formData.estimate_id === 0) {
+        toast({
+          title: "Error",
+          description: "Estimate ID is required",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Create payload similar to backend expectations
       const phaseEnum: Record<ProjectPhase, PhaseName> = {
-        Analysis: "ANALYSIS",
-        Design: "DESIGN",
-        Development: "DEVELOPMENT",
-        Deployment: "DEPLOY",
+        Analysis: PhaseName.ANALYSIS,
+        Design: PhaseName.DESIGN,
+        Development: PhaseName.DEVELOPMENT,
+        Deployment: PhaseName.DEPLOY,
       };
+
       const projectData = {
-        name: formData.name,
-        description: formData.description,
-        expectedDuration: formData.expectedDuration,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        imagePreviewUrl: formData.imagePreviewUrl,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        expectedDuration: formData.expectedDuration || "",
+        startDate: formData.startDate || new Date().toISOString().split("T")[0],
+        endDate: formData.endDate || "",
+        imagePreviewUrl: formData.imagePreviewUrl || "",
         phases: [
           {
             name: phaseEnum[formData.currentPhase],
-            startDate: formData.startDate,
-            endDate: formData.endDate,
+            startDate:
+              formData.startDate || new Date().toISOString().split("T")[0],
+            endDate: formData.endDate || "",
           },
         ],
         workTeam_id: formData.workTeam_id,
@@ -120,7 +164,10 @@ export function ProjectEditor({projectId,onBack,onSave,
       };
 
       if (projectId) {
-        //await ProjectManagementService.updateProject(projectId, projectData);
+        await ProjectManagementService.updateProject(
+          projectId.toString(),
+          projectData
+        );
         toast({
           title: "Success",
           description: "Project updated successfully",
@@ -194,30 +241,36 @@ export function ProjectEditor({projectId,onBack,onSave,
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="bg-white rounded-lg p-8">
           <div className="space-y-6">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">ID</Label>
-              <Input
-                value={projectId || "0000"}
-                disabled
-                placeholder="0000"
-                className="mt-1"
-              />
-            </div>
+            {/* Solo mostrar el campo ID cuando se está editando un proyecto existente */}
+            {projectId && (
+              <div>
+                <Label className="text-sm font-medium text-gray-700">ID</Label>
+                <Input
+                  value={projectId}
+                  disabled
+                  placeholder="0000"
+                  className="mt-1"
+                />
+              </div>
+            )}
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
                 Estimated Id
               </Label>
               <Input
-                value={formData.estimate_id}
-                onChange={(e) =>
+                type="number"
+                value={formData.estimate_id || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
                   setFormData({
                     ...formData,
-                    estimate_id: parseInt(e.target.value),
-                  })
-                }
-                placeholder="estimate_Id"
+                    estimate_id: value === "" ? 0 : parseInt(value) || 0,
+                  });
+                }}
+                placeholder="Enter estimate ID (e.g., 1)"
                 className="mt-1"
+                min="1"
               />
             </div>
             <div>
@@ -225,15 +278,18 @@ export function ProjectEditor({projectId,onBack,onSave,
                 WorkTeam Id
               </Label>
               <Input
-                value={formData.workTeam_id}
-                onChange={(e) =>
+                type="number"
+                value={formData.workTeam_id || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
                   setFormData({
                     ...formData,
-                    workTeam_id: parseInt(e.target.value),
-                  })
-                }
-                placeholder="work_team_Id"
+                    workTeam_id: value === "" ? 0 : parseInt(value) || 0,
+                  });
+                }}
+                placeholder="Enter work team ID (e.g., 1)"
                 className="mt-1"
+                min="1"
               />
             </div>
 
@@ -258,7 +314,7 @@ export function ProjectEditor({projectId,onBack,onSave,
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
+                placeholder="Briefly describe your project. "
                 className="mt-1 min-h-[100px]"
                 maxLength={200}
               />
@@ -281,32 +337,34 @@ export function ProjectEditor({projectId,onBack,onSave,
                   <SelectValue placeholder="Dropdown here" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/*phases.map((phase) => (
+                  {phases.map((phase) => (
                     <SelectItem key={phase} value={phase}>
                       {phase}
                     </SelectItem>
-                  ))*/}
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Expected Duration
+                Expected Duration (in months)
               </Label>
               <Input
+                type="number"
                 value={formData.expectedDuration}
                 onChange={(e) =>
                   setFormData({ ...formData, expectedDuration: e.target.value })
                 }
-                placeholder="Attendant"
+                placeholder="Enter duration in months (e.g., 6)"
                 className="mt-1"
+                min="1"
               />
             </div>
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Expected Duration
+                Start Date / End Date
               </Label>
               <div className="flex items-center gap-2 mt-1">
                 <Input

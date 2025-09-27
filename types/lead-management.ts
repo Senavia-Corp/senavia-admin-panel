@@ -112,10 +112,21 @@ export interface CreateLeadData {
 }
 
 ///////////Nuevas Interfaces////////////////////
+export interface Guest {
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string; // e.g., "Client", "Team Member", "Stakeholder"
+}
+
 export interface ScheduleData {
   date: string;
   //timezone: string;
   timeRange: string;
   title?: string;
   description?: string;
+}
+
+export interface MultiGuestScheduleData extends ScheduleData {
+  guests: Guest[];
 }

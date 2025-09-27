@@ -4,6 +4,7 @@ import type {
   LeadStatus,
   Service,
   ScheduleData,
+  MultiGuestScheduleData,
 } from "@/types/lead-management";
 import Axios from "axios";
 import { endpoints } from "@/lib/services/endpoints";
@@ -274,6 +275,99 @@ export class LeadManagementService {
 
       throw new Error(
         error.message || "Failed to create schedule. Please try again."
+      );
+    }
+  }
+
+  static async createMultiGuestSchedule(
+    scheduleData: MultiGuestScheduleData & any
+  ): Promise<any> {
+    try {
+      // Convert time range to start and end times
+      const { timeStart, timeFinish } = this.convertTimeRangeToTimes(
+        scheduleData.date,
+        scheduleData.timeRange
+      );
+
+      // Prepare guests data
+      const guests = scheduleData.guests || [];
+      const guestEmails = guests.map((guest: any) => guest.email);
+      const guestNames = guests.map((guest: any) => guest.name);
+
+      // Combine all emails (client + guests)
+      const allEmails = [scheduleData.clientEmail || "", ...guestEmails].filter(
+        Boolean
+      );
+
+      // Prepare payload for multi-guest calendar event endpoint
+      const payload = {
+        // Main client data
+        name: scheduleData.clientName || "",
+        phone: scheduleData.clientPhone || "",
+        email: allEmails, // Todos los correos como array
+        address: scheduleData.clientAddress || "",
+        service: scheduleData.serviceId || "",
+        about:
+          scheduleData.description || "Scheduled meeting with multiple guests",
+        timeStart,
+        timeFinish,
+        isLoggedIn: true,
+        reminder: true,
+        // Multi-guest specific fields
+        guests: guests, // Ya es un array
+        guestEmail: guestEmails, // Array de emails de invitados
+        guestNames: guestNames, // Array de nombres de invitados
+        totalGuests: guests.length,
+        isMultiGuest: true,
+      };
+
+      const response = await fetch(
+        endpoints.lead.createMultiGuestCalendarEvent,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const status = response.status;
+
+      // Handle successful responses
+      if (status === 200 || status === 201) {
+        return {
+          success: true,
+          message: "Multi-guest schedule created successfully",
+          status: status,
+          guestsCount: guests.length,
+        };
+      }
+
+      // Handle time conflict
+      if (status === 409) {
+        throw new Error("The selected time is already booked");
+      }
+
+      // Handle other errors
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.message ||
+          `Error ${status}: Could not create multi-guest schedule`
+      );
+    } catch (error: any) {
+      console.error("Error creating multi-guest schedule:", error);
+
+      // Re-throw with appropriate message
+      if (error.message.includes("already booked")) {
+        throw new Error(
+          "The selected time is already booked. Please choose a different time."
+        );
+      }
+
+      throw new Error(
+        error.message ||
+          "Failed to create multi-guest schedule. Please try again."
       );
     }
   }
