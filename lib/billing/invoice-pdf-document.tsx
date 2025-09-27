@@ -79,7 +79,7 @@ export const InvoicePDFDocument = ({
           </View>
         </View>
 
-        <Image src="/contract-logo.png" />
+        <Image src="/senaviaLogo.png" style={styles.headerImage} />
 
         <View style={styles.inner}>
           {/* Marca */}
@@ -211,6 +211,8 @@ export const InvoicePDFDocument = ({
           </View>
         </View>
 
+        <Image src="/senaviaLogo.png" style={styles.footerImage} />
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>(954) 706-4084 | info@senaviacorp.com</Text>
           <Text style={styles.footerText}>150 S Pine Island Rd Office FORT LAUDERDALE FL 33324</Text>
@@ -247,13 +249,14 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     backgroundColor: "white",
     position: "relative",
-    paddingBottom:30,
+    paddingBottom:50,
+    paddingTop: 50,
 
   },
 
   /* Banners */
   bannerBase: { height: 80, width: "100%", backgroundColor: "#010d2b" },
-  topBanner: { marginBottom: 20 },
+  topBanner: { marginBottom: 50, marginTop: -50 },
   bottomBanner: {
     position: "absolute",
     bottom: 0,
@@ -407,7 +410,7 @@ const styles = StyleSheet.create({
     color: "#04081E",
   },
   infoHeader: {
-    backgroundColor: "white",
+    color: "white",
     position: "absolute",
     top: 10,
     left: 240,
@@ -419,22 +422,29 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "column",
-    backgroundColor: "white",
     position: "absolute",
-    bottom: 10,        // Justo encima del banner inferior (que tiene height: 80)
-    left: 10,          // Al lado izquierdo con padding       // Por encima del banner azul inferior
-    width: 300,     // Ancho máximo
+    bottom: 5,        
+    left: 20,          
+    width: 500,
 
   },
   footerText: {
-    fontSize: 8,
-    color: '#04081E',
+    color: 'white',
     marginBottom: 2,
     lineHeight: 1.3,
-  }
-  // headerImage: {
-  //   width: 100,
-  //   height: 100,
-  //   position: "relative",
-  // },
+  },
+  headerImage: {
+    position: "absolute",
+    top: 25,
+    left: 20,
+    width: 200,
+    height: 30,
+  },
+  footerImage: {
+    position: "absolute",
+    bottom: 25,
+    right: 60,
+    width: 200,
+    height: 30,
+  },
 });
