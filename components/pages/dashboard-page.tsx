@@ -24,6 +24,11 @@ import type {
   TimeFilter,
 } from "@/types/dashboard";
 
+interface UserData {
+  id: string;
+  name: string;
+  roleId: number;
+} 
 export function DashboardPage() {
   const [activeTab, setActiveTab] = useState("Leads");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("lastMonth");
@@ -33,10 +38,33 @@ export function DashboardPage() {
   const [recentBills, setRecentBills] = useState<Bill[]>([]);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
-  const [weeklyActivities, setWeeklyActivities] = useState<WeeklyActivity[]>(
-    []
-  );
+  const [weeklyActivities, setWeeklyActivities] = useState<WeeklyActivity[]>([]);
+    const [user, setUser] = useState<UserData | null>(null);
 
+ useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/auth/me", {
+        method: "GET",
+        credentials: "include", // 🔑 para que viaje la cookie
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        console.log("✅ Funciona, usuario autenticado:", data.data);
+      } else {
+        console.log("❌ No funciona, no autenticado:", data.message);
+      }
+    } catch (err) {
+      console.error("🚨 Error en la request:", err);
+    }
+  };
+
+  fetchUser();
+}, []);
+
+  
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
