@@ -24,8 +24,9 @@ export function ProfileDrawer({
   if (!isOpen) return null
   const [user, setUser] = useState<{ name?: string; email?: string; phone?: string; imageUrl?: string }>({})
   const router = useRouter()
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
    useEffect(() => {
-    fetch("http://localhost:3000/api/auth/me", {
+    fetch(`${apiUrl}/auth/me`, {
       method: "GET",
       credentials: "include", // 👈 para enviar cookies
     })
