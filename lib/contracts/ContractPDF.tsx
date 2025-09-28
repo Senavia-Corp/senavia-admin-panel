@@ -54,7 +54,7 @@ export type ContractPDFProps = {
     companyPhone: string;
     content: string;
     clauses?: Array<{
-      clauseId: string;
+      clauseId: number;
       clause: {
         title: string;
         description: string;
