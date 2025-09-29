@@ -45,6 +45,8 @@ export function ProjectsPage() {
   };
 
   const handleViewProject = (project: Project) => {
+    console.log("Editing project:", project);
+    console.log("Setting selectedProjectId to:", project.id.toString());
     setSelectedProjectId(project.id.toString());
     setShowEditorForm(true);
   };
@@ -118,6 +120,13 @@ export function ProjectsPage() {
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
+            {/* Debug info */}
+            {console.log("Rendering ProjectEditor with:", {
+              selectedProjectId,
+              parsedProjectId: selectedProjectId
+                ? parseInt(selectedProjectId)
+                : undefined,
+            })}
           </div>
         </main>
       </div>

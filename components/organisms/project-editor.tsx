@@ -59,13 +59,18 @@ export function ProjectEditor({
   useEffect(() => {
     const loadProject = async () => {
       if (projectId) {
+        console.log("Loading project with ID:", projectId);
         try {
           const project = await ProjectManagementService.getProjectById(
             projectId.toString()
           );
+          console.log("Loaded project data:", project);
+
           if (project) {
             const currentPhase = getPhaseLabel(project);
-            setFormData({
+            console.log("Determined current phase:", currentPhase);
+
+            const newFormData = {
               name: project.name || "",
               description: project.description || "",
               expectedDuration: project.expectedDuration || "",
@@ -76,7 +81,12 @@ export function ProjectEditor({
               imagePreviewUrl: project.imagePreviewUrl || "",
               workTeam_id: project.workTeam_id?.id || 0,
               estimate_id: project.estimate_id?.id || 0,
-            });
+            };
+
+            console.log("Setting form data:", newFormData);
+            setFormData(newFormData);
+          } else {
+            console.log("No project data received");
           }
         } catch (error) {
           console.error("Error loading project:", error);
@@ -86,6 +96,8 @@ export function ProjectEditor({
             variant: "destructive",
           });
         }
+      } else {
+        console.log("No projectId provided, using default form data");
       }
     };
 
