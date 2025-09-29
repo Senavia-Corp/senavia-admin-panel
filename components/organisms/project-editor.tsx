@@ -14,9 +14,15 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
+import { EstimateManagementService } from "@/services/estimate-management-service";
 import type { Project, ProjectPhase } from "@/types/project-management";
+import type {
+  EstimateOption,
+  WorkTeamOption,
+} from "@/types/estimate-management";
 import { PhaseName } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
+import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 
 interface ProjectEditorProps {
   projectId?: number;
@@ -55,6 +61,12 @@ export function ProjectEditor({
     estimate_id: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [estimateOptions, setEstimateOptions] = useState<EstimateOption[]>([]);
+  const [workTeamOptions, setWorkTeamOptions] = useState<WorkTeamOption[]>([]);
+  const [isLoadingEstimates, setIsLoadingEstimates] = useState(false);
+  const [isLoadingWorkTeams, setIsLoadingWorkTeams] = useState(false);
+  const [estimatesError, setEstimatesError] = useState<string | null>(null);
+  const [workTeamsError, setWorkTeamsError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -131,7 +143,37 @@ export function ProjectEditor({
     };
 
     loadProject();
+    loadEstimateOptions();
+    loadWorkTeamOptions();
   }, [projectId]);
+
+  const loadEstimateOptions = async () => {
+    setIsLoadingEstimates(true);
+    setEstimatesError(null);
+    try {
+      const options = await EstimateManagementService.getEstimateOptions();
+      setEstimateOptions(options);
+    } catch (error) {
+      console.error("Error loading estimate options:", error);
+      setEstimatesError("Failed to load estimates");
+    } finally {
+      setIsLoadingEstimates(false);
+    }
+  };
+
+  const loadWorkTeamOptions = async () => {
+    setIsLoadingWorkTeams(true);
+    setWorkTeamsError(null);
+    try {
+      const options = await EstimateManagementService.getWorkTeamOptions();
+      setWorkTeamOptions(options);
+    } catch (error) {
+      console.error("Error loading work team options:", error);
+      setWorkTeamsError("Failed to load work teams");
+    } finally {
+      setIsLoadingWorkTeams(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -297,40 +339,49 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Estimated Id
+                Estimate *
               </Label>
-              <Input
-                type="number"
-                value={formData.estimate_id || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
+              <GenericDropdown
+                value={formData.estimate_id || undefined}
+                onChange={(value, option) => {
                   setFormData({
                     ...formData,
-                    estimate_id: value === "" ? 0 : parseInt(value) || 0,
+                    estimate_id: value,
                   });
                 }}
-                placeholder="Enter estimate ID (e.g., 1)"
-                className="mt-1"
-                min="1"
+                placeholder="Select an estimate..."
+                className="mt-1 w-full"
+                options={estimateOptions}
+                isLoading={isLoadingEstimates}
+                error={estimatesError}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="estimates"
               />
             </div>
+
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                WorkTeam Id
+                Work Team *
               </Label>
-              <Input
-                type="number"
-                value={formData.workTeam_id || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
+              <GenericDropdown
+                value={formData.workTeam_id || undefined}
+                onChange={(value, option) => {
                   setFormData({
                     ...formData,
-                    workTeam_id: value === "" ? 0 : parseInt(value) || 0,
+                    workTeam_id: value,
                   });
                 }}
-                placeholder="Enter work team ID (e.g., 1)"
-                className="mt-1"
-                min="1"
+                placeholder="Select a work team..."
+                className="mt-1 w-full"
+                options={workTeamOptions}
+                isLoading={isLoadingWorkTeams}
+                error={workTeamsError}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="work teams"
               />
             </div>
 
