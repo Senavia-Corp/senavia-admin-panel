@@ -4,8 +4,8 @@ const API_BASE = "https://senaviacorp.com/api";
 const API_LOCAL = "http://localhost:3000/api";
 
 // Use local API for development, production API for production
-//const API = process.env.NODE_ENV === "development" ? API_LOCAL : API_BASE;
-const API = "http://localhost:3000/api";
+const API = process.env.NODE_ENV === "development" ? API_LOCAL : API_BASE;
+// const API = process.env.API_URL;
 
 export const endpoints = {
   service: {
@@ -34,6 +34,10 @@ export const endpoints = {
     delete: (id: number) => `${API}/product?id=${id}`,
     create: `${API}/product`,
     update: (id: number) => `${API}/product?id=${id}`,
+  },
+
+  stripe : {
+    createCheckoutSession: `${API}/checkout`,
   },
 
   blog: {

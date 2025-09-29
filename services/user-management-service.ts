@@ -111,7 +111,7 @@ const mockProjects: UserProject[] = [
 ];
 
 export class UserManagementService {
-  static async getUsers(search?: string, roleFilter?: string): Promise<User[]> {
+  static async getUsers(): Promise<User[]> {
     try {
       const response = await Axios.get(endpoints.user.getUsers, {
         headers: {
@@ -140,22 +140,6 @@ export class UserManagementService {
         createdAt: new Date(user.createdAt || Date.now()),
         updatedAt: new Date(user.updatedAt || Date.now()),
       }));
-
-      // Apply client-side filtering if needed
-      if (search) {
-        users = users.filter(
-          (user: User) =>
-            user.name?.toLowerCase().includes(search.toLowerCase()) ||
-            user.email?.toLowerCase().includes(search.toLowerCase()) ||
-            user.phone?.includes(search)
-        );
-      }
-
-      if (roleFilter && roleFilter !== "all") {
-        users = users.filter(
-          (user: User) => user.role.id === parseInt(roleFilter)
-        );
-      }
 
       return users;
     } catch (error: any) {

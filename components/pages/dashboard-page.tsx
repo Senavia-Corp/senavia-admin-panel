@@ -28,7 +28,7 @@ interface UserData {
   id: string;
   name: string;
   roleId: number;
-} 
+}
 export function DashboardPage() {
   const [activeTab, setActiveTab] = useState("Leads");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("lastMonth");
@@ -39,32 +39,33 @@ export function DashboardPage() {
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [weeklyActivities, setWeeklyActivities] = useState<WeeklyActivity[]>([]);
-    const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
 
- useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/auth/me", {
-        method: "GET",
-        credentials: "include", // 🔑 para que viaje la cookie
-      });
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/auth/me`, {
+          method: "GET",
+          credentials: "include", // 🔑 para que viaje la cookie
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (data.success) {
-        console.log("✅ Funciona, usuario autenticado:", data.data);
-      } else {
-        console.log("❌ No funciona, no autenticado:", data.message);
+        if (data.success) {
+          console.log("✅ Funciona, usuario autenticado:", data.data);
+        } else {
+          console.log("❌ No funciona, no autenticado:", data.message);
+        }
+      } catch (err) {
+        console.error("🚨 Error en la request:", err);
       }
-    } catch (err) {
-      console.error("🚨 Error en la request:", err);
-    }
-  };
+    };
 
-  fetchUser();
-}, []);
+    fetchUser();
+  }, []);
 
-  
+
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -131,9 +132,8 @@ export function DashboardPage() {
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Main Content */}
       <main
-        className={`flex-1 transition-all duration-200 ${
-          isCalendarOpen ? "mr-80" : "mr-0"
-        }`}
+        className={`flex-1 transition-all duration-200 ${isCalendarOpen ? "mr-80" : "mr-0"
+          }`}
       >
         <div className="p-6 space-y-6 max-w-full">
           {/* Controls */}

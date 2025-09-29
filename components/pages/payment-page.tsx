@@ -11,10 +11,12 @@ import { PaymentManagementService } from "@/services/payment-management-service"
 import { BillingViewModel } from "./billing/BillingViewModel";
 import { toast } from "sonner";
 import type { Payment } from "@/types/payment-management";
+import { Lead } from "@/types/lead-management";
 
 interface PaymentPageProps {
   payments: Payment[];
   estimateId: number;
+  lead?: Lead[];
   onBack?: () => void;
   onRedirectToBillingDetails?: () => void;
 }
@@ -22,6 +24,7 @@ interface PaymentPageProps {
 export function PaymentPage({
   payments: initialPayments,
   estimateId,
+  lead,
   onBack,
   onRedirectToBillingDetails,
 }: PaymentPageProps) {
@@ -176,6 +179,7 @@ export function PaymentPage({
           payment={
             payments.find((payment) => payment.id === selectedPaymentId)!
           }
+          lead = {lead}
           onBack={handleBackToList}
           onUpdate={handlePaymentUpdate}
           onRedirectToBillingDetails={onRedirectToBillingDetails}
