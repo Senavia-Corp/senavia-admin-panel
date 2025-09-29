@@ -21,19 +21,29 @@ export function BillingPage() {
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { toast } = useToast()
 
   useEffect(() => {
-    getBillings()
-    getLeads()
-    getPlans()
+    const initializeData = async () => {
+      setIsLoading(true)
+      setIsInitialLoad(true)
+      try {
+        await getBillings()
+        await getLeads()
+        await getPlans()
+      } finally {
+        setIsInitialLoad(false)
+      }
+    }
+    initializeData()
   }, []) // Solo se ejecuta al montar el componente
 
   useEffect(() => {
-    if (billings.length > 0) {
+    if (!isInitialLoad) {
       loadBillingRecords()
     }
-  }, [billings, searchTerm, statusFilter])
+  }, [billings, searchTerm, statusFilter, isInitialLoad])
 
   const loadBillingRecords = React.useCallback(async () => {
     try {
@@ -204,7 +214,7 @@ export function BillingPage() {
                 billingRecords,
                 handlers,
                 {
-                  isLoading,
+                  isLoading: isLoading || isInitialLoad,
                   hasError,
                   onRetry: loadBillingRecords,
                   emptyStateTitle: "No billing records found",
