@@ -70,6 +70,35 @@ export function ProjectEditor({
             const currentPhase = getPhaseLabel(project);
             console.log("Determined current phase:", currentPhase);
 
+            // Handle different possible structures for relations
+            let workTeamId = 0;
+            let estimateId = 0;
+
+            // Try different possible structures for workTeam_id
+            if (typeof project.workTeam_id === "number") {
+              workTeamId = project.workTeam_id;
+            } else if (project.workTeam_id?.id) {
+              workTeamId = project.workTeam_id.id;
+            } else if ((project as any).workTeamId) {
+              workTeamId = (project as any).workTeamId;
+            }
+
+            // Try different possible structures for estimate_id
+            if (typeof project.estimate_id === "number") {
+              estimateId = project.estimate_id;
+            } else if (project.estimate_id?.id) {
+              estimateId = project.estimate_id.id;
+            } else if ((project as any).estimateId) {
+              estimateId = (project as any).estimateId;
+            }
+
+            console.log("Mapping relations:", {
+              originalWorkTeam: project.workTeam_id,
+              mappedWorkTeamId: workTeamId,
+              originalEstimate: project.estimate_id,
+              mappedEstimateId: estimateId,
+            });
+
             const newFormData = {
               name: project.name || "",
               description: project.description || "",
@@ -79,8 +108,8 @@ export function ProjectEditor({
               startDate: project.startDate || "",
               endDate: project.endDate || "",
               imagePreviewUrl: project.imagePreviewUrl || "",
-              workTeam_id: project.workTeam_id?.id || 0,
-              estimate_id: project.estimate_id?.id || 0,
+              workTeam_id: workTeamId,
+              estimate_id: estimateId,
             };
 
             console.log("Setting form data:", newFormData);
