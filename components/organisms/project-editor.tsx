@@ -12,15 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
 import { EstimateManagementService } from "@/services/estimate-management-service";
+import { PhaseManagementService } from "@/services/phase-management-service";
+import { PhaseManagementPage } from "@/components/pages/phase-management-page";
 import type { Project, ProjectPhase } from "@/types/project-management";
 import type {
   EstimateOption,
   WorkTeamOption,
   PhaseOption,
 } from "@/types/estimate-management";
+import type { ProjectPhaseDetail } from "@/types/phase-management";
 import { PhaseName } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
 import { GenericDropdown } from "@/components/atoms/generic-dropdown";
@@ -70,6 +73,8 @@ export function ProjectEditor({
   const [estimatesError, setEstimatesError] = useState<string | null>(null);
   const [workTeamsError, setWorkTeamsError] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [showPhaseManagement, setShowPhaseManagement] = useState(false);
+  const [projectPhases, setProjectPhases] = useState<ProjectPhaseDetail[]>([]);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -167,6 +172,7 @@ export function ProjectEditor({
     loadProject();
     loadEstimateOptions();
     loadWorkTeamOptions();
+    loadProjectPhases();
   }, [projectId]);
 
   const loadEstimateOptions = async () => {
@@ -194,6 +200,24 @@ export function ProjectEditor({
       setWorkTeamsError("Failed to load work teams");
     } finally {
       setIsLoadingWorkTeams(false);
+    }
+  };
+
+  const loadProjectPhases = async () => {
+    if (projectId) {
+      try {
+        const phases = await PhaseManagementService.getPhasesByProject(
+          projectId
+        );
+        setProjectPhases(phases);
+      } catch (error) {
+        console.error("Error loading project phases:", error);
+        toast({
+          title: "Warning",
+          description: "Failed to load project phases",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -311,6 +335,24 @@ export function ProjectEditor({
     }
   };
 
+  const handleManagePhases = () => {
+    if (!projectId) {
+      toast({
+        title: "Error",
+        description: "Please save the project first before managing phases",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPhaseManagement(true);
+  };
+
+  const handleBackFromPhases = () => {
+    setShowPhaseManagement(false);
+    // Recargar las fases por si se actualizaron
+    loadProjectPhases();
+  };
+
   // Debug logging for render
   console.log("ProjectEditor render state:", {
     currentPhase: formData.currentPhase,
@@ -341,6 +383,18 @@ export function ProjectEditor({
       default:
         return "Analysis";
     }
+  }
+
+  // Si está mostrando la gestión de fases
+  if (showPhaseManagement) {
+    return (
+      <PhaseManagementPage
+        phases={projectPhases}
+        projectId={projectId!}
+        projectName={currentProject?.name || `Project ${projectId}`}
+        onBack={handleBackFromPhases}
+      />
+    );
   }
 
   return (
@@ -523,17 +577,42 @@ export function ProjectEditor({
               </div>
             </div>
 
-            <Button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
-            >
-              {isLoading
-                ? "Saving..."
-                : projectId
-                ? "Update Task"
-                : "Add / Update Task"}
-            </Button>
+            <div className="space-y-4">
+              {/* Manage Phases Button - Solo si el proyecto existe */}
+              {projectId && (
+                <Button
+                  onClick={handleManagePhases}
+                  className="w-full py-6 px-6 bg-[#1e293b] hover:bg-[#334155] text-white rounded-lg flex items-center justify-between min-h-[80px]"
+                >
+                  <div className="flex items-center">
+                    <Calendar className="h-6 w-6 mr-4" />
+                    <div className="text-left">
+                      <div className="font-semibold text-lg">
+                        Project Phases
+                      </div>
+                      <div className="text-sm text-gray-300">
+                        Manage project phases and timeline
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#95C11F] text-[#1e293b] px-4 py-2 rounded-full text-sm font-medium">
+                    {projectPhases.length} phases
+                  </div>
+                </Button>
+              )}
+
+              <Button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
+              >
+                {isLoading
+                  ? "Saving..."
+                  : projectId
+                  ? "Update Project"
+                  : "Create Project"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
