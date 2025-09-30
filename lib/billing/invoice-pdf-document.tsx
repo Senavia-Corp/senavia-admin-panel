@@ -139,10 +139,21 @@ export const InvoicePDFDocument = ({
               {plans?.find((p) => p.id === billing.plan_id)?.description ||
                 "No description"}
             </Text>
+            {(billing.costs || []).map((cost) => (
+                <View key={cost.id}>
+                  <Text style={[styles.sectionTitle,{ fontSize: 10, marginBottom: 4 }]}>{cost.name}</Text>
+                  <Text style={[styles.paragraph,{ fontSize: 10, marginBottom: 4 }]}>
+                    {formatCurrency(cost.value)}
+                  </Text>
+                  <Text style={[styles.paragraph,{ fontSize: 10, marginBottom: 4 }]}>
+                    {cost.description}
+                  </Text>
+                </View>
+              ))}
           </View>
 
           {/* Resumen de factura */}
-          <View style={styles.summaryContainer} break>
+          <View style={styles.summaryContainer} >
             <Text style={styles.sectionTitle}>Invoice summary</Text>
             <View style={styles.tableWrapper}>
               <View style={[styles.tableRow, styles.tableHead]}>

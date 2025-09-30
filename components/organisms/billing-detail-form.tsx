@@ -21,7 +21,7 @@ import { CostPage } from "@/components/pages/cost-page";
 import { PaymentPage } from "@/components/pages/payment-page";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
-import { BillingStatus, CreateBillingData } from "@/types/billing-management";
+import { BillingStatus, CreateBillingData, BillingPDF } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
 import { Progress } from "../ui/progress";
@@ -69,8 +69,8 @@ export function BillingDetailForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [localEstimateData, setLocalEstimateData] =
-    useState<CreateBillingData | null>(null);
+  const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
+  const [localBillingData, setLocalBillingData] = useState<BillingPDF | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -244,7 +244,7 @@ export function BillingDetailForm({
       <div className="">
         <PaymentPage
           payments={selectedBilling?.payments || []}
-          lead = {lead}
+          lead={lead}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
           onRedirectToBillingDetails={() => setShowPayments(false)}
@@ -360,11 +360,11 @@ export function BillingDetailForm({
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
-                maxLength={5000}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                {localEstimateData?.description?.length || 0}/5000
+                {localEstimateData?.description?.length || 0}/10000
               </div>
             </div>
             <hr className="border-[#EBEDF2]" />
@@ -497,10 +497,13 @@ export function BillingDetailForm({
               )}
             </div>
             <hr className="border-[#EBEDF2]" />
-            <p>service</p>
+            <p>Service</p>
             <Select
               disabled={true}
-              value={servicesID(localEstimateData?.lead_id || 0)}
+              value={servicesID(
+                lead.find((lead) => lead.id === associatedLeads[0])?.service
+                  ?.id || 0
+              )}
             >
               <SelectTrigger className="w-full h-7">
                 <SelectValue placeholder="Dropdown here" />
@@ -517,7 +520,9 @@ export function BillingDetailForm({
               <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                 <div>
                   <h2 className="text-2xl font-normal">Costs Details</h2>
-                  <p className="font-light text-base">Description</p>
+                  <p className="font-light text-base">
+                    Creates extra costs for customer estimates
+                  </p>
                 </div>
                 <Button
                   onClick={() => setShowCosts(true)}
@@ -528,23 +533,30 @@ export function BillingDetailForm({
               </CardHeader>
             </Card>
 
-            <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
-              <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
-                <div>
-                  <h2 className="text-2xl font-normal">Payments Details</h2>
-                  <p className="font-light text-base">Description</p>
-                </div>
-                <Button
-                  onClick={() => setShowPayments(true)}
-                  className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
-                >
-                  <Eye color="#04081E" />
-                </Button>
-              </CardHeader>
-            </Card>
+            {/* Payments Details */}
+            {localEstimateData?.state === "ACCEPTED" ||
+            localEstimateData?.state === "ACCEPTED" ||
+            localEstimateData?.state === "PAID" ? (
+              <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
+                <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
+                  <div>
+                    <h2 className="text-2xl font-normal">Payments Details</h2>
+                    <p className="font-light text-base">Description</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowPayments(true)}
+                    className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+                  >
+                    <Eye color="#04081E" />
+                  </Button>
+                </CardHeader>
+              </Card>
+            ) : (
+              <></>
+            )}
             <Button
               className={
-                "rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80"
+                "rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
               }
               onClick={UpdateBilling}
               disabled={isUpdating}

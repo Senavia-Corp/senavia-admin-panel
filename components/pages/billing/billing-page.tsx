@@ -201,13 +201,13 @@ export function BillingPage() {
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
-              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
+              <h1 className="text-2xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "billing-page",
                 "Add Billing",
-                "Description",
+                "Create estimates, invoices, and payments for client projects.",
                 "All Billing",
                 "Description",
                 ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],

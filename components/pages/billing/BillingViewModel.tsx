@@ -191,10 +191,10 @@ export function BillingViewModel() {
     const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(endpoints.cost.createCost, "post", cost);
     if (status === 201 && response && response.success) {
       setCost(response.data);
-      return true;
+      return { success: true, data: response.data };
     } else {
       setError(errorLogs?.message || response?.message || "Failed to create cost");
-      return false;
+      return { success: false, error: errorLogs?.message || response?.message || "Failed to create cost" };
     }
   };
 

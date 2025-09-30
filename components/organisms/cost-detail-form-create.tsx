@@ -33,7 +33,7 @@ export function CostDetailFormCreate({
         value: value,
         estimateId: estimateId
       };
-      await createCost(costData);
+      const response =await createCost(costData);
 
       const newTotalValue = totalValue + value;
       await PatchBilling(estimateId, {
@@ -44,7 +44,7 @@ export function CostDetailFormCreate({
       const newCost: Cost = {
         ...costData,
         // Puedes generar un número aleatorio para el ID así:
-        id: Math.floor(Math.random() * 10000), // ID temporal aleatorio entre 0 y 9999
+        id: response.data?.[0]?.id || 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -57,7 +57,7 @@ export function CostDetailFormCreate({
 
       // Notificar al componente padre
       onCreateSuccess?.(newCost);
-      
+      onBack?.();
     } catch (error) {
       console.error('Error creating cost:', error);
       toast({
