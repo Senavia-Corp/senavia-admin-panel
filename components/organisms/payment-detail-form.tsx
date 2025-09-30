@@ -193,9 +193,12 @@ export function PaymentDetailForm({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={1000}
+              maxLength={10000}
               className="w-full h-28 resize-none text-xs"
             />
+            <div className="text-xs text-gray-500 text-right mt-1">
+              {localPayment.description.length}/10000
+            </div>
             <hr className="border-[#EBEDF2]" />
 
             <p>Amount</p>

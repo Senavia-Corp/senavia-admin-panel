@@ -202,10 +202,10 @@ export function PhaseDetailForm({
                 }
                 placeholder="Describe what will be accomplished in this phase"
                 className="mt-1 min-h-[100px]"
-                maxLength={500}
+                maxLength={10000}
               />
               <div className="text-xs text-gray-500 text-right mt-1">
-                {formData.description.length}/500
+                {formData.description.length}/10000
               </div>
             </div>
 

@@ -499,10 +499,10 @@ export function ProjectEditor({
                 }
                 placeholder="Briefly describe your project. "
                 className="mt-1 min-h-[100px]"
-                maxLength={200}
+                maxLength={10000}
               />
               <div className="text-xs text-gray-500 text-right mt-1">
-                {formData.description.length}/200
+                {formData.description.length}/10000
               </div>
             </div>
 
