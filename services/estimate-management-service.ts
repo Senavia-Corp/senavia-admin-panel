@@ -5,7 +5,9 @@ import type {
   WorkTeam,
   EstimateOption,
   WorkTeamOption,
+  PhaseOption,
 } from "@/types/estimate-management";
+import type { Project, Phase, PhaseName } from "@/types/project-management";
 
 export class EstimateManagementService {
   static async getEstimates(): Promise<Estimate[]> {
@@ -123,5 +125,84 @@ export class EstimateManagementService {
         updatedAt: new Date(),
       },
     ];
+  }
+
+  static createPhaseOptions(project: Project | null): PhaseOption[] {
+    if (!project || !project.phases || project.phases.length === 0) {
+      // Si no hay fases, crear opciones por defecto
+      // IMPORTANTE: Empezar desde ID 1, no 0, para evitar problemas con valores falsy
+      return [
+        {
+          id: 1,
+          name: "Analysis",
+          subtitle: "Initial phase - Not started",
+        },
+        {
+          id: 2,
+          name: "Design",
+          subtitle: "Design phase - Not started",
+        },
+        {
+          id: 3,
+          name: "Development",
+          subtitle: "Development phase - Not started",
+        },
+        {
+          id: 4,
+          name: "Deployment",
+          subtitle: "Final phase - Not started",
+        },
+      ];
+    }
+
+    // Crear opciones basadas en las fases reales del proyecto
+    return project.phases.map((phase) => {
+      const phaseName = this.getPhaseDisplayName(phase.name);
+      const startDate = phase.startDate
+        ? new Date(phase.startDate).toLocaleDateString("es-ES")
+        : "No date";
+      const endDate = phase.endDate
+        ? new Date(phase.endDate).toLocaleDateString("es-ES")
+        : "Ongoing";
+
+      return {
+        id: phase.id,
+        name: phaseName,
+        subtitle: `${startDate} - ${endDate}`,
+      };
+    });
+  }
+
+  static getPhaseDisplayName(phaseName: any): string {
+    const nameStr = String(phaseName).toUpperCase();
+    switch (nameStr) {
+      case "ANALYSIS":
+        return "Analysis";
+      case "DESIGN":
+        return "Design";
+      case "DEVELOPMENT":
+        return "Development";
+      case "DEPLOY":
+        return "Deployment";
+      default:
+        return String(phaseName);
+    }
+  }
+
+  static getCurrentPhaseId(project: Project): number {
+    if (!project.phases || project.phases.length === 0) {
+      return 1; // Default to Analysis ID (changed from 0 to 1)
+    }
+
+    // Get the most recent phase (last in chronological order)
+    const lastPhase = [...project.phases]
+      .sort((a, b) => {
+        const aTime = new Date(a.startDate || a.createdAt || "").getTime();
+        const bTime = new Date(b.startDate || b.createdAt || "").getTime();
+        return aTime - bTime;
+      })
+      .pop();
+
+    return lastPhase?.id || 0;
   }
 }

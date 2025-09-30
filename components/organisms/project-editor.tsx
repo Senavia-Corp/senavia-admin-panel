@@ -19,6 +19,7 @@ import type { Project, ProjectPhase } from "@/types/project-management";
 import type {
   EstimateOption,
   WorkTeamOption,
+  PhaseOption,
 } from "@/types/estimate-management";
 import { PhaseName } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
@@ -34,7 +35,7 @@ interface ProjectFormData {
   name: string;
   description: string;
   expectedDuration: string;
-  currentPhase: ProjectPhase;
+  currentPhase: number; // ID de la fase seleccionada
   status: string;
   startDate: string;
   endDate: string;
@@ -52,7 +53,7 @@ export function ProjectEditor({
     name: "",
     description: "",
     expectedDuration: "",
-    currentPhase: "Analysis",
+    currentPhase: 1, // ID de la fase por defecto (Analysis = 1)
     status: "Active",
     startDate: "",
     endDate: "",
@@ -63,10 +64,12 @@ export function ProjectEditor({
   const [isLoading, setIsLoading] = useState(false);
   const [estimateOptions, setEstimateOptions] = useState<EstimateOption[]>([]);
   const [workTeamOptions, setWorkTeamOptions] = useState<WorkTeamOption[]>([]);
+  const [phaseOptions, setPhaseOptions] = useState<PhaseOption[]>([]);
   const [isLoadingEstimates, setIsLoadingEstimates] = useState(false);
   const [isLoadingWorkTeams, setIsLoadingWorkTeams] = useState(false);
   const [estimatesError, setEstimatesError] = useState<string | null>(null);
   const [workTeamsError, setWorkTeamsError] = useState<string | null>(null);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -79,8 +82,18 @@ export function ProjectEditor({
           console.log("Loaded project data:", project);
 
           if (project) {
-            const currentPhase = getPhaseLabel(project);
-            console.log("Determined current phase:", currentPhase);
+            setCurrentProject(project);
+            const phaseOptions =
+              EstimateManagementService.createPhaseOptions(project);
+            console.log(
+              "Setting phase options for existing project:",
+              phaseOptions
+            );
+            setPhaseOptions(phaseOptions);
+
+            const currentPhaseId =
+              EstimateManagementService.getCurrentPhaseId(project);
+            console.log("Determined current phase ID:", currentPhaseId);
 
             // Handle different possible structures for relations
             let workTeamId = 0;
@@ -115,7 +128,7 @@ export function ProjectEditor({
               name: project.name || "",
               description: project.description || "",
               expectedDuration: project.expectedDuration || "",
-              currentPhase: currentPhase as ProjectPhase,
+              currentPhase: currentPhaseId,
               status: "Active",
               startDate: project.startDate || "",
               endDate: project.endDate || "",
@@ -139,6 +152,15 @@ export function ProjectEditor({
         }
       } else {
         console.log("No projectId provided, using default form data");
+        // Para proyectos nuevos, crear opciones de fases por defecto
+        const defaultPhaseOptions =
+          EstimateManagementService.createPhaseOptions(null);
+        console.log(
+          "Setting phase options for new project:",
+          defaultPhaseOptions
+        );
+        setPhaseOptions(defaultPhaseOptions);
+        setCurrentProject(null);
       }
     };
 
@@ -219,12 +241,26 @@ export function ProjectEditor({
         return;
       }
 
-      // Create payload similar to backend expectations
-      const phaseEnum: Record<ProjectPhase, PhaseName> = {
-        Analysis: PhaseName.ANALYSIS,
-        Design: PhaseName.DESIGN,
-        Development: PhaseName.DEVELOPMENT,
-        Deployment: PhaseName.DEPLOY,
+      // Get the selected phase information
+      const selectedPhase = phaseOptions.find(
+        (p) => p.id === formData.currentPhase
+      );
+      const selectedPhaseName = selectedPhase ? selectedPhase.name : "Analysis";
+
+      // Map phase name to enum
+      const getPhaseEnum = (phaseName: string): PhaseName => {
+        switch (phaseName.toLowerCase()) {
+          case "analysis":
+            return PhaseName.ANALYSIS;
+          case "design":
+            return PhaseName.DESIGN;
+          case "development":
+            return PhaseName.DEVELOPMENT;
+          case "deployment":
+            return PhaseName.DEPLOY;
+          default:
+            return PhaseName.ANALYSIS;
+        }
       };
 
       const projectData = {
@@ -236,7 +272,7 @@ export function ProjectEditor({
         imagePreviewUrl: formData.imagePreviewUrl || "",
         phases: [
           {
-            name: phaseEnum[formData.currentPhase],
+            name: getPhaseEnum(selectedPhaseName),
             startDate:
               formData.startDate || new Date().toISOString().split("T")[0],
             endDate: formData.endDate || "",
@@ -275,12 +311,13 @@ export function ProjectEditor({
     }
   };
 
-  const phases: ProjectPhase[] = [
-    "Analysis",
-    "Design",
-    "Development",
-    "Deployment",
-  ];
+  // Debug logging for render
+  console.log("ProjectEditor render state:", {
+    currentPhase: formData.currentPhase,
+    phaseOptions: phaseOptions,
+    phaseOptionsLength: phaseOptions.length,
+    projectId: projectId,
+  });
 
   function getPhaseLabel(project: Project): ProjectPhase {
     const lastPhase = (project.phases || [])
@@ -417,25 +454,32 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Current Phase
+                Current Phase *
               </Label>
-              <Select
+              <GenericDropdown
                 value={formData.currentPhase}
-                onValueChange={(value: ProjectPhase) =>
-                  setFormData({ ...formData, currentPhase: value })
-                }
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {phases.map((phase) => (
-                    <SelectItem key={phase} value={phase}>
-                      {phase}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value, option) => {
+                  console.log("Phase selection changed:", {
+                    value,
+                    option,
+                    currentValue: formData.currentPhase,
+                    valueType: typeof value,
+                  });
+                  setFormData({
+                    ...formData,
+                    currentPhase: value,
+                  });
+                }}
+                placeholder="Select a phase..."
+                className="mt-1 w-full"
+                options={phaseOptions}
+                isLoading={false}
+                error={null}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="phases"
+              />
             </div>
 
             <div>

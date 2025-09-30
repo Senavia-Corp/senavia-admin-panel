@@ -32,3 +32,9 @@ export interface WorkTeamOption {
   name: string;
   subtitle: string; // Estado del equipo
 }
+
+export interface PhaseOption {
+  id: number;
+  name: string;
+  subtitle: string; // Fecha de inicio y estado de la fase
+}
