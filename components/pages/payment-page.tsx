@@ -239,7 +239,7 @@ export function PaymentPage({
                     0
                   )
                 )}`,
-                "Description",
+                "Create your deferred payments in a personalized way",
                 "All Payments",
                 "Description",
                 [

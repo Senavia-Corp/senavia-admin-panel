@@ -532,7 +532,7 @@ export function BillingDetailForm({
               <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                 <div>
                   <h2 className="text-2xl font-normal">Payments Details</h2>
-                  <p className="font-light text-base">Description</p>
+                  <p className="font-light text-base">Create your deferred payments in a personalized way</p>
                 </div>
                 <Button
                   onClick={() => setShowPayments(true)}
