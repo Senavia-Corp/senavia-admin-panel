@@ -237,10 +237,8 @@ export class PaymentManagementService {
       "Bank Transfer",
       "Credit Card",
       "Debit Card",
-      "PayPal",
       "Cash",
       "Check",
-      "Wire Transfer",
     ];
   }
 }
