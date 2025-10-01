@@ -177,13 +177,16 @@ export function PaymentDetailFormCreate({
                   : ""
               }
               onChange={(e) => {
-                // Eliminar todo excepto números
-                const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   setAmount(0);
                   return;
                 }
-                setAmount(parseInt(rawValue));
+                const numericValue = parseFloat(rawValue);
+                if (!isNaN(numericValue)) {
+                  setAmount(numericValue);
+                }
               }}
             />
             <hr className="border-[#EBEDF2]" />

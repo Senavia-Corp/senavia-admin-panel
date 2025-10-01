@@ -18,7 +18,7 @@ import {
   PatchPaymentData,
   Payment,
 } from "@/types/payment-management";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { PatchBillingData } from "@/types/billing-management";
 
 export function BillingViewModel() {
@@ -36,23 +36,31 @@ export function BillingViewModel() {
 
   const getBillings = async () => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Billings>>(endpoints.estimate.getEstimates, "get");
+    const { response, status, errorLogs } = await fetchData<
+      apiResponse<Billings>
+    >(endpoints.estimate.getEstimates, "get");
     if (status === 200 && response && response.success) {
       setBillings(response.data);
     } else {
-      setError(errorLogs?.message || response?.message || "Failed to fetch billings");
+      setError(
+        errorLogs?.message || response?.message || "Failed to fetch billings"
+      );
     }
-  }
+  };
 
   const getBilling = async (id: number) => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.getEstimate(id), "get");
+    const { response, status, errorLogs } = await fetchData<
+      apiResponse<Billing>
+    >(endpoints.estimate.getEstimate(id), "get");
     if (status === 200 && response && response.success) {
       setBilling(response.data);
     } else {
-      setError(errorLogs?.message || response?.message || "Failed to fetch billing");
+      setError(
+        errorLogs?.message || response?.message || "Failed to fetch billing"
+      );
     }
-  }
+  };
 
   const createBilling = async (billing: CreateBillingData) => {
     try {
@@ -64,90 +72,118 @@ export function BillingViewModel() {
         throw new Error("Total value, lead ID and plan ID are required");
       }
 
-      const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(
-        endpoints.estimate.createEstimate,
-        "post",
-        billing
-      );
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Billing>
+      >(endpoints.estimate.createEstimate, "post", billing);
 
       if (status === 201 && response?.success) {
-        const billingData = Array.isArray(response.data) ? response.data : [response.data];
+        const billingData = Array.isArray(response.data)
+          ? response.data
+          : [response.data];
         setBilling(billingData);
         setSuccessMessage("Estimate created successfully!");
         return { success: true, data: billingData };
       } else {
-        throw new Error(errorLogs?.message || response?.message || "Failed to create billing");
+        throw new Error(
+          errorLogs?.message || response?.message || "Failed to create billing"
+        );
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to create billing";
+      const message =
+        error instanceof Error ? error.message : "Failed to create billing";
       setError(message);
       return { success: false, error: message };
     }
-  }
+  };
 
-  const createStripeSession = async (reference: string, amount: number, id: number) => {
+  const createStripeSession = async (
+    reference: string,
+    amount: number,
+    id: number
+  ) => {
     setError(null);
     setSuccessMessage(null);
 
     if (!reference || !amount) {
-      setError("Reference and amount are required to create a checkout session");
+      setError(
+        "Reference and amount are required to create a checkout session"
+      );
       return null;
     }
 
-    const { response, status, errorLogs } = await fetchData<apiResponse<CheckoutSession>>(
-      endpoints.stripe.createCheckoutSession,
-      "post",
-      { reference, amount, id }
-    );
+    const { response, status, errorLogs } = await fetchData<
+      apiResponse<CheckoutSession>
+    >(endpoints.stripe.createCheckoutSession, "post", {
+      reference,
+      amount,
+      id,
+    });
     if (status === 200 && response && response.success) {
       const url = response.data;
       return url;
     } else {
-      setError(errorLogs?.message || response?.message || "Failed to create checkout session");
+      setError(
+        errorLogs?.message ||
+          response?.message ||
+          "Failed to create checkout session"
+      );
       return null;
     }
-  }
+  };
 
-  const PatchBilling = async (id: number, billing: Partial<CreateBillingData>) => {
+  const PatchBilling = async (
+    id: number,
+    billing: Partial<CreateBillingData>
+  ) => {
     try {
       setError(null);
-      const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(
-        endpoints.estimate.updateEstimate(id),
-        "patch",
-        billing
-      );
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Billing>
+      >(endpoints.estimate.updateEstimate(id), "patch", billing);
       if (status === 200 && response && response.success) {
         setBilling(response.data);
         return response.data;
       } else {
-        throw new Error(errorLogs?.message || response?.message || "Failed to update billing");
+        throw new Error(
+          errorLogs?.message || response?.message || "Failed to update billing"
+        );
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to update billing");
+      setError(
+        error instanceof Error ? error.message : "Failed to update billing"
+      );
       throw error;
     }
   };
 
   const getLeads = async () => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Lead>>(endpoints.lead.getLeads, "get");
+    const { response, status, errorLogs } = await fetchData<apiResponse<Lead>>(
+      endpoints.lead.getLeads,
+      "get"
+    );
     if (status === 200 && response && response.success) {
       setLeads(response.data);
     } else {
-      setError(errorLogs?.message || response?.message || "Failed to fetch leads");
+      setError(
+        errorLogs?.message || response?.message || "Failed to fetch leads"
+      );
     }
   };
 
   const deleteBilling = async (id: number) => {
     try {
       setError(null);
-      const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.deleteEstimate(id), "delete");
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Billing>
+      >(endpoints.estimate.deleteEstimate(id), "delete");
       if (status === 200 && response && response.success) {
         await getBillings(); // Recargar la lista después de eliminar
         return true;
-      }
-      else {
-        setError(errorLogs?.message || response?.message || "Failed to delete billing");
+      } else {
+        setError(
+          errorLogs?.message || response?.message || "Failed to delete billing"
+        );
         return false;
       }
     } catch (error) {
@@ -188,12 +224,18 @@ export function BillingViewModel() {
 
   const createCost = async (cost: CreateCostData) => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(endpoints.cost.createCost, "post", cost);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(
+      endpoints.cost.createCost,
+      "post",
+      cost
+    );
     if (status === 201 && response && response.success) {
       setCost(response.data);
       return true;
     } else {
-      setError(errorLogs?.message || response?.message || "Failed to create cost");
+      setError(
+        errorLogs?.message || response?.message || "Failed to create cost"
+      );
       return false;
     }
   };
@@ -201,11 +243,15 @@ export function BillingViewModel() {
   const deleteCost = async (id: number) => {
     try {
       setError(null);
-      const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(endpoints.cost.deleteCost(id), "delete");
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Cost>
+      >(endpoints.cost.deleteCost(id), "delete");
       if (status === 200 && response && response.success) {
         toast.success("Costo eliminado"); // No funciona
       } else {
-        setError(errorLogs?.message || response?.message || "Failed to delete Cost");
+        setError(
+          errorLogs?.message || response?.message || "Failed to delete Cost"
+        );
         return false;
       }
     } catch (error) {
@@ -216,16 +262,20 @@ export function BillingViewModel() {
 
   const updateCost = async (id: number, PatchCost: PatchCost) => {
     try {
-      setError(null)
-      const { response, status, errorLogs } = await fetchData<apiResponse<PatchCost>>(endpoints.cost.updateCost(id), "patch", PatchCost);
+      setError(null);
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<PatchCost>
+      >(endpoints.cost.updateCost(id), "patch", PatchCost);
       if (status === 200) {
-        console.log("Cost patched successfully") //Cambiar luego por un toast
+        console.log("Cost patched successfully"); //Cambiar luego por un toast
       } else {
-        setError(errorLogs?.message || response?.message || "Failed to delete Cost");
+        setError(
+          errorLogs?.message || response?.message || "Failed to delete Cost"
+        );
         return false;
       }
     } catch (error) {
-      setError("error un updateCost BillingViewModel")
+      setError("error un updateCost BillingViewModel");
     }
   };
 
@@ -239,7 +289,12 @@ export function BillingViewModel() {
       >(endpoints.payment.getPayments, "get");
 
       if (status === 200 && response && response.success) {
-        setPayments(response.data);
+        // Normalizar los datos para asegurar que amount sea número
+        const normalizedPayments = response.data.map((payment) => ({
+          ...payment,
+          amount: Number(payment.amount),
+        }));
+        setPayments(normalizedPayments);
       } else {
         // Si la API falla, usar el servicio mock
         console.warn("API failed for getPayments, using mock service");
@@ -263,12 +318,17 @@ export function BillingViewModel() {
       >(endpoints.payment.createPayment, "post", payment);
 
       if (status === 201 && response && response.success) {
-        const newPayments = Array.isArray(response.data)
+        const rawPayments = Array.isArray(response.data)
           ? response.data
           : [response.data];
+        // Normalizar los datos para asegurar que amount sea número
+        const newPayments = rawPayments.map((payment) => ({
+          ...payment,
+          amount: Number(payment.amount),
+        }));
         // Actualizar la lista de payments agregando el nuevo payment
         setPayments((prevPayments) => [...prevPayments, ...newPayments]);
-        setPayment(response.data);
+        setPayment(newPayments[0]);
         toast.success("Payment created successfully");
         return { success: true, data: response.data };
       } else {
@@ -387,10 +447,11 @@ export function BillingViewModel() {
             prevPayments.map((payment) =>
               payment.id === id
                 ? {
-                  ...payment,
-                  ...PatchPayment,
-                  updatedAt: new Date().toISOString(),
-                }
+                    ...payment,
+                    ...PatchPayment,
+                    amount: Number(PatchPayment.amount || payment.amount),
+                    updatedAt: new Date().toISOString(),
+                  }
                 : payment
             )
           );
@@ -409,10 +470,11 @@ export function BillingViewModel() {
               prevPayments.map((payment) =>
                 payment.id === id
                   ? {
-                    ...payment,
-                    ...PatchPayment,
-                    updatedAt: new Date().toISOString(),
-                  }
+                      ...payment,
+                      ...PatchPayment,
+                      amount: Number(PatchPayment.amount || payment.amount),
+                      updatedAt: new Date().toISOString(),
+                    }
                   : payment
               )
             );
@@ -438,10 +500,11 @@ export function BillingViewModel() {
             prevPayments.map((payment) =>
               payment.id === id
                 ? {
-                  ...payment,
-                  ...PatchPayment,
-                  updatedAt: new Date().toISOString(),
-                }
+                    ...payment,
+                    ...PatchPayment,
+                    amount: Number(PatchPayment.amount || payment.amount),
+                    updatedAt: new Date().toISOString(),
+                  }
                 : payment
             )
           );
@@ -470,11 +533,17 @@ export function BillingViewModel() {
   const sendToClient = async (sendToClientData: SendToClientData) => {
     try {
       setError(null);
-      const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.sendToClient, "post", sendToClientData);
+      const { response, status, errorLogs } = await fetchData<
+        apiResponse<Billing>
+      >(endpoints.estimate.sendToClient, "post", sendToClientData);
       if (status === 200 && response && response.success) {
         toast.success("Billing sent to client successfully");
       } else {
-        setError(errorLogs?.message || response?.message || "Failed to send billing to client");
+        setError(
+          errorLogs?.message ||
+            response?.message ||
+            "Failed to send billing to client"
+        );
         toast.error("Error sending billing to client");
       }
     } catch (error) {
@@ -507,6 +576,6 @@ export function BillingViewModel() {
     deletePayment,
     updatePayment,
     sendToClient,
-    createStripeSession
+    createStripeSession,
   };
 }

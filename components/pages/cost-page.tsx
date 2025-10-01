@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
-import { BillingViewModel, } from "./billing/BillingViewModel";
+import { BillingViewModel } from "./billing/BillingViewModel";
 import { useToast } from "@/hooks/use-toast";
 import type { Cost } from "@/types/cost-management";
 import { CostDetailForm } from "../organisms/cost-detail-form";
-
 
 interface CostPageProps {
   costs: Cost[];
@@ -63,17 +62,17 @@ export function CostPage({
   const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
       await deleteCost(costToDelete.id);
-      
+
       // Calcular el nuevo totalValue restando el valor del costo eliminado
       const newTotalValue = currentTotalValue - costToDelete.value;
-      
+
       setCosts((prevCosts) =>
         prevCosts.filter((cost) => cost.id !== costToDelete.id)
       );
       setCurrentTotalValue(newTotalValue);
-      
+
       await PatchBilling(estimateId, {
-        totalValue: newTotalValue
+        totalValue: newTotalValue,
       });
       toast({
         title: "Cost deleted successfully",
@@ -102,7 +101,9 @@ export function CostPage({
         const valueDifference = updatedCost.value - oldCost.value;
         setCurrentTotalValue((prevTotal) => prevTotal + valueDifference);
       }
-      return prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost));
+      return prevCosts.map((cost) =>
+        cost.id === updatedCost.id ? updatedCost : cost
+      );
     });
   };
 
@@ -204,7 +205,10 @@ export function CostPage({
               {GeneralTable(
                 "costs-page",
                 `Add Cost | Total: ${formatCurrency(
-                  filteredCosts.reduce((sum, cost) => sum + cost.value, 0)
+                  filteredCosts.reduce(
+                    (sum, cost) => sum + Number(cost.value),
+                    0
+                  )
                 )}`,
                 "Description",
                 "All Costs",

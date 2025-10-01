@@ -217,13 +217,16 @@ export function PaymentDetailForm({
                   : ""
               }
               onChange={(e) => {
-                // Eliminar todo excepto números
-                const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   handleFieldChange("amount", 0);
                   return;
                 }
-                handleFieldChange("amount", parseInt(rawValue));
+                const numericValue = parseFloat(rawValue);
+                if (!isNaN(numericValue)) {
+                  handleFieldChange("amount", numericValue);
+                }
               }}
             />
             <hr className="border-[#EBEDF2]" />
