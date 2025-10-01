@@ -123,7 +123,7 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
                 onChange={(e) => handleFieldChange('description', e.target.value)}
                 placeholder="Enter the description of the Cost"
                 rows={6}
-                maxLength={5000}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
             <hr className="border-[#EBEDF2]" />
