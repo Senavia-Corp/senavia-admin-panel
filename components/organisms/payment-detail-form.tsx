@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -41,11 +41,62 @@ export function PaymentDetailForm({
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment, createStripeSession } = BillingViewModel();
+  const { updatePayment, createStripeSession, getPayments, payments } =
+    BillingViewModel();
+  const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
+
+  // Cargar payments existentes para validar porcentaje
+  useEffect(() => {
+    const loadExistingPayments = async () => {
+      try {
+        await getPayments(); // Esto actualiza el estado en BillingViewModel
+      } catch (error) {
+        console.error("Error loading existing payments:", error);
+      }
+    };
+
+    loadExistingPayments();
+  }, [payment.estimateId, getPayments]);
+
+  // Actualizar existingPayments cuando cambien los payments del BillingViewModel
+  useEffect(() => {
+    if (payments && payments.length > 0) {
+      const paymentsForEstimate = payments.filter(
+        (p: Payment) => p.estimateId === payment.estimateId
+      );
+      setExistingPayments(paymentsForEstimate);
+    }
+  }, [payments, payment.estimateId]);
+
+  // Función para calcular el porcentaje total actual (excluyendo el payment actual)
+  const getCurrentTotalPercentage = () => {
+    return existingPayments
+      .filter((p) => p.id !== payment.id) // Excluir el payment actual
+      .reduce((total, p) => total + p.percentagePaid, 0);
+  };
+
+  // Función para validar si se puede actualizar el porcentaje
+  const validatePercentage = (newPercentage: number) => {
+    const currentTotal = getCurrentTotalPercentage();
+    return currentTotal + newPercentage <= 100;
+  };
 
   const handleUpdatePayment = async () => {
     try {
       setIsUpdating(true);
+
+      // Validar que el porcentaje no exceda el 100%
+      if (!validatePercentage(localPayment.percentagePaid)) {
+        const currentTotal = getCurrentTotalPercentage();
+        const maxAllowed = 100 - currentTotal;
+        toast({
+          title: "Percentage limit exceeded",
+          description: `Cannot update payment. Current total (excluding this payment): ${currentTotal}%. Maximum allowed: ${maxAllowed}%`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const paymentData: PatchPaymentData = {
         reference: localPayment.reference,
         description: localPayment.description,
@@ -237,12 +288,16 @@ export function PaymentDetailForm({
               className="w-full h-7"
               type="number"
               min="0"
-              max="100"
+              max={100 - getCurrentTotalPercentage()}
               value={localPayment.percentagePaid}
               onChange={(e) =>
                 handleFieldChange("percentagePaid", Number(e.target.value))
               }
             />
+            <div className="text-xs text-gray-500 text-right mt-1">
+              Current total (excluding this): {getCurrentTotalPercentage()}% |
+              Available: {100 - getCurrentTotalPercentage()}%
+            </div>
             <hr className="border-[#EBEDF2]" />
 
             <p>State</p>
