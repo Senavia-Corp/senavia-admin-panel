@@ -35,6 +35,7 @@ interface BillingDetailFormProps {
   plans: Plans[];
   onBack: () => void;
   onSave: () => void;
+  onBackRefresh?: () => Promise<void> | void;
 }
 
 const servicesID = (service_ID: number) => {
@@ -56,6 +57,7 @@ export function BillingDetailForm({
   plans,
   onBack,
   onSave,
+  onBackRefresh,
 }: BillingDetailFormProps) {
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
@@ -73,11 +75,6 @@ export function BillingDetailForm({
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("selectedBilling recibido:", selectedBilling);
-    console.log("billingId recibido:", billingId);
-    console.log("leads recibidos:", leads);
-    console.log("lead recibido:", lead);
-    console.log("plans recibidos:", plans);
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
@@ -218,7 +215,6 @@ export function BillingDetailForm({
         duration: 3000,
       });
     } catch (error) {
-      console.log("An error has occured " + error);
       toast({
         title: "Failed to update billing",
         description: "The billing has not been updated.",
@@ -299,13 +295,21 @@ export function BillingDetailForm({
   };
 
   if (showCosts) {
+    // Usar datos más recientes del backend si están disponibles
+    const latestFromVm = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
+    const latestCosts = latestFromVm?.costs ?? selectedBilling?.costs ?? [];
+    const latestTotalValue = latestFromVm?.totalValue ? Number(latestFromVm.totalValue) : Number(selectedBilling?.totalValue || 0);
+
     return (
       <div className="">
         <CostPage
-          costs={selectedBilling?.costs || []}
-          totalValue={parseInt(selectedBilling?.totalValue || "0")}
+          costs={latestCosts}
+          totalValue={latestTotalValue}
           estimateId={selectedBilling?.id || 0}
-          onBack={() => setShowCosts(false)}
+          onBack={async () => {
+            await refreshFromBackend();
+            setShowCosts(false);
+          }}
         />
       </div>
     );
@@ -342,7 +346,12 @@ export function BillingDetailForm({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onBack}
+            onClick={async () => {
+              if (onBackRefresh) {
+                await onBackRefresh();
+              }
+              onBack();
+            }}
             className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -603,7 +612,7 @@ export function BillingDetailForm({
 
             {/* Payments Details */}
             {localEstimateData?.state === "ACCEPTED" ||
-            localEstimateData?.state === "ACCEPTED" ||
+            localEstimateData?.state === "INVOICE" ||
             localEstimateData?.state === "PAID" ? (
               <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
                 <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">

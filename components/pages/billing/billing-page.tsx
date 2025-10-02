@@ -168,6 +168,9 @@ export function BillingPage() {
               lead={lead}
               plans={plans}
               onBack={handleBackToList}
+              onBackRefresh={async () => {
+                await getBillings();
+              }}
               onSave={handleSaveSuccess}
             />
           </div>

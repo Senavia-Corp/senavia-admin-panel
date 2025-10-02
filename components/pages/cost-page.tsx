@@ -5,6 +5,7 @@ import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialo
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
+import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
 import { BillingViewModel, } from "./billing/BillingViewModel";
 import { useToast } from "@/hooks/use-toast";
@@ -36,18 +37,25 @@ export function CostPage({
   const [showCreateCost, setShowCreateCost] = useState(false);
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
-  const vm = BillingViewModel();
-  const { deleteCost, PatchBilling, getBilling, billing } = vm;
+  const { deleteCost, PatchBilling, getBilling, billing } = BillingViewModel();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
     filterCosts();
   }, [searchTerm, statusFilter, costs]);
 
-  // Refrescar desde backend por estimateId
+
+
+  // Cuando llegue billing del VM, sincronizar costos/total
   useEffect(() => {
-    refreshFromBackend();
-  }, [estimateId]);
+    if (billing && Array.isArray(billing) && billing.length > 0) {
+      const latest = billing[0] as unknown as { costs?: Cost[]; totalValue?: number };
+      const latestCosts = latest.costs || [];
+      setCosts(latestCosts);
+      setFilteredCosts(latestCosts);
+
+    }
+  }, [billing]);
 
   const refreshFromBackend = async () => {
     try {
@@ -58,24 +66,6 @@ export function CostPage({
     }
   };
 
-  // Cuando llegue billing del VM, sincronizar costos/total
-  useEffect(() => {
-    if (billing && Array.isArray(billing) && billing.length > 0) {
-      const latest = billing[0] as unknown as { costs?: Cost[]; totalValue?: number };
-      const latestCosts = latest.costs || [];
-      const latestTotal = typeof latest.totalValue === "number" ? latest.totalValue : totalValue;
-      setCosts(latestCosts);
-      setFilteredCosts(latestCosts);
-      setCurrentTotalValue(latestTotal);
-    }
-  }, [billing]);
-
-  // Sincronizar cuando cambien los props (por ejemplo, tras refrescar desde el padre)
-  useEffect(() => {
-    setCosts(initialCosts);
-    setFilteredCosts(initialCosts);
-    setCurrentTotalValue(totalValue);
-  }, [initialCosts, totalValue]);
 
   const filterCosts = () => {
     let filtered = costs;
@@ -134,6 +124,7 @@ export function CostPage({
   };
 
   const handleCostUpdate = async (updatedCost: Cost) => {
+    await refreshFromBackend();
     setCosts((prevCosts) => {
       const oldCost = prevCosts.find((cost) => cost.id === updatedCost.id);
       if (oldCost) {
@@ -142,13 +133,14 @@ export function CostPage({
       }
       return prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost));
     });
-    await refreshFromBackend();
+    
   };
 
   const handleCostCreate = async (newCost: Cost) => {
+    await refreshFromBackend();
     setCosts((prevCosts) => [...prevCosts, newCost]);
     setCurrentTotalValue((prevTotal) => prevTotal + newCost.value);
-    await refreshFromBackend();
+    
   };
 
   const handleCreateCost = () => {
@@ -240,29 +232,32 @@ export function CostPage({
               <p className="font-bold text-[#393939] text-5xl"></p>
             </div>
             <div className="flex-1 min-h-0">
-              {isRefreshing ? (
-                <div className="p-6">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-6 w-1/3 bg-gray-200 rounded" />
-                    <div className="h-10 w-full bg-gray-100 rounded" />
-                    <div className="h-10 w-full bg-gray-100 rounded" />
-                    <div className="h-10 w-full bg-gray-100 rounded" />
-                    <div className="h-10 w-full bg-gray-100 rounded" />
-                  </div>
-                </div>
-              ) : (
-                GeneralTable(
-                  "costs-page",
-                  `Add Cost | Total: ${formatCurrency(
+              {GeneralTable(
+                "costs-page",
+                `Add Cost | Total: ${formatCurrency(
                     filteredCosts.reduce((sum, cost) => sum + cost.value, 0)
-                  )}`,
-                  "Description",
-                  "All Costs",
-                  "Description",
-                  ["Cost ID", "Name", "Type", "Value", "Actions"],
-                  filteredCosts,
-                  handlers
-                )
+                )}`,
+                "Description",
+                "All Costs",
+                "Description",
+                ["Cost ID", "Name", "Type", "Value", "Actions"],
+                filteredCosts,
+                handlers,
+                {
+                  isLoading: isRefreshing,
+                  hasError: false,
+                  onRetry: refreshFromBackend,
+                  emptyStateTitle: "No costs found",
+                  emptyStateDescription:
+                    searchTerm || statusFilter
+                      ? "No costs match your current filters. Try adjusting your search criteria."
+                      : "No costs have been created yet. Click the '+' button to add the first cost.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={2} />
+                  ),
+                  skeletonCount: 5,
+                  searchPlaceholder: "Search by name or type...",
+                }
               )}
             </div>
           </div>

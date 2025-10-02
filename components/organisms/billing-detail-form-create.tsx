@@ -208,18 +208,18 @@ export function BillingDetailCreateForm({
     }
   };
 
-  if (showCosts) {
-    return (
-      <div className="">
-        <CostPage
-          costs={selectedBilling?.costs || []}
-          totalValue={parseInt(selectedBilling?.totalValue || "0")}
-          estimateId={selectedBilling?.id || 0}
-          onBack={() => setShowCosts(false)}
-        />
-      </div>
-    );
-  }
+  // if (showCosts) {
+  //   return (
+  //     <div className="">
+  //       <CostPage
+  //         costs={selectedBilling?.costs || []}
+  //         totalValue={parseInt(selectedBilling?.totalValue || "0")}
+  //         estimateId={selectedBilling?.id || 0}
+  //         onBack={() => setShowCosts(false)}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   if (showPayments) {
     return (
@@ -276,7 +276,7 @@ export function BillingDetailCreateForm({
             />
             <p>Estimated Time:</p>
             <Input
-              type="text"
+              type="number"
               className="w-full h-7"
               value={estimatedTime}
               onChange={(e) => setEstimatedTime(e.target.value)}

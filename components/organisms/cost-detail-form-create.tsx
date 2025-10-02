@@ -23,6 +23,7 @@ export function CostDetailFormCreate({
   const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
   const { toast } = useToast();
+  
   const handleCreateCost = async () => {
     try {
       setLoadingPost(true);
