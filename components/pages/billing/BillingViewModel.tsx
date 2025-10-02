@@ -30,6 +30,7 @@ export function BillingViewModel() {
   const [billings, setBillings] = useState<Billings[]>([]);
   const [lead, setLead] = useState<Lead[]>([]);
   const [plans, setPlans] = useState<Plans[]>([]);
+  const [plan, setPlan] = useState<Plan[]>([]);
   const [cost, setCost] = useState<CreateCostData[]>([]);
   const [payment, setPayment] = useState<CreatePaymentData[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -47,8 +48,9 @@ export function BillingViewModel() {
   const getBilling = async (id: number) => {
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.getEstimate(id), "get");
-    if (status === 200 && response && response.success) {
-      setBilling(response.data);
+    if ((status === 200 || status === 201) && response && response.success) {
+      const billingData = Array.isArray(response.data) ? response.data : [response.data];
+      setBilling(billingData);
     } else {
       setError(errorLogs?.message || response?.message || "Failed to fetch billing");
     }
@@ -70,7 +72,7 @@ export function BillingViewModel() {
         billing
       );
 
-      if (status === 201 && response?.success) {
+      if ((status === 200 || status === 201) && response?.success) {
         const billingData = Array.isArray(response.data) ? response.data : [response.data];
         setBilling(billingData);
         setSuccessMessage("Estimate created successfully!");
@@ -185,6 +187,18 @@ export function BillingViewModel() {
       );
     }
   };
+
+  const getPlanById = async (id: number) => {
+    setError(null);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Plan>>(endpoints.plan.getPlan(id), "get");
+    if (status === 200 && response && response.success) {
+      setPlan(response.data);
+
+    } else {
+      setError(errorLogs?.message || response?.message || "Failed to fetch plan");
+      return null;
+    }
+  }
 
   const createCost = async (cost: CreateCostData) => {
     setError(null);
@@ -507,6 +521,8 @@ export function BillingViewModel() {
     deletePayment,
     updatePayment,
     sendToClient,
-    createStripeSession
+    createStripeSession,
+    getPlanById,
+    plan,
   };
 }

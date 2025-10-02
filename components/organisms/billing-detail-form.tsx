@@ -16,7 +16,7 @@ import { DocumentPreviewBilling } from "../../lib/billing/document-preview-billi
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
-import { Plans } from "@/types/plan";
+import { Plans, Plan } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
 import { PaymentPage } from "@/components/pages/payment-page";
 import { PaymentManagementService } from "@/services/payment-management-service";
@@ -181,14 +181,36 @@ export function BillingDetailForm({
       });
     } finally {
       setIsUpdating(false);
-      onSave();
+
     }
   };
   const handleSendToClient = async () => {
     try {
+      const selectedLead = leads.find((l) => l.id === associatedLeads[0]);
+      const selectedPlan = plans.find((p) => p.id === associatedPlan[0]);
+      if (!selectedLead || !selectedPlan || !selectedBilling) {
+        throw new Error("Missing lead/plan/billing for PDF generation");
+      }
+      // Adaptar tipos: Leads -> Lead (asegurar clientAddress) y Plans -> Plan (agregar serviceId/fechas)
+      const leadForPdf: Lead = {
+        ...selectedLead,
+        clientAddress: selectedLead.clientAddress || "",
+      } as Lead;
+
+      const planForPdf: Plan = {
+        id: selectedPlan.id,
+        name: selectedPlan.name,
+        description: selectedPlan.description,
+        type: selectedPlan.type,
+        price: selectedPlan.price,
+        serviceId: selectedPlan.service.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        service: selectedPlan.service,
+      } as Plan;
       const pdfBlob = await pdfRenderer(
         <InvoicePDFDocument
-          lead={lead}
+          lead={leadForPdf}
           billing={
             {
               ...selectedBilling,
@@ -196,7 +218,7 @@ export function BillingDetailForm({
               totalValue: selectedBilling?.totalValue || "0",
             } as Billing
           }
-          plans={plans}
+          plans={planForPdf}
         />
       ).toBlob();
 
@@ -256,16 +278,7 @@ export function BillingDetailForm({
   if (showDocument && selectedBilling) {
     return (
       <DocumentPreviewBilling
-        billing={
-          {
-            ...selectedBilling,
-            description: selectedBilling.description || "",
-            totalValue: selectedBilling.totalValue || "0",
-          } as Billing
-        }
-        lead={lead}
-        costs={selectedBilling.costs}
-        plans={plans}
+        BillingID={billingId || 0}
         onBack={() => setShowDocument(false)}
       />
     );
