@@ -1,4 +1,4 @@
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, Loader2 } from "lucide-react";
 import { MultiSelectBilling } from "../atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,6 @@ import { Input } from "../ui/input";
 import { Plans, Plan } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
 import { PaymentPage } from "@/components/pages/payment-page";
-import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { BillingStatus, CreateBillingData, BillingPDF } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
@@ -61,7 +60,7 @@ export function BillingDetailForm({
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const { PatchBilling, sendToClient } = BillingViewModel();
+  const { PatchBilling, sendToClient, getBilling, billing, getLeadById, getPlanById, plan, lead: vmLead } = BillingViewModel();
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -69,8 +68,8 @@ export function BillingDetailForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
-  const [localBillingData, setLocalBillingData] = useState<BillingPDF | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -109,6 +108,40 @@ export function BillingDetailForm({
     });
   }, []);
 
+  // Sincronizar datos locales cuando llegue el billing desde backend
+  useEffect(() => {
+    if (billing && Array.isArray(billing) && billing.length > 0) {
+      const b = billing[0] as unknown as Billing;
+      setLocalEstimateData({
+        title: b.title || "",
+        totalValue: Number(b.totalValue) || 0,
+        estimatedTime: b.estimatedTime?.toString() || "",
+        description: b.description || "",
+        state: b.state || "",
+        lead_id: b.lead_id || 0,
+        plan_id: b.plan_id || 0,
+        deadLineToPay: b.deadLineToPay || "",
+        invoiceDateCreated: b.invoiceDateCreated || "",
+        invoiceReference: b.invoiceReference || "",
+        percentagePaid: b.percentagePaid || 0,
+        remainingPercentage: b.remainingPercentage || 0,
+      });
+    }
+  }, [billing]);
+
+  const refreshFromBackend = async () => {
+    try {
+      setIsRefreshing(true);
+      await getBilling(billingId);
+      const refreshedLeadId = (localEstimateData?.lead_id || selectedBilling?.lead_id || 0);
+      const refreshedPlanId = (localEstimateData?.plan_id || selectedBilling?.plan_id || 0);
+      if (refreshedLeadId) await getLeadById(refreshedLeadId);
+      if (refreshedPlanId) await getPlanById(refreshedPlanId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -142,6 +175,16 @@ export function BillingDetailForm({
     return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
   };
 
+  const openCosts = async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshFromBackend();
+      setShowCosts(true);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const UpdateBilling = async () => {
     try {
       setIsUpdating(true);
@@ -167,6 +210,8 @@ export function BillingDetailForm({
       };
       await PatchBilling(ID_estimate, billingData);
       setLocalEstimateData(billingData);
+      // Recargar del backend para reflejar datos actualizados
+      await refreshFromBackend();
       toast({
         title: "Billing updated successfully",
         description: "The billing has been updated successfully.",
@@ -186,38 +231,43 @@ export function BillingDetailForm({
   };
   const handleSendToClient = async () => {
     try {
+      // Asegurar datos frescos
+      await refreshFromBackend();
+      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : (selectedBilling as Billing | null);
       const selectedLead = leads.find((l) => l.id === associatedLeads[0]);
       const selectedPlan = plans.find((p) => p.id === associatedPlan[0]);
-      if (!selectedLead || !selectedPlan || !selectedBilling) {
+      const backendLead = vmLead && vmLead.length > 0 ? (vmLead[0] as unknown as Lead) : undefined;
+      const backendPlan = plan && plan.length > 0 ? (plan[0] as unknown as Plans) : undefined;
+      const effectiveLead = backendLead ?? selectedLead;
+      const effectivePlan = backendPlan ?? selectedPlan;
+      if (!effectiveLead || !effectivePlan || !latestBilling) {
         throw new Error("Missing lead/plan/billing for PDF generation");
       }
       // Adaptar tipos: Leads -> Lead (asegurar clientAddress) y Plans -> Plan (agregar serviceId/fechas)
       const leadForPdf: Lead = {
-        ...selectedLead,
-        clientAddress: selectedLead.clientAddress || "",
+        ...effectiveLead,
+        clientAddress: effectiveLead.clientAddress || "",
       } as Lead;
 
       const planForPdf: Plan = {
-        id: selectedPlan.id,
-        name: selectedPlan.name,
-        description: selectedPlan.description,
-        type: selectedPlan.type,
-        price: selectedPlan.price,
-        serviceId: selectedPlan.service.id,
+        id: effectivePlan.id,
+        name: effectivePlan.name,
+        description: effectivePlan.description,
+        type: effectivePlan.type,
+        price: effectivePlan.price,
+        serviceId: effectivePlan.service.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        service: selectedPlan.service,
+        service: effectivePlan.service,
       } as Plan;
       const pdfBlob = await pdfRenderer(
         <InvoicePDFDocument
           lead={leadForPdf}
-          billing={
-            {
-              ...selectedBilling,
-              description: selectedBilling?.description || "",
-              totalValue: selectedBilling?.totalValue || "0",
-            } as Billing
-          }
+          billing={{
+            ...(latestBilling as Billing),
+            description: (latestBilling as Billing)?.description || "",
+            totalValue: (latestBilling as Billing)?.totalValue || "0",
+          } as Billing}
           plans={planForPdf}
         />
       ).toBlob();
@@ -228,10 +278,10 @@ export function BillingDetailForm({
       );
 
       await sendToClient({
-        name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
-        title: localEstimateData?.title || "",
-        description: localEstimateData?.description || "",
-        email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
+        name: effectiveLead?.clientName || "",
+        title: localEstimateData?.title || (latestBilling?.title ?? ""),
+        description: localEstimateData?.description || (latestBilling?.description ?? ""),
+        email: effectiveLead?.clientEmail || "",
         document: base64String,
       });
 
@@ -538,10 +588,15 @@ export function BillingDetailForm({
                   </p>
                 </div>
                 <Button
-                  onClick={() => setShowCosts(true)}
+                  onClick={openCosts}
+                  disabled={isRefreshing || isUpdating}
                   className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
                 >
-                  <Eye color="#04081E" />
+                  {isRefreshing ? (
+                    <Loader2 className="animate-spin" color="#04081E" />
+                  ) : (
+                    <Eye color="#04081E" />
+                  )}
                 </Button>
               </CardHeader>
             </Card>

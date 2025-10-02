@@ -36,11 +36,46 @@ export function CostPage({
   const [showCreateCost, setShowCreateCost] = useState(false);
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
-  const { deleteCost, PatchBilling } = BillingViewModel();
+  const vm = BillingViewModel();
+  const { deleteCost, PatchBilling, getBilling, billing } = vm;
   const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
     filterCosts();
   }, [searchTerm, statusFilter, costs]);
+
+  // Refrescar desde backend por estimateId
+  useEffect(() => {
+    refreshFromBackend();
+  }, [estimateId]);
+
+  const refreshFromBackend = async () => {
+    try {
+      setIsRefreshing(true);
+      await getBilling(estimateId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Cuando llegue billing del VM, sincronizar costos/total
+  useEffect(() => {
+    if (billing && Array.isArray(billing) && billing.length > 0) {
+      const latest = billing[0] as unknown as { costs?: Cost[]; totalValue?: number };
+      const latestCosts = latest.costs || [];
+      const latestTotal = typeof latest.totalValue === "number" ? latest.totalValue : totalValue;
+      setCosts(latestCosts);
+      setFilteredCosts(latestCosts);
+      setCurrentTotalValue(latestTotal);
+    }
+  }, [billing]);
+
+  // Sincronizar cuando cambien los props (por ejemplo, tras refrescar desde el padre)
+  useEffect(() => {
+    setCosts(initialCosts);
+    setFilteredCosts(initialCosts);
+    setCurrentTotalValue(totalValue);
+  }, [initialCosts, totalValue]);
 
   const filterCosts = () => {
     let filtered = costs;
@@ -62,6 +97,7 @@ export function CostPage({
 
   const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
+      setIsRefreshing(true);
       await deleteCost(costToDelete.id);
       
       // Calcular el nuevo totalValue restando el valor del costo eliminado
@@ -75,6 +111,7 @@ export function CostPage({
       await PatchBilling(estimateId, {
         totalValue: newTotalValue
       });
+      await refreshFromBackend();
       toast({
         title: "Cost deleted successfully",
         duration: 3000,
@@ -86,6 +123,8 @@ export function CostPage({
         duration: 3000,
         variant: "destructive",
       });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -94,22 +133,22 @@ export function CostPage({
     setShowCostDetail(true);
   };
 
-  const handleCostUpdate = (updatedCost: Cost) => {
+  const handleCostUpdate = async (updatedCost: Cost) => {
     setCosts((prevCosts) => {
       const oldCost = prevCosts.find((cost) => cost.id === updatedCost.id);
       if (oldCost) {
-        // Actualizar totalValue: restar el valor anterior y sumar el nuevo
         const valueDifference = updatedCost.value - oldCost.value;
         setCurrentTotalValue((prevTotal) => prevTotal + valueDifference);
       }
       return prevCosts.map((cost) => (cost.id === updatedCost.id ? updatedCost : cost));
     });
+    await refreshFromBackend();
   };
 
-  const handleCostCreate = (newCost: Cost) => {
+  const handleCostCreate = async (newCost: Cost) => {
     setCosts((prevCosts) => [...prevCosts, newCost]);
-    // Agregar el valor del nuevo costo al totalValue
     setCurrentTotalValue((prevTotal) => prevTotal + newCost.value);
+    await refreshFromBackend();
   };
 
   const handleCreateCost = () => {
@@ -201,17 +240,29 @@ export function CostPage({
               <p className="font-bold text-[#393939] text-5xl"></p>
             </div>
             <div className="flex-1 min-h-0">
-              {GeneralTable(
-                "costs-page",
-                `Add Cost | Total: ${formatCurrency(
-                  filteredCosts.reduce((sum, cost) => sum + cost.value, 0)
-                )}`,
-                "Description",
-                "All Costs",
-                "Description",
-                ["Cost ID", "Name", "Type", "Value", "Actions"],
-                filteredCosts,
-                handlers
+              {isRefreshing ? (
+                <div className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-6 w-1/3 bg-gray-200 rounded" />
+                    <div className="h-10 w-full bg-gray-100 rounded" />
+                    <div className="h-10 w-full bg-gray-100 rounded" />
+                    <div className="h-10 w-full bg-gray-100 rounded" />
+                    <div className="h-10 w-full bg-gray-100 rounded" />
+                  </div>
+                </div>
+              ) : (
+                GeneralTable(
+                  "costs-page",
+                  `Add Cost | Total: ${formatCurrency(
+                    filteredCosts.reduce((sum, cost) => sum + cost.value, 0)
+                  )}`,
+                  "Description",
+                  "All Costs",
+                  "Description",
+                  ["Cost ID", "Name", "Type", "Value", "Actions"],
+                  filteredCosts,
+                  handlers
+                )
               )}
             </div>
           </div>
