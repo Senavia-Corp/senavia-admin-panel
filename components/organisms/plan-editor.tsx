@@ -10,6 +10,7 @@ import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialo
 import { PlanViewModel } from "../pages/plan/PlanViewModel";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 
 interface EditorProps {
   entityId?: number;
@@ -40,13 +41,19 @@ export function PlanEditor({
     watch,
     formState: { errors },
   } = useForm<PlanFormData>({
-    defaultValues: { name: "", description: "", type: "",price:0,serviceId:0 },
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "",
+      price: 0,
+      serviceId: 0,
+    },
   });
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { getPlanById,savePlan } = PlanViewModel();
+  const { getPlanById, savePlan } = PlanViewModel();
   const { toast } = useToast();
   const descriptionValue = watch("description", "");
 
@@ -68,7 +75,7 @@ export function PlanEditor({
   };
 
   const onSubmit = async (data: PlanFormData) => {
-      try {
+    try {
       setIsLoading(true);
       const success = await savePlan(data, entityId ?? undefined);
       if (success) {
@@ -88,8 +95,7 @@ export function PlanEditor({
       console.error("💥 Error inesperado en handleSave:", err);
       toast({
         title: "Error",
-        description:
-          err.message || "Failed to create plan. Please try again.",
+        description: err.message || "Failed to create plan. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -97,7 +103,7 @@ export function PlanEditor({
     }
   };
 
-  const handleDelete = async () => {    
+  const handleDelete = async () => {
     try {
       if (entityId) {
         const success = await onDelete(entityId);
@@ -134,7 +140,7 @@ export function PlanEditor({
         </h1>
       </div>
 
-      {/* Main Content */}      
+      {/* Main Content */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-gray-900 rounded-lg p-6 flex-1 flex w-full"
@@ -214,7 +220,10 @@ export function PlanEditor({
             <CardTitle className="text-lg">Price *</CardTitle>
             <div className="mb-6">
               <Input
-                {...register("price", { required: "Price is required", valueAsNumber: true })}
+                {...register("price", {
+                  required: "Price is required",
+                  valueAsNumber: true,
+                })}
                 placeholder="Enter the price"
                 disabled={isLoading}
                 className={` ${
@@ -234,7 +243,10 @@ export function PlanEditor({
           <CardTitle className="text-lg">Service *</CardTitle>
           <div className="mb-6">
             <Input
-              {...register("serviceId", { required: "Service is required", valueAsNumber: true })}
+              {...register("serviceId", {
+                required: "Service is required",
+                valueAsNumber: true,
+              })}
               placeholder="Enter the service"
               disabled={isLoading}
               className={` ${
@@ -249,6 +261,37 @@ export function PlanEditor({
               </p>
             )}
           </div>
+          {/*Service*/}
+          <Controller
+            name="serviceId"
+            control={control}
+            render={({ field }) => (
+              <GenericDropdown
+                value={(field.value ?? undefined) as number | undefined}
+                onChange={(value) => {
+                  field.onChange(value);
+                }}
+                placeholder="Select a service..."
+                className={`w-full ${errors.serviceId ? "border-red-500" : ""}`}
+                disabled={isSubmitting}
+                options={serviceOptions}
+                isLoading={isServicesLoading}
+                error={servicesError}
+                loadOptions={serviceLoadOptions}
+                hasError={Boolean(errors.serviceId)}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="services"
+              />
+            )}
+          />
+          {errors.serviceId && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors.serviceId.message as string}
+            </p>
+          )}
+          {/* Fin Service*/}
           <div className="flex justify-center my-4">
             <Button
               type="submit"
