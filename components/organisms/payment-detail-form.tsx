@@ -85,8 +85,15 @@ export function PaymentDetailForm({
     try {
       setIsUpdating(true);
 
-      // Validar que el porcentaje no exceda el 100%
-      if (!validatePercentage(localPayment.percentagePaid)) {
+      // Solo validar porcentaje si ha cambiado respecto al valor original
+      // Esto permite actualizar otros campos (reference, description, amount, etc.) sin restricciones
+      const percentageChanged =
+        localPayment.percentagePaid !== payment.percentagePaid;
+
+      if (
+        percentageChanged &&
+        !validatePercentage(localPayment.percentagePaid)
+      ) {
         const currentTotal = getCurrentTotalPercentage();
         const maxAllowed = 100 - currentTotal;
         toast({
