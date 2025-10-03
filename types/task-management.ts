@@ -1,9 +1,14 @@
 export interface Task {
   id: string
   title: string
+  description?: string
   status: TaskStatus
   priority: TaskPriority
   assignedTo: string
+  expectedDuration?: number // in hours
+  startDate?: Date
+  endDate?: Date
+  attachments?: string[] // file paths or URLs
   createdAt: Date
   updatedAt: Date
   projectId: string
@@ -18,9 +23,14 @@ export type ProjectPhase = "Analysis" | "Design" | "Development" | "Deployment"
 
 export interface CreateTaskData {
   title: string
+  description?: string
   status: TaskStatus
   priority: TaskPriority
   assignedTo: string
+  expectedDuration?: number // in hours
+  startDate?: Date
+  endDate?: Date
+  attachments?: File[] // for form submission
   projectId: string
   phase: ProjectPhase
 }
