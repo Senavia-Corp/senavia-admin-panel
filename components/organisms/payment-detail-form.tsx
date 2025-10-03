@@ -212,7 +212,7 @@ export function PaymentDetailForm({
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
             size="sm"
@@ -223,6 +223,12 @@ export function PaymentDetailForm({
           </Button>
           <h1 className="text-4xl font-medium text-[#04081E]">Edit Payment</h1>
         </div>
+        <Button
+          className="rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-semibold text-sm px-4 py-2"
+          onClick={handleSendEmail}
+        >
+          Send Payment by Email
+        </Button>
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
@@ -372,15 +378,6 @@ export function PaymentDetailForm({
             >
               {isUpdating ? "Updating..." : "Update Payment"}
             </Button>
-
-            <button
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
-              onClick={() => {
-                handleSendEmail();
-              }}
-            >
-              Send Payment by Email
-            </button>
           </div>
         </div>
       </div>
