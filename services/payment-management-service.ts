@@ -93,6 +93,49 @@ const mockPayments: Payment[] = [
     createdAt: "2025-01-14T10:00:00Z",
     updatedAt: "2025-01-14T10:00:00Z",
   },
+  // Payments para el estimate 121 (que aparecen en la imagen)
+  {
+    id: 44,
+    reference: "Prueba",
+    description: "Prueba",
+    amount: 2000,
+    percentagePaid: 45,
+    state: "PAID",
+    paidDate: "2025-10-02",
+    method: "Bank Transfer",
+    attachments: [],
+    estimateId: 121,
+    createdAt: "2025-10-02T10:00:00Z",
+    updatedAt: "2025-10-02T10:00:00Z",
+  },
+  {
+    id: 45,
+    reference: "Probar",
+    description: "Proba",
+    amount: 1350,
+    percentagePaid: 30,
+    state: "PAID",
+    paidDate: "2025-10-02",
+    method: "Credit Card",
+    attachments: [],
+    estimateId: 121,
+    createdAt: "2025-10-02T11:00:00Z",
+    updatedAt: "2025-10-02T11:00:00Z",
+  },
+  {
+    id: 46,
+    reference: "FNWQUNF",
+    description: "NSDNQFNQSFN",
+    amount: 1125,
+    percentagePaid: 23,
+    state: "PAID",
+    paidDate: "2025-10-02",
+    method: "Wire Transfer",
+    attachments: [],
+    estimateId: 121,
+    createdAt: "2025-10-02T12:00:00Z",
+    updatedAt: "2025-10-02T12:00:00Z",
+  },
 ];
 
 export class PaymentManagementService {
@@ -233,12 +276,6 @@ export class PaymentManagementService {
    * Obtiene los métodos de pago disponibles
    */
   static getPaymentMethods(): string[] {
-    return [
-      "Bank Transfer",
-      "Credit Card",
-      "Debit Card",
-      "Cash",
-      "Check",
-    ];
+    return ["Bank Transfer", "Credit Card", "Debit Card", "Cash", "Check"];
   }
 }

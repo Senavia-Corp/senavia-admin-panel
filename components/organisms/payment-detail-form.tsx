@@ -41,9 +41,42 @@ export function PaymentDetailForm({
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment, createStripeSession, getPayments, payments } =
-    BillingViewModel();
+  const {
+    updatePayment,
+    createStripeSession,
+    getPayments,
+    payments,
+    getBilling,
+    billing,
+    PatchBilling,
+  } = BillingViewModel();
   const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
+  const [billingTotalValue, setBillingTotalValue] = useState<number>(0);
+
+  // Cargar billing data para obtener el valor total
+  useEffect(() => {
+    const loadBillingData = async () => {
+      try {
+        await getBilling(payment.estimateId);
+      } catch (error) {
+        console.error("Error loading billing data:", error);
+      }
+    };
+
+    loadBillingData();
+  }, [payment.estimateId, getBilling]);
+
+  // Actualizar billingTotalValue cuando cambie el billing
+  useEffect(() => {
+    if (billing && billing.length > 0) {
+      const currentBilling = billing.find(
+        (b: any) => b.id === payment.estimateId
+      );
+      if (currentBilling) {
+        setBillingTotalValue(Number(currentBilling.totalValue) || 0);
+      }
+    }
+  }, [billing, payment.estimateId]);
 
   // Cargar payments existentes para validar porcentaje
   useEffect(() => {
@@ -79,6 +112,58 @@ export function PaymentDetailForm({
   const validatePercentage = (newPercentage: number) => {
     const currentTotal = getCurrentTotalPercentage();
     return currentTotal + newPercentage <= 100;
+  };
+
+  // Función para calcular automáticamente el amount basado en el porcentaje
+  const calculateAmountFromPercentage = (percentage: number) => {
+    if (billingTotalValue > 0 && percentage > 0) {
+      return (billingTotalValue * percentage) / 100;
+    }
+    return 0;
+  };
+
+  // Función para actualizar el billing con los nuevos porcentajes
+  const updateBillingPercentages = async () => {
+    try {
+      console.log("Starting billing percentage update...");
+
+      // Obtener payments frescos directamente del servicio
+      const freshPayments =
+        await PaymentManagementService.getPaymentsByEstimateId(
+          payment.estimateId
+        );
+      console.log("Fresh payments from service:", freshPayments);
+
+      const totalPercentagePaid = freshPayments.reduce(
+        (total: number, p: Payment) => {
+          const percentage = Number(p.percentagePaid) || 0;
+          console.log(`Payment ${p.id}: ${percentage}%`);
+          return total + percentage;
+        },
+        0
+      );
+
+      const remainingPercentage = Math.max(0, 100 - totalPercentagePaid);
+
+      console.log("Calculated percentages:", {
+        totalPercentagePaid,
+        remainingPercentage,
+        paymentsCount: freshPayments.length,
+      });
+
+      // Actualizar el billing con los nuevos porcentajes
+      await PatchBilling(payment.estimateId, {
+        percentagePaid: totalPercentagePaid,
+        remainingPercentage: remainingPercentage,
+      });
+
+      console.log("Billing updated successfully with new percentages");
+
+      // Recargar el billing para refrescar la UI
+      await getBilling(payment.estimateId);
+    } catch (error) {
+      console.error("Error updating billing percentages:", error);
+    }
   };
 
   const handleUpdatePayment = async () => {
@@ -129,6 +214,9 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Actualizar los porcentajes del billing
+        await updateBillingPercentages();
 
         // Redirigir a la tabla de billing details después de actualizar
         if (onRedirectToBillingDetails) {
@@ -310,6 +398,7 @@ export function PaymentDetailForm({
                 const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   handleFieldChange("percentagePaid", 0);
+                  handleFieldChange("amount", 0);
                   return;
                 }
                 const numericValue = parseFloat(rawValue);
@@ -319,12 +408,34 @@ export function PaymentDetailForm({
                   numericValue <= 100
                 ) {
                   handleFieldChange("percentagePaid", numericValue);
+                  // Calcular automáticamente el amount basado en el porcentaje
+                  const calculatedAmount =
+                    calculateAmountFromPercentage(numericValue);
+                  handleFieldChange(
+                    "amount",
+                    Math.round(calculatedAmount * 100) / 100
+                  );
                 }
               }}
             />
-            <div className="text-xs text-gray-500 text-right mt-1">
-              Current total (excluding this): {getCurrentTotalPercentage()}% |
-              Available: {100 - getCurrentTotalPercentage()}%
+            <div className="text-xs text-right mt-1">
+              <div className="space-y-1">
+                <div className="text-gray-500">
+                  Current total (excluding this): {getCurrentTotalPercentage()}%
+                  | Available: {100 - getCurrentTotalPercentage()}%
+                </div>
+                {billingTotalValue > 0 && (
+                  <div className="text-blue-600 font-medium">
+                    Billing Total: ${billingTotalValue.toLocaleString()} |
+                    {localPayment.percentagePaid > 0 &&
+                      ` ${
+                        localPayment.percentagePaid
+                      }% = $${calculateAmountFromPercentage(
+                        localPayment.percentagePaid
+                      ).toLocaleString()}`}
+                  </div>
+                )}
+              </div>
             </div>
             <hr className="border-[#EBEDF2]" />
 
