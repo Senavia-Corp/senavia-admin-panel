@@ -11,6 +11,7 @@ import { PlanViewModel } from "../pages/plan/PlanViewModel";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { GenericDropdown } from "@/components/atoms/generic-dropdown";
+import { LeadManagementService } from "@/services/lead-management-service";
 
 interface EditorProps {
   entityId?: number;
@@ -53,9 +54,47 @@ export function PlanEditor({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Estados para el dropdown de servicios
+  const [serviceOptions, setServiceOptions] = useState<
+    Array<{
+      id: number;
+      name: string;
+      subtitle?: string;
+    }>
+  >([]);
+  const [isServicesLoading, setIsServicesLoading] = useState(false);
+  const [servicesError, setServicesError] = useState<string | null>(null);
+
   const { getPlanById, savePlan } = PlanViewModel();
   const { toast } = useToast();
   const descriptionValue = watch("description", "");
+
+  // Función para cargar servicios
+  const loadServiceOptions = async () => {
+    try {
+      setIsServicesLoading(true);
+      setServicesError(null);
+      const fetched = await LeadManagementService.getServices();
+      const mappedServices = fetched.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        subtitle: s.description,
+      }));
+      setServiceOptions(mappedServices);
+      return mappedServices;
+    } catch (error) {
+      console.error("Error loading services:", error);
+      setServicesError("Error loading services");
+      toast({
+        title: "Error",
+        description: "Couldn't load services. Please try again.",
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setIsServicesLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (entityId) {
@@ -241,26 +280,6 @@ export function PlanEditor({
           </CardContent>
           {/* Service */}
           <CardTitle className="text-lg">Service *</CardTitle>
-          <div className="mb-6">
-            <Input
-              {...register("serviceId", {
-                required: "Service is required",
-                valueAsNumber: true,
-              })}
-              placeholder="Enter the service"
-              disabled={isLoading}
-              className={` ${
-                errors.serviceId
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : "focus-visible:ring-blue-500"
-              } ${isLoading ? "bg-gray-100 cursor-not-allowed" : ""}`}
-            />
-            {errors.serviceId && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.serviceId.message}
-              </p>
-            )}
-          </div>
           {/*Service*/}
           <Controller
             name="serviceId"
@@ -273,11 +292,11 @@ export function PlanEditor({
                 }}
                 placeholder="Select a service..."
                 className={`w-full ${errors.serviceId ? "border-red-500" : ""}`}
-                disabled={isSubmitting}
+                disabled={isLoading}
                 options={serviceOptions}
                 isLoading={isServicesLoading}
                 error={servicesError}
-                loadOptions={serviceLoadOptions}
+                loadOptions={loadServiceOptions}
                 hasError={Boolean(errors.serviceId)}
                 searchFields={["name", "subtitle"]}
                 displayField="name"
