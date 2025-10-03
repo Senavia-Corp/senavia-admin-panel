@@ -46,7 +46,7 @@ export function DashboardPage() {
     try {
       const res = await fetch("http://localhost:3000/api/auth/me", {
         method: "GET",
-        credentials: "include", // 🔑 para que viaje la cookie
+        credentials: "include", //para que viaje la cookie
       });
 
       const data = await res.json();

@@ -112,8 +112,11 @@ export const endpoints = {
     sendToClient: 'https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3',
   },
   plan: {
-    getPlans: `${API}/plan`,
-    getPlan: (id: number) => `${API}/plan?id=${id}`,
+    getPlans: `${API}/plan`,    
+    getById: (id: number) => `${API}/plan?id=${id}`,
+    delete: (id: number) => `${API}/plan?id=${id}`,
+    update: (id: number) => `${API}/plan?id=${id}`,
+    create: `${API}/plan`,
   },
   cost: {
     createCost: `${API}/cost`,

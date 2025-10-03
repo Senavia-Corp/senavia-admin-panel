@@ -3,32 +3,29 @@
 import { useState, useEffect } from "react";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Clause } from "./clause/clause";
-import { ClauseEditor } from "../organisms/clause-editor";
+import type{Plan} from"./plan/plan";
+import { PlanEditor } from "../organisms/plan-editor";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
-import ClauseViewModel from "./clause/ClauseViewModel";
+//import ClauseViewModel from "./clause/ClauseViewModel";
 import { useToast } from "@/hooks/use-toast";
 import { PaginationControl } from "../molecules/Pagination-control";
 import { Pagination } from "../ui/pagination";
 import { ClauseTableRowSkeleton } from "../atoms/clause-table-row-skeleton";
+import { PlanViewModel } from "./plan/PlanViewModel";
 
-export function ClausePage() {
+export function PlanPage() {
   const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [themeFilter, setThemeFilter] = useState("");
   const [showEditor, setShowEditor] = useState(false);
-  const [editingClauseId, setEditingClauseId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [itemsPerPage, setitemsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
   const {
-    clauses,
-    loading,
-    pageInfo,
-    getAllClauses,
-    getClauseById,
-    deleteClause,
-  } = ClauseViewModel({ isPaginated: true, offset, itemsPerPage, searchTerm });
-  const clauseVM = ClauseViewModel();
+    getAllPlans,plans, loading,deletePlan
+  } = PlanViewModel({ isPaginated: true, offset, itemsPerPage, searchTerm });
+  
   const [entityToDelete, setEntityToDelete] = useState<Clause | null>(null);
   const [dataClauses, setDataClauses] = useState<Clause[]>([]);
   const { toast } = useToast();
@@ -36,14 +33,14 @@ export function ClausePage() {
     setOffset(0);
   }, [searchTerm]);
 
-  const handleView = (clause: Clause) => {
-    setEditingClauseId(clause.id);
+  const handleView = (plan: Plan) => {
+    setEditingId(plan.id);
 
     setShowEditor(true);
   };
 
   const handleCreateBlog = () => {
-    setEditingClauseId(null);
+    setEditingId(null);
     setShowEditor(true);
   };
   const handleFilterChange = () => {};
@@ -56,23 +53,26 @@ export function ClausePage() {
   };
   const handleDelete = async (id: number) => {
     try {
-      const success = await deleteClause(id);
+      const success = await deletePlan(id);
       if (success) {
-        toast({ title: "Success", description: "Clause deleted successfully" });
+        toast({ title: "Success", description: "Plan deleted successfully" });
         //setDataProducts((prev) => prev.filter((p) => p.id !== id));
       } else {
-        console.error(`❌ No se pudo eliminar el producto ${id}`);
+        console.error(`❌ No se pudo eliminar el plan ${id}`);
         toast({
           title: "Error",
           description:
-            "The product could not be deleted; it is associated with a contract.",
+            "The plan could not be deleted.",
         });
       }
     } catch (error) {
-      console.error("Error eliminando producto:", error);
+      console.error("Error eliminando plan:", error);
     }
   };
-  const PaginadoComponent = () => (
+
+
+  /*const PaginadoComponent = () => (
+    
     <PaginationControl
       offset={offset}
       itemsPerPage={itemsPerPage}
@@ -85,7 +85,7 @@ export function ClausePage() {
         }
       }}
     />
-  );
+  );*/
 
   if (showEditor) {
     return (
@@ -93,19 +93,19 @@ export function ClausePage() {
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="p-6 h-full">
-            <ClauseEditor
-              entityId={editingClauseId ?? undefined}
+            <PlanEditor
+              entityId={editingId ?? undefined}
               onBack={() => {
                 setShowEditor(false);
-                getAllClauses();
+                getAllPlans();
               }}
               onSave={() => {
                 {
                   setShowEditor(false);
-                  getAllClauses();
+                  getAllPlans();
                 }
               }}
-              onDelete={deleteClause}
+              onDelete={deletePlan}
             />
           </div>
         </main>
@@ -121,25 +121,23 @@ export function ClausePage() {
           <div className="flex flex-col h-full w-full">
             <div className="flex items-center mb-6 flex-shrink-0">
               <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">
-                Clause Management
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">Plan</h1>
             </div>
 
             <div className="flex-1 min-h-0">
               {GeneralTable(
-                "clause-page",
-                "Add Clause",
-                "Create a new clause to add to one of your contracts.",
-                "All Clauses",
+                "plan-page",
+                "Add Plan",
                 "Description",
-                ["Clause ID", "Title", "Description", "Actions"],
-                clauses,
+                "All Plans",
+                "Description",
+                ["Plan ID", "Name","Description","Type","price",  "Actions"],
+                plans,
                 handlers,
                 {
                   isLoading: loading,
-                  pagination: <PaginadoComponent />,
-                  skeletonComponent: ClauseTableRowSkeleton, // 👈 tu componente de fila de skeleton
+                  //pagination: <PaginadoComponent />,
+                  skeletonComponent: ClauseTableRowSkeleton, 
                   skeletonCount: 5,
                 }
               )}
