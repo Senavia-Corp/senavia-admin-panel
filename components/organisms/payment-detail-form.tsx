@@ -286,13 +286,28 @@ export function PaymentDetailForm({
             <Input
               placeholder="0"
               className="w-full h-7"
-              type="number"
-              min="0"
-              max={100 - getCurrentTotalPercentage()}
-              value={localPayment.percentagePaid}
-              onChange={(e) =>
-                handleFieldChange("percentagePaid", Number(e.target.value))
+              type="text"
+              value={
+                localPayment.percentagePaid === 0
+                  ? ""
+                  : localPayment.percentagePaid.toString()
               }
+              onChange={(e) => {
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
+                if (rawValue === "") {
+                  handleFieldChange("percentagePaid", 0);
+                  return;
+                }
+                const numericValue = parseFloat(rawValue);
+                if (
+                  !isNaN(numericValue) &&
+                  numericValue >= 0 &&
+                  numericValue <= 100
+                ) {
+                  handleFieldChange("percentagePaid", numericValue);
+                }
+              }}
             />
             <div className="text-xs text-gray-500 text-right mt-1">
               Current total (excluding this): {getCurrentTotalPercentage()}% |

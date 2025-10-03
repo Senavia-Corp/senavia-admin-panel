@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -34,7 +34,8 @@ export function PaymentDetailFormCreate({
 }) {
   const [loadingPost, setLoadingPost] = useState(false);
   const { toast } = useToast();
-  const { createPayment } = BillingViewModel();
+  const { createPayment, getPayments, payments } = BillingViewModel();
+  const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
 
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
@@ -44,9 +45,95 @@ export function PaymentDetailFormCreate({
   const [paidDate, setPaidDate] = useState("");
   const [method, setMethod] = useState("");
 
+  // Cargar payments existentes para validar porcentaje
+  useEffect(() => {
+    const loadExistingPayments = async () => {
+      try {
+        await getPayments(); // Esto actualiza el estado en BillingViewModel
+      } catch (error) {
+        console.error("Error loading existing payments:", error);
+      }
+    };
+
+    loadExistingPayments();
+  }, [estimateId, getPayments]);
+
+  // Actualizar existingPayments cuando cambien los payments del BillingViewModel
+  useEffect(() => {
+    console.log("All payments from BillingViewModel:", payments);
+    console.log("Current estimateId:", estimateId);
+
+    if (payments && payments.length > 0) {
+      const paymentsForEstimate = payments.filter(
+        (payment: Payment) => payment.estimateId === estimateId
+      );
+      console.log("Filtered payments for estimate:", paymentsForEstimate);
+      setExistingPayments(paymentsForEstimate);
+    } else {
+      console.log("No payments found or payments array is empty");
+      setExistingPayments([]);
+    }
+  }, [payments, estimateId]);
+
+  // Función para calcular el porcentaje total actual
+  const getCurrentTotalPercentage = () => {
+    const total = existingPayments.reduce((total, payment) => {
+      const percentage = Number(payment.percentagePaid);
+      console.log(
+        `Payment ${payment.id}: ${payment.percentagePaid} -> ${percentage}`
+      );
+      return total + percentage;
+    }, 0);
+    console.log("Existing payments:", existingPayments);
+    console.log("Current total percentage:", total);
+    return isNaN(total) ? 0 : total;
+  };
+
+  // Función para validar si se puede agregar el nuevo porcentaje
+  const validatePercentage = (newPercentage: number) => {
+    const currentTotal = getCurrentTotalPercentage();
+    return currentTotal + newPercentage <= 100;
+  };
+
+  // Función para verificar si ya se completó el 100%
+  const isFullyPaid = () => {
+    return getCurrentTotalPercentage() >= 100;
+  };
+
   const handleCreatePayment = async () => {
     try {
       setLoadingPost(true);
+
+      // Verificar si ya se completó el 100%
+      if (isFullyPaid()) {
+        toast({
+          title: "Cannot create payment",
+          description: `Payment creation blocked. Total percentage is already at 100%. No additional payments can be created for this estimate.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validar que el porcentaje no exceda el 100%
+      const currentTotal = getCurrentTotalPercentage();
+      const newTotal = currentTotal + percentagePaid;
+      console.log("Validation check:", {
+        currentTotal,
+        percentagePaid,
+        newTotal,
+        isValid: newTotal <= 100,
+      });
+
+      if (!validatePercentage(percentagePaid)) {
+        const maxAllowed = 100 - currentTotal;
+        toast({
+          title: "Percentage limit exceeded",
+          description: `Cannot create payment. Current total: ${currentTotal}%. Maximum allowed for new payment: ${maxAllowed}%`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const paymentData: CreatePaymentData = {
         reference,
         description,
@@ -80,7 +167,7 @@ export function PaymentDetailFormCreate({
           onBack?.();
         }
       } else {
-        throw new Error(response.message || "Failed to create payment");
+        throw new Error("Failed to create payment");
       }
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -195,12 +282,37 @@ export function PaymentDetailFormCreate({
             <Input
               placeholder="0"
               className="w-full h-7"
-              type="number"
-              min="0"
-              max="100"
-              value={percentagePaid}
-              onChange={(e) => setPercentagePaid(Number(e.target.value))}
+              type="text"
+              value={percentagePaid === 0 ? "" : percentagePaid.toString()}
+              onChange={(e) => {
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
+                if (rawValue === "") {
+                  setPercentagePaid(0);
+                  return;
+                }
+                const numericValue = parseFloat(rawValue);
+                if (
+                  !isNaN(numericValue) &&
+                  numericValue >= 0 &&
+                  numericValue <= 100
+                ) {
+                  setPercentagePaid(numericValue);
+                }
+              }}
             />
+            <div className="text-xs text-right mt-1">
+              {isFullyPaid() ? (
+                <span className="text-green-600 font-semibold">
+                  ✅ Payment plan completed: 100%
+                </span>
+              ) : (
+                <span className="text-gray-500">
+                  Current total: {Math.round(getCurrentTotalPercentage())}% |
+                  Available: {Math.round(100 - getCurrentTotalPercentage())}%
+                </span>
+              )}
+            </div>
             <hr className="border-[#EBEDF2]" />
 
             <p>State</p>
@@ -247,13 +359,21 @@ export function PaymentDetailFormCreate({
             <hr className="border-[#EBEDF2]" />
 
             <Button
-              className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
+              className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
               onClick={handleCreatePayment}
               disabled={
-                loadingPost || !reference || !description || amount <= 0
+                loadingPost ||
+                !reference ||
+                !description ||
+                amount <= 0 ||
+                isFullyPaid()
               }
             >
-              {loadingPost ? "Creating..." : "Add Payment"}
+              {loadingPost
+                ? "Creating..."
+                : isFullyPaid()
+                ? "Payment Plan Completed"
+                : "Add Payment"}
             </Button>
           </div>
         </div>
