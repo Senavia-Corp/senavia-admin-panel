@@ -83,12 +83,6 @@ export function BillingDetailCreateForm({
   onBack,
   onSave,
 }: BillingDetailCreateFormProps) {
-  // Movemos los console.log dentro de un useEffect para que solo se ejecuten una vez al montar el componente
-  useEffect(() => {
-    console.log("selectedBilling recibido:", selectedBilling);
-    console.log("leads recibidos:", leads);
-    console.log("lead recibido:", lead);
-  }, []);
   const [showDocument, setShowDocument] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState({ type: "", message: "" });
@@ -183,9 +177,6 @@ export function BillingDetailCreateForm({
           description: "The billing has been created successfully.",
           duration: 3000,
         });
-        if (newBilling && newBilling.id) {
-          console.log("Created billing with ID:", newBilling.id);
-        }
       } else if ("error" in response) {
         toast({
           title: "Failed to create billing",

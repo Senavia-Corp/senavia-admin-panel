@@ -233,7 +233,6 @@ export function BillingViewModel() {
       setError(null)
       const { response, status, errorLogs } = await fetchData<apiResponse<PatchCost>>(endpoints.cost.updateCost(id), "patch", PatchCost);
       if (status === 200) {
-        console.log("Cost patched successfully") //Cambiar luego por un toast
       } else {
         setError(errorLogs?.message || response?.message || "Failed to delete Cost");
         return false;

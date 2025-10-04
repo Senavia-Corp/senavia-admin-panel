@@ -41,10 +41,8 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
 
   // cuando billing cambie, cargar lead y plan
   useEffect(() => {
-    console.log("billing recibido:", billing);
     if (!billing || billing.length === 0) return;
     const current = billing[0];
-    console.log("current recibido:", current);
     if (current.lead_id) getLeadById(current.lead_id);
     if (current.plan_id) getPlanById(current.plan_id);
   }, [billing]);

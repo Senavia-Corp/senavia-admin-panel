@@ -189,17 +189,24 @@ export function BillingDetailForm({
 
       const planPrice = associatedPlan.length > 0 
         ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
-        : Number(localEstimateData?.totalValue) || 0;
-      const costsTotal =
-        selectedBilling?.costs?.reduce(
-          (sum, cost) => sum + Number(cost.value),
-          0
-        ) || 0;
+        : 0;
+      // Usar costos del backend si están disponibles, sino del selectedBilling
+      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
+      const currentCosts = latestBilling?.costs || selectedBilling?.costs || [];
+      const costsTotal = currentCosts.reduce(
+        (sum, cost) => sum + Number(cost.value),
+        0
+      );
+
+      // Si no hay plan seleccionado, mantener el totalValue actual
+      const newTotalValue = associatedPlan.length > 0 
+        ? planPrice + costsTotal 
+        : Number(localEstimateData?.totalValue) + costsTotal || 0;
 
       const billingData: CreateBillingData = {
         ...localEstimateData!,
         state: status,
-        totalValue: planPrice + costsTotal,
+        totalValue: newTotalValue,
         plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
         deadLineToPay: selectedBilling?.deadLineToPay || "",
         invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",

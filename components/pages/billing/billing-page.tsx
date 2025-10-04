@@ -113,7 +113,6 @@ export function BillingPage() {
   }, [getLeadById])
 
   const handleCreateBilling = useCallback(async () => {
-    console.log("Create new billing record")
     setShowCreateBilling(true)
   }, [])
 

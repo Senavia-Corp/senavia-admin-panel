@@ -53,7 +53,7 @@ export function CostPage({
       const latestCosts = latest.costs || [];
       setCosts(latestCosts);
       setFilteredCosts(latestCosts);
-
+      console.log("costs recibidos:", latestCosts);
     }
   }, [billing]);
 
@@ -144,7 +144,6 @@ export function CostPage({
   };
 
   const handleCreateCost = () => {
-    console.log("Create new billing record");
     setShowCreateCost(true);
   };
 

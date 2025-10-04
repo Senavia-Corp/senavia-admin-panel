@@ -169,7 +169,7 @@ export function CostDetailFormCreate({
               onClick={handleCreateCost}
               disabled={loadingPost || !isFormValid}
             >
-              {loadingPost ? 'Updating...' : 'Add Cost'}  
+              {loadingPost ? 'Creating...' : 'Add Cost'}  
             </Button>
           </div>
         </div>

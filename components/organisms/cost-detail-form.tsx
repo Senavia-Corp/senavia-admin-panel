@@ -34,12 +34,10 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
 
       // Primero actualizamos el costo
       await updateCost(costId, costData);
-      console.log("Cost updated successfully");
 
       // Después actualizamos el billing con el nuevo total
       // Restamos el valor anterior y sumamos el nuevo valor
       const newTotalValue = Number(totalValue) - Number(cost.value) + Number(costData.value);
-      console.log("Updating billing with new total:", newTotalValue);
       
       await PatchBilling(billingId, {
         totalValue: newTotalValue
