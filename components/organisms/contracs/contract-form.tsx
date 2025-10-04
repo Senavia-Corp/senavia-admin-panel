@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contractFormSchema } from "@/components/organisms/contracs/schemas";
@@ -7,6 +7,7 @@ import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 import { Card, CardHeader } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Eye } from "lucide-react";
+import { ContractClauses } from "./contract-clauses-management/contract-clauses";
 
 import type {
   CreateContractFormValues,
@@ -70,6 +71,7 @@ export function ContractForm({
   userLoadOptions,
   leadLoadOptions,
 }: ContractFormProps) {
+  const [showClauses, setShowClauses] = useState(false);
   const formMethods = useForm<CreateContractFormValues>({
     resolver: zodResolver(contractFormSchema),
     defaultValues: initialValues,
@@ -100,6 +102,18 @@ export function ContractForm({
       }
     );
   };
+
+  const handleShowClauses = () => {
+    setShowClauses(true);
+  };
+
+  if (showClauses) {
+    return (
+      <div className="min-h-screen w-full bg-red-500">
+        <ContractClauses />
+      </div>
+    );
+  }
 
   return (
     <FormProvider {...formMethods}>
@@ -427,7 +441,7 @@ export function ContractForm({
                 </p>
               </div>
               <Button
-                onClick={() => null}
+                onClick={handleShowClauses}
                 className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
               >
                 <Eye color="#04081E" />

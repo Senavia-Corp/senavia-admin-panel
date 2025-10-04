@@ -6,6 +6,15 @@ export type ContractStatus =
   | "EXPIRED"
   | "TERMINATED";
 
+export interface Clause {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  state?: string;
+}
+
 export interface ContractClauseLink {
   contractId: number;
   clauseId: number;

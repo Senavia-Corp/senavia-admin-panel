@@ -10,8 +10,8 @@ interface DropdownOption {
 }
 
 interface GenericDropdownProps {
-  value?: number;
-  onChange: (value: number, option?: DropdownOption) => void;
+  value?: number | null;
+  onChange: (value: number | null, option?: DropdownOption) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -132,7 +132,9 @@ export function GenericDropdown({
   }, []);
 
   // Find the selected option
-  const selectedOption = effectiveOptions.find((option) => option.id === value);
+  const selectedOption = value
+    ? effectiveOptions.find((option) => option.id === value)
+    : undefined;
 
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,6 +167,14 @@ export function GenericDropdown({
   };
 
   const handleSelectOption = (selectedOption: DropdownOption) => {
+    // If clicking on the already selected option, deselect it
+    if (value === selectedOption.id) {
+      onChange(null, undefined); // Pass null to indicate deselection
+      setIsOpen(false);
+      setSearchTerm("");
+      return;
+    }
+
     onChange(selectedOption.id, selectedOption);
     setIsOpen(false);
     setSearchTerm(""); // Clear search when selecting
