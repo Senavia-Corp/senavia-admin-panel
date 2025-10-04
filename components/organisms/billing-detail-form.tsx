@@ -288,14 +288,11 @@ export function BillingDetailForm({
         description: localEstimateData?.description || (latestBilling?.description ?? ""),
         email: effectiveLead?.clientEmail || "",
         document: base64String,
+        id: latestBilling?.id || 0,
       });
 
-      toast({
-        title: "Billing sent to client successfully",
-        description: "The billing has been sent to the client.",
-      });
+
     } catch (error) {
-      console.error("Error sending to client:", error);
       toast({
         title: "Failed to send to client",
         description: "The billing has not been sent to the client.",

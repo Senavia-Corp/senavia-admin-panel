@@ -92,9 +92,10 @@ export interface SendToClientData {
   name: string;
   title: string;
   description: string;
-  email: string;
+  email: string;  
   document?: string;
-}
+  id: number;
+  }
 
 export interface BillingPDF{
   title: string,
