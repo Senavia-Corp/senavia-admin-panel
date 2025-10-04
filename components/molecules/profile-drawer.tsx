@@ -3,6 +3,9 @@
 import { Settings, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { API } from "@/lib/services/endpoints";
+
+
 
 interface ProfileDrawerProps {
   isOpen: boolean;
@@ -35,7 +38,7 @@ export function ProfileDrawer({
   }, [user]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/auth/me", {
+    fetch(`${API}/auth/me`, {
       method: "GET",
       credentials: "include", // 👈 para enviar cookies
     })

@@ -249,7 +249,7 @@ export function PlanEditor({
                   <option value="">Select type...</option>
                   {["MONTHLY", "SINGLEPAYMENT"].map((type) => (
                     <option key={type} value={type}>
-                      {type}
+                     {type.charAt(0) + type.slice(1).toLowerCase()}
                     </option>
                   ))}
                 </select>
