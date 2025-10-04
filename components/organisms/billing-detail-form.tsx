@@ -96,7 +96,7 @@ export function BillingDetailForm({
       description: selectedBilling?.description || "",
       state: selectedBilling?.state || "",
       lead_id: selectedBilling?.lead_id || 0,
-      plan_id: selectedBilling?.plan_id || 0,
+      plan_id: selectedBilling?.plan_id || undefined,
       deadLineToPay: selectedBilling?.deadLineToPay || "",
       invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
       invoiceReference: selectedBilling?.invoiceReference || "",
@@ -116,7 +116,7 @@ export function BillingDetailForm({
         description: b.description || "",
         state: b.state || "",
         lead_id: b.lead_id || 0,
-        plan_id: b.plan_id || 0,
+        plan_id: b.plan_id || undefined,
         deadLineToPay: b.deadLineToPay || "",
         invoiceDateCreated: b.invoiceDateCreated || "",
         invoiceReference: b.invoiceReference || "",
@@ -187,10 +187,9 @@ export function BillingDetailForm({
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
 
-      const planPrice =
-        Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) ||
-        Number(localEstimateData?.totalValue) ||
-        0;
+      const planPrice = associatedPlan.length > 0 
+        ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
+        : Number(localEstimateData?.totalValue) || 0;
       const costsTotal =
         selectedBilling?.costs?.reduce(
           (sum, cost) => sum + Number(cost.value),
@@ -201,9 +200,12 @@ export function BillingDetailForm({
         ...localEstimateData!,
         state: status,
         totalValue: planPrice + costsTotal,
-        deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
-        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-        invoiceReference: "INV-2025-0456",
+        plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
+        deadLineToPay: selectedBilling?.deadLineToPay || "",
+        invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
+        invoiceReference: (localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== "") 
+          ? localEstimateData.invoiceReference 
+          : (selectedBilling?.invoiceReference || "INV-2025-0456"),
       };
       await PatchBilling(ID_estimate, billingData);
       setLocalEstimateData(billingData);
@@ -384,7 +386,7 @@ export function BillingDetailForm({
               Total:{" "}
               {localEstimateData?.totalValue
                 ? formatCurrency(localEstimateData.totalValue)
-                : "N/A"}
+                : "$0"}
             </p>
             <hr className="border-[#EBEDF2]" />
             <p>Title</p>
@@ -529,7 +531,7 @@ export function BillingDetailForm({
                 onChange={(value) => {
                   setAssociatedPlan(value);
                   setLocalEstimateData((prev) =>
-                    prev ? { ...prev, plan_id: value[0] || 0 } : null
+                    prev ? { ...prev, plan_id: value[0] || undefined } : null
                   );
                 }}
               />

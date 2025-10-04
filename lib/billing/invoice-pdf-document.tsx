@@ -72,13 +72,13 @@ export const InvoicePDFDocument = ({
           </View>
           <View
             style={{
-              paddingLeft: 100,
+              paddingLeft: 70,
               alignSelf: "flex-end",
               justifyContent: "flex-end",
             }}
           >
             <Text style={{ marginBottom: 10 }}>
-              {"Estimate #" + billing.id}
+              {`Estimate # 100_${billing.id}`}
             </Text>
             <Text style={{ fontWeight: "bold" }}>Issued Date</Text>
             <Text>{billing.deadLineToPay || "No value found"}</Text>
@@ -119,9 +119,7 @@ export const InvoicePDFDocument = ({
             <CardPDF
               title="Payment"
               lines={[
-                `Payment Date: ${new Date(
-                  billing.deadLineToPay
-                ).toLocaleDateString()}`,
+                `Payment Date: ${billing.deadLineToPay}`,
                 formatCurrency(billing.totalValue),
               ]}
             />
@@ -425,7 +423,7 @@ const styles = StyleSheet.create({
     color: "white",
     position: "absolute",
     top: 10,
-    left: 240,
+    left: 220,
     width: 350,
     flexDirection: "row",
     gap: "10",

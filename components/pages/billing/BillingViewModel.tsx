@@ -62,8 +62,8 @@ export function BillingViewModel() {
       setSuccessMessage(null);
 
       // Validar datos requeridos
-      if (!billing.lead_id || !billing.plan_id) {
-        throw new Error("Total value, lead ID and plan ID are required");
+      if (!billing.lead_id) {
+        throw new Error("Lead ID is required");
       }
 
       const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(

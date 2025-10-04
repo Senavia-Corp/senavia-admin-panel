@@ -150,7 +150,6 @@ export function BillingDetailCreateForm({
       description !== "" &&
       status !== "" &&
       associatedLeads.length > 0 &&
-      associatedPlan.length > 0 &&
       deadlineToPay !== ""
     );
   };
@@ -160,12 +159,14 @@ export function BillingDetailCreateForm({
     try {
       const billingData: CreateBillingData = {
         title: title,
-        totalValue: Number(plans.find((plan) => plan.id === associatedPlan[0])?.price ?? 0),
+        totalValue: associatedPlan.length > 0 
+          ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price ?? 0)
+          : 0,
         estimatedTime: estimatedTime,
         description: description,
         state: status,
         lead_id: associatedLeads[0] || 0,
-        plan_id: associatedPlan[0] || 0,
+        plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
         deadLineToPay: deadlineToPay,
         invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
         invoiceReference: invoiceReference,
@@ -208,19 +209,6 @@ export function BillingDetailCreateForm({
     }
   };
 
-  // if (showCosts) {
-  //   return (
-  //     <div className="">
-  //       <CostPage
-  //         costs={selectedBilling?.costs || []}
-  //         totalValue={parseInt(selectedBilling?.totalValue || "0")}
-  //         estimateId={selectedBilling?.id || 0}
-  //         onBack={() => setShowCosts(false)}
-  //       />
-  //     </div>
-  //   );
-  // }
-
   if (showPayments) {
     return (
       <div className="">
@@ -234,10 +222,6 @@ export function BillingDetailCreateForm({
     );
   }
 
-
-  // if (showDocument && selectedBilling) {
-  //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
-  // }
 
   return (
     <div className="flex flex-col">
@@ -364,7 +348,7 @@ export function BillingDetailCreateForm({
             </div>
             <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
-              <label>Associated Plan ID</label>
+              <label>Associated Plan ID (Optional)</label>
               <MultiSelectPlan
                 plans={plans}
                 value={associatedPlan}
@@ -429,11 +413,6 @@ export function BillingDetailCreateForm({
           </div>
         </div>
       </div>
-      <CardMokcup
-        type={popupMessage.type === "success" ? "success" : "error"}
-        message={popupMessage.message}
-        isOpen={showPopup}
-      />
     </div>
   );
 }
