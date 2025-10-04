@@ -41,7 +41,7 @@ export interface Contract {
   state: ContractStatus;
   signedDate: string | null;
   companyEmail: string;
-  companyAdd: string;
+  companyAdd?: string;
   companyPhone: string;
   content: string;
   ownerName: string;
@@ -63,12 +63,12 @@ export interface CreateContractData {
   title: string;
   content: string;
   state: ContractStatus;
-  clauses: number[];
+  clauses?: number[];
   signedDate: string; // UI label: Deadline to Sign
   userId?: number | null;
-  leadId: number;
+  leadId?: number | null;
   companyEmail: string;
-  companyAdd: string;
+  companyAdd?: string;
   companyPhone: string;
   ownerName: string;
   ownerSignDate?: string | null;

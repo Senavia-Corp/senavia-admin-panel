@@ -3,16 +3,17 @@ import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contractFormSchema } from "@/components/organisms/contracs/schemas";
 import { Loader2 } from "lucide-react";
-import { ClauseMultiSelect } from "@/components/atoms/clause-multiselect";
 import { GenericDropdown } from "@/components/atoms/generic-dropdown";
-import { useFetch } from "@/lib/services/endpoints";
+import { Card, CardHeader } from "../../ui/card";
+import { Button } from "../../ui/button";
+import { Eye } from "lucide-react";
+
 import type {
   CreateContractFormValues,
   ContractStatus,
 } from "@/types/contract-management";
 
 type ContractFormMode = "create" | "edit";
-const { fetchData } = useFetch();
 
 interface ContractFormProps {
   mode: ContractFormMode;
@@ -102,6 +103,18 @@ export function ContractForm({
 
   return (
     <FormProvider {...formMethods}>
+      {/* Header with email button */}
+      <div className="flex items-center justify-end mb-6">
+        <button
+          className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4"
+          onClick={() => {
+            handleSendEmail();
+          }}
+        >
+          Send Contract by Email
+        </button>
+      </div>
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className={`w-full mx-auto p-8 bg-white rounded-lg shadow-none ${
@@ -190,33 +203,6 @@ export function ContractForm({
             )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              Clauses *
-            </label>
-            <div
-              className={`${
-                errors.clauses ? "border border-red-500 rounded-md" : ""
-              }`}
-            >
-              <Controller
-                name="clauses"
-                control={control}
-                render={({ field }) => (
-                  <ClauseMultiSelect
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Select clauses..."
-                    disabled={isSubmitting}
-                  />
-                )}
-              />
-            </div>
-            {errors.clauses && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.clauses.message as string}
-              </p>
-            )}
-
-            <label className="block text-sm font-medium mb-2 mt-4">
               Deadline to Sign *
             </label>
             <input
@@ -270,16 +256,22 @@ export function ContractForm({
               </p>
             )}
 
-            <label className="block text-sm font-medium mb-2 mt-4">
-              Lead *
-            </label>
+            <label className="block text-sm font-medium mb-2 mt-4">Lead</label>
             <Controller
               name="leadId"
               control={control}
               render={({ field }) => (
                 <GenericDropdown
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value || undefined}
+                  onChange={(value, selectedOption) => {
+                    field.onChange(value);
+                    if (selectedOption) {
+                      setValue("companyEmail", selectedOption.email || "");
+                      setValue("recipientName", selectedOption.name || "");
+                      setValue("companyAdd", selectedOption.address || "");
+                      setValue("companyPhone", selectedOption.phone || "");
+                    }
+                  }}
                   placeholder="Select a lead..."
                   className={`w-full ${errors.leadId ? "border-red-500" : ""}`}
                   disabled={isSubmitting}
@@ -327,7 +319,7 @@ export function ContractForm({
             )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              Client Address *
+              Client Address
             </label>
             <input
               type="text"
@@ -425,6 +417,24 @@ export function ContractForm({
           </div>
         </div>
 
+        {mode === "edit" && (
+          <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center mt-8 ">
+            <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
+              <div>
+                <h2 className="text-2xl font-normal">Clause Details</h2>
+                <p className="font-light text-base">
+                  Use this interface to create clauses for this contract
+                </p>
+              </div>
+              <Button
+                onClick={() => null}
+                className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+              >
+                <Eye color="#04081E" />
+              </Button>
+            </CardHeader>
+          </Card>
+        )}
         <div className="flex justify-center mt-8">
           <button
             type="submit"
@@ -443,16 +453,6 @@ export function ContractForm({
           </button>
         </div>
       </form>
-      <div className="flex justify-center mt-8">
-        <button
-          className="w-full md:w-2/3 bg-[#99CC33] hover:bg-[#8bb82e] text-white py-3 px-6 rounded-lg text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
-          onClick={() => {
-            handleSendEmail();
-          }}
-        >
-          Send Contract by Email
-        </button> 
-      </div>
     </FormProvider>
   );
 }

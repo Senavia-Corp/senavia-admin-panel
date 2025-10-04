@@ -59,6 +59,9 @@ export function EditContractForm({
       id: l.id,
       name: l.clientName,
       subtitle: l.description,
+      address: l.clientAddress,
+      phone: l.clientPhone,
+      email: l.clientEmail,
     }));
   };
 
