@@ -85,6 +85,9 @@ export function ContractForm({
     formState: { errors, isSubmitting, isDirty },
   } = formMethods;
 
+  const MAX_CONTENT_LENGTH = 10000;
+  const contentValue = formMethods.watch("content") || "";
+
   useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
@@ -177,8 +180,12 @@ export function ContractForm({
                 placeholder="Enter contract content..."
                 rows={4}
                 disabled={isSubmitting}
+                maxLength={MAX_CONTENT_LENGTH}
                 {...register("content")}
               />
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {contentValue.length}/{MAX_CONTENT_LENGTH}
+              </div>
               {errors.content && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.content.message as string}
