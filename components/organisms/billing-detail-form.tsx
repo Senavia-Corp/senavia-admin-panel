@@ -282,13 +282,20 @@ export function BillingDetailForm({
         String.fromCharCode(...new Uint8Array(arrayBuffer))
       );
 
+      // Determinar la URL base según el entorno
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+      const baseUrl = isDevelopment 
+        ? 'http://localhost:3000/es/estimate' 
+        : 'https://senaviacorp.com/en/estimate';
+      const estimateUrl = `${baseUrl}?ID=${latestBilling?.id || 0}`;
+
       await sendToClient({
         name: effectiveLead?.clientName || "",
         title: localEstimateData?.title || (latestBilling?.title ?? ""),
         description: localEstimateData?.description || (latestBilling?.description ?? ""),
         email: effectiveLead?.clientEmail || "",
         document: base64String,
-        id: latestBilling?.id || 0,
+        url: estimateUrl,
       });
 
 

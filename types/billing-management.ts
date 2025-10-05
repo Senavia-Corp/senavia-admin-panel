@@ -94,7 +94,7 @@ export interface SendToClientData {
   description: string;
   email: string;  
   document?: string;
-  id: number;
+  url: string;
   }
 
 export interface BillingPDF{
