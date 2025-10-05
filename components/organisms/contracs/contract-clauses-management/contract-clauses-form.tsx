@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Clause } from "@/types/contract-management";
+import ClauseViewModel from "@/components/pages/clause/ClauseViewModel";
 
 // Schema para el formulario de clauses
 const clauseFormSchema = z.object({
@@ -27,6 +28,7 @@ export function ContractClausesForm({
   onSuccess,
 }: ContractClausesFormProps) {
   const { toast } = useToast();
+  const { saveClause } = ClauseViewModel();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formMethods = useForm<ClauseFormValues>({
@@ -46,25 +48,22 @@ export function ContractClausesForm({
   const onSubmit = async (values: ClauseFormValues) => {
     try {
       setIsSubmitting(true);
+      const success = await saveClause(
+        { title: values.title, description: values.description },
+        clause?.id
+      );
 
-      if (clause) {
-        // TODO: Replace with actual service call for update
-        // await ClauseManagementService.updateClause(clause.id, values);
-        console.log("Updating clause:", values);
+      if (success) {
+        toast({
+          title: "Success",
+          description: clause
+            ? "Clause updated successfully!"
+            : "Clause created successfully!",
+        });
+        onSuccess?.();
       } else {
-        // TODO: Replace with actual service call for create
-        // await ClauseManagementService.createClause(values);
-        console.log("Creating clause:", values);
+        throw new Error("Failed to save clause");
       }
-
-      toast({
-        title: "Success",
-        description: clause
-          ? "Clause updated successfully!"
-          : "Clause created successfully!",
-      });
-
-      onSuccess?.();
     } catch (error: any) {
       console.error("Error saving clause:", error);
       toast({

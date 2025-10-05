@@ -8,50 +8,30 @@ import { useToast } from "@/hooks/use-toast";
 import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 import { DetailTabs } from "@/components/molecules/detail-tabs";
 import { ContractClausesForm } from "@/components/organisms/contracs/contract-clauses-management/contract-clauses-form";
+import ClauseViewModel from "@/components/pages/clause/ClauseViewModel";
 
-export function ContractClauses() {
+interface ContractClausesProps {
+  onBackToContract?: () => void;
+}
+
+export function ContractClauses({ onBackToContract }: ContractClausesProps) {
   const { toast } = useToast();
-  const [clauses, setClauses] = useState<Clause[]>([]);
-  const [filteredClauses, setFilteredClauses] = useState<Clause[]>([]);
-  const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
   const [selectedClause, setSelectedClause] = useState<Clause | null>(null);
   const [showEditorForm, setShowEditorForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  // ViewModel (sin paginación en esta vista)
+  const { clauses, loading, getAllClauses, deleteClause } = ClauseViewModel({
+    isPaginated: false,
+  });
 
-  // Campos de búsqueda para clauses
+  // Campos de búsqueda para clauses (coinciden con clause-page)
   const SEARCHABLE_FIELDS = ["title", "description"] as const;
 
   useEffect(() => {
-    loadClauses();
+    getAllClauses();
+    // getAllClauses es estable por cierre del hook; no agregarlo como dep para evitar re-fetch infinito
   }, []);
-
-  const loadClauses = async () => {
-    try {
-      setIsLoading(true);
-      setHasError(false);
-      // TODO: Replace with actual service call
-      // const clausesData = await ClauseManagementService.getClauses();
-      // setClauses(clausesData);
-      // setFilteredClauses(clausesData);
-
-      // Temporary mock data
-      setClauses([]);
-      setFilteredClauses([]);
-    } catch (error) {
-      console.error("Error loading clauses:", error);
-      setHasError(true);
-      toast({
-        title: "Error",
-        description: "Failed to load clauses. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCreateClause = () => {
     setSelectedClause(null);
@@ -69,28 +49,23 @@ export function ContractClauses() {
   };
 
   const handleDeleteClause = async (clause: Clause) => {
-    try {
-      // TODO: Replace with actual service call
-      // await ClauseManagementService.deleteClause(clause.id);
+    const ok = await deleteClause(clause.id);
+    if (ok) {
       setClauseToDelete(null);
-      loadClauses();
       toast({ title: "Success", description: "Clause deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting clause:", error);
+      // refrescar lista
+      await getAllClauses();
+    } else {
       toast({
         title: "Error",
-        description: "Failed to delete clause. Please try again.",
+        description:
+          "The clause could not be deleted; it is associated with a contract.",
         variant: "destructive",
       });
     }
   };
 
-  const handleFilterChange = (filter: string) => {
-    const [type, value] = filter.split(":");
-    if (type === "status") {
-      setStatusFilter(value === "all" ? "" : value);
-    }
-  };
+  const handleFilterChange = () => {};
 
   const handleBackToList = () => {
     setSelectedClause(null);
@@ -100,7 +75,7 @@ export function ContractClauses() {
   const handleSaveSuccess = () => {
     setSelectedClause(null);
     setShowEditorForm(false);
-    loadClauses();
+    getAllClauses();
   };
 
   const handlers = {
@@ -112,22 +87,16 @@ export function ContractClauses() {
     onFilter: handleFilterChange,
   };
 
-  // Local filtering like contracts page
-  useEffect(() => {
+  // Filtrado local (sin estado adicional para evitar bucles)
+  const filteredClauses = clauses.filter((clause) => {
     const lowerSearch = searchTerm.toLowerCase();
-    const filtered = clauses.filter((clause) => {
-      const matchesSearch = !searchTerm
-        ? true
-        : SEARCHABLE_FIELDS.some((field) =>
-            String(clause[field] ?? "")
-              .toLowerCase()
-              .includes(lowerSearch)
-          );
-      const matchesStatus = !statusFilter || clause.state === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-    setFilteredClauses(filtered);
-  }, [clauses, searchTerm, statusFilter]);
+    if (!searchTerm) return true;
+    return SEARCHABLE_FIELDS.some((field) =>
+      String((clause as any)[field] ?? "")
+        .toLowerCase()
+        .includes(lowerSearch)
+    );
+  });
 
   // Show create form
   if (showEditorForm && !selectedClause) {
@@ -167,15 +136,25 @@ export function ContractClauses() {
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <div className="flex items-center mb-6 flex-shrink-0">
-              <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
-              <h1 className="font-sans font-medium text-[25px] leading-none tracking-normal align-middle text-gray-900">
-                Contract Clauses Management
-              </h1>
+            <div className="flex items-center justify-between mb-6 flex-shrink-0">
+              <div className="flex items-center">
+                <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
+                <h1 className="font-sans font-medium text-[25px] leading-none tracking-normal align-middle text-gray-900">
+                  Contract Clauses Management
+                </h1>
+              </div>
+              {onBackToContract && (
+                <button
+                  onClick={onBackToContract}
+                  className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4 hover:bg-[#8bb82e] transition-colors"
+                >
+                  Back to Contract
+                </button>
+              )}
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
-                "contract-clauses-page",
+                "clause-page",
                 "Add Clause",
                 "Create new contract clauses and terms",
                 "All Clauses",
@@ -184,14 +163,7 @@ export function ContractClauses() {
                 filteredClauses,
                 handlers,
                 {
-                  isLoading,
-                  hasError,
-                  onRetry: loadClauses,
-                  emptyStateTitle: "No clauses found",
-                  emptyStateDescription:
-                    searchTerm || statusFilter
-                      ? "No clauses match your current filters. Try adjusting your search criteria."
-                      : "No clauses have been created yet. Click the '+' button to create the first clause.",
+                  isLoading: loading,
                   skeletonComponent: () => (
                     <TableRowSkeleton columns={3} actions={3} />
                   ),
