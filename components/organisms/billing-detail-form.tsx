@@ -187,7 +187,7 @@ export function BillingDetailForm({
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
 
-      const planPrice = associatedPlan.length > 0 
+      const planPrice = associatedPlan.length > 0
         ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
         : 0;
       // Usar costos del backend si están disponibles, sino del selectedBilling
@@ -199,8 +199,8 @@ export function BillingDetailForm({
       );
 
       // Si no hay plan seleccionado, mantener el totalValue actual
-      const newTotalValue = associatedPlan.length > 0 
-        ? planPrice + costsTotal 
+      const newTotalValue = associatedPlan.length > 0
+        ? planPrice + costsTotal
         : Number(localEstimateData?.totalValue) + costsTotal || 0;
 
       const billingData: CreateBillingData = {
@@ -210,8 +210,8 @@ export function BillingDetailForm({
         plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
         deadLineToPay: selectedBilling?.deadLineToPay || "",
         invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
-        invoiceReference: (localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== "") 
-          ? localEstimateData.invoiceReference 
+        invoiceReference: (localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== "")
+          ? localEstimateData.invoiceReference
           : (selectedBilling?.invoiceReference || "INV-2025-0456"),
       };
       await PatchBilling(ID_estimate, billingData);
@@ -284,8 +284,8 @@ export function BillingDetailForm({
 
       // Determinar la URL base según el entorno
       const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
-      const baseUrl = isDevelopment 
-        ? 'http://localhost:3000/es/estimate' 
+      const baseUrl = isDevelopment
+        ? 'http://localhost:3000/es/estimate'
         : 'https://senaviacorp.com/en/estimate';
       const estimateUrl = `${baseUrl}?ID=${latestBilling?.id || 0}`;
 
@@ -560,10 +560,10 @@ export function BillingDetailForm({
                         {plans.find((plan) => plan.id === associatedPlan[0])
                           ?.price
                           ? formatCurrency(
-                              plans.find(
-                                (plan) => plan.id === associatedPlan[0]
-                              )?.price!
-                            )
+                            plans.find(
+                              (plan) => plan.id === associatedPlan[0]
+                            )?.price!
+                          )
                           : "No price"}
                       </p>
                       <p>
@@ -625,13 +625,13 @@ export function BillingDetailForm({
 
             {/* Payments Details */}
             {localEstimateData?.state === "ACCEPTED" ||
-            localEstimateData?.state === "INVOICE" ||
-            localEstimateData?.state === "PAID" ? (
+              localEstimateData?.state === "INVOICE" ||
+              localEstimateData?.state === "PAID" ? (
               <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
                 <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                   <div>
                     <h2 className="text-2xl font-normal">Payments Details</h2>
-                    <p className="font-light text-base">Description</p>
+                    <p className="font-light text-base">Create your deferred payments in a personalized way</p>
                   </div>
                   <Button
                     onClick={() => setShowPayments(true)}

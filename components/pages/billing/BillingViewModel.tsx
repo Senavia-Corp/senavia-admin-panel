@@ -124,8 +124,8 @@ export function BillingViewModel() {
     } else {
       setError(
         errorLogs?.message ||
-          response?.message ||
-          "Failed to create checkout session"
+        response?.message ||
+        "Failed to create checkout session"
       );
       return null;
     }
@@ -224,7 +224,7 @@ export function BillingViewModel() {
 
   const getPlanById = async (id: number) => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<apiResponse<Plan>>(endpoints.plan.getPlan(id), "get");
+    const { response, status, errorLogs } = await fetchData<apiResponse<Plan>>(endpoints.plan.getById(id), "get");
     if (status === 200 && response && response.success) {
       setPlan(response.data);
 
@@ -338,7 +338,12 @@ export function BillingViewModel() {
         // Actualizar la lista de payments agregando el nuevo payment
         setPayments((prevPayments) => [...prevPayments, ...newPayments]);
         setPayment(newPayments[0]);
-        toast.success("Payment created successfully");
+        //toast.success("Payment created successfully");
+        toast({
+          title: "Payment created successfully",
+          description: "The payment has been created successfully.",
+        });
+
         return { success: true, data: response.data };
       } else {
         // Si la API falla, usar el servicio mock
@@ -451,11 +456,11 @@ export function BillingViewModel() {
             prevPayments.map((payment) =>
               payment.id === id
                 ? {
-                    ...payment,
-                    ...PatchPayment,
-                    amount: Number(PatchPayment.amount || payment.amount),
-                    updatedAt: new Date().toISOString(),
-                  }
+                  ...payment,
+                  ...PatchPayment,
+                  amount: Number(PatchPayment.amount || payment.amount),
+                  updatedAt: new Date().toISOString(),
+                }
                 : payment
             )
           );
@@ -473,11 +478,11 @@ export function BillingViewModel() {
               prevPayments.map((payment) =>
                 payment.id === id
                   ? {
-                      ...payment,
-                      ...PatchPayment,
-                      amount: Number(PatchPayment.amount || payment.amount),
-                      updatedAt: new Date().toISOString(),
-                    }
+                    ...payment,
+                    ...PatchPayment,
+                    amount: Number(PatchPayment.amount || payment.amount),
+                    updatedAt: new Date().toISOString(),
+                  }
                   : payment
               )
             );
@@ -502,11 +507,11 @@ export function BillingViewModel() {
             prevPayments.map((payment) =>
               payment.id === id
                 ? {
-                    ...payment,
-                    ...PatchPayment,
-                    amount: Number(PatchPayment.amount || payment.amount),
-                    updatedAt: new Date().toISOString(),
-                  }
+                  ...payment,
+                  ...PatchPayment,
+                  amount: Number(PatchPayment.amount || payment.amount),
+                  updatedAt: new Date().toISOString(),
+                }
                 : payment
             )
           );
@@ -539,14 +544,23 @@ export function BillingViewModel() {
         apiResponse<Billing>
       >(endpoints.estimate.sendToClient, "post", sendToClientData);
       if (status === 200 && response && response.success) {
-        toast.success("Billing sent to client successfully");
+        //toast.success("Billing sent to client successfully");
+        toast({
+          title: "Billing sent to client successfully",
+          description: "The billing has been sent to the client.",
+        });
       } else {
         setError(
           errorLogs?.message ||
-            response?.message ||
-            "Failed to send billing to client"
+          response?.message ||
+          "Failed to send billing to client"
         );
-        toast.error("Error sending billing to client");
+        //toast.error("Error sending billing to client");
+        toast({
+          title: "Failed to send billing to client",
+          description: errorLogs?.message || response?.message || "Failed to send billing to client",
+          duration: 3000,
+        });
       }
     } catch (error) {
       const errorMessage = "Error sending billing to client";
