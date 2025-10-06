@@ -86,6 +86,7 @@ export class ProjectManagementService {
 
   static async getProjectById(id: string): Promise<Project | null> {
     try {
+      console.log("Fetching project by ID:", id);
       const response = await Axios.get(
         `http://localhost:3000/api/project?id=${id}`,
         {
@@ -94,11 +95,19 @@ export class ProjectManagementService {
         }
       );
 
+      console.log("getProjectById API response:", response.data);
+      console.log("Response success:", response.data.success);
+      console.log("Response data:", response.data.data);
+      console.log("Response data type:", typeof response.data.data);
+      console.log("Response data length:", response.data.data?.length);
+
       if (!response.data.success) {
         throw new Error(response.data.message || "Error fetching project");
       }
 
-      return response.data.data[0] || null;
+      const project = response.data.data[0] || response.data.data || null;
+      console.log("Returning project:", project);
+      return project;
     } catch (error: any) {
       console.error("Error fetching project:", error);
       if (error.response?.status === 401) {

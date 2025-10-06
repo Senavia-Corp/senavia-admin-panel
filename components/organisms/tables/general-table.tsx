@@ -18,6 +18,7 @@ import { SupportTableRow } from "@/components/organisms/tables/row/ticket-table-
 import { CostTableRow } from "@/components/organisms/tables/row/cost-table-row";
 import { ClauseTableRow } from "./row/clause-table-row";
 import { PaymentTableRow } from "@/components/organisms/tables/row/payment-table-row";
+import { PhaseTableRow } from "@/components/organisms/tables/row/phase-table-row";
 import {
   FilterBilling,
   FilterPermission,
@@ -62,8 +63,8 @@ export function GeneralTable(
     skeletonComponent?: React.ComponentType;
     skeletonCount?: number;
     searchPlaceholder?: string;
-    pagination?:React.ReactNode
-  },
+    pagination?: React.ReactNode;
+  }
 ) {
   const {
     onCreate,
@@ -84,7 +85,7 @@ export function GeneralTable(
     skeletonComponent: SkeletonComponent,
     skeletonCount = 5,
     searchPlaceholder = "Search",
-    pagination
+    pagination,
   } = options || {};
 
   const tableRows = data
@@ -226,6 +227,15 @@ export function GeneralTable(
             <PaymentTableRow
               key={item.id}
               payment={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "phases-page":
+          return (
+            <PhaseTableRow
+              key={item.id}
+              phase={item}
               onView={() => onView(item)}
               onDelete={() => onDelete(item)}
             />

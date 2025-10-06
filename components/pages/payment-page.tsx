@@ -179,7 +179,7 @@ export function PaymentPage({
           payment={
             payments.find((payment) => payment.id === selectedPaymentId)!
           }
-          lead = {lead}
+          lead={lead}
           onBack={handleBackToList}
           onUpdate={handlePaymentUpdate}
           onRedirectToBillingDetails={onRedirectToBillingDetails}
@@ -235,11 +235,11 @@ export function PaymentPage({
                 "payments-page",
                 `Add Payment | Total: ${formatCurrency(
                   filteredPayments.reduce(
-                    (sum, payment) => sum + payment.amount,
+                    (sum, payment) => sum + Number(payment.amount),
                     0
                   )
                 )}`,
-                "Description",
+                "Create your deferred payments in a personalized way",
                 "All Payments",
                 "Description",
                 [

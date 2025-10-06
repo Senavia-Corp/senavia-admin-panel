@@ -186,7 +186,7 @@ export default function PaymentsPage() {
                 "payments-page",
                 `Add Payment | Total: ${formatCurrency(
                   filteredPayments.reduce(
-                    (sum, payment) => sum + payment.amount,
+                    (sum, payment) => sum + Number(payment.amount),
                     0
                   )
                 )}`,

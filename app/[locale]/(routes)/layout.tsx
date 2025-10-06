@@ -5,6 +5,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Header } from "@/components/organisms/layout/header";
 import { Toaster } from "@/components/ui/toaster";
+import { SessionExpiryProvider } from "@/components/providers/session-expiry-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,18 +23,20 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${inter.className}`}>
-        <SidebarProvider>
-          <div className="flex min-h-screen bg-gray-50 w-full">
-            <AppSidebar />
-            <SidebarInset className="flex-1 min-w-0 min-h-0 flex flex-col">
-              {/* Header dentro del área de contenido */}
-              <Header />
-              {/* Contenido principal */}
-              <div className="flex-1 overflow-auto">{children}</div>
-            </SidebarInset>
-          </div>
-          <Toaster />
-        </SidebarProvider>
+        <SessionExpiryProvider>
+          <SidebarProvider>
+            <div className="flex min-h-screen bg-gray-50 w-full">
+              <AppSidebar />
+              <SidebarInset className="flex-1 min-w-0 min-h-0 flex flex-col">
+                {/* Header dentro del área de contenido */}
+                <Header />
+                {/* Contenido principal */}
+                <div className="flex-1 overflow-auto">{children}</div>
+              </SidebarInset>
+            </div>
+            <Toaster />
+          </SidebarProvider>
+        </SessionExpiryProvider>
       </body>
     </html>
   );

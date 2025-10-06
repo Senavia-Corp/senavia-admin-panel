@@ -1,72 +1,84 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { TaskCard } from "@/components/atoms/task-card"
-import { Plus } from "lucide-react"
-import type { Task, TaskStatus } from "@/types/task-management"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { TaskCard } from "@/components/atoms/task-card";
+import { Plus } from "lucide-react";
+import type { Task, TaskStatus } from "@/types/task-management";
 
 interface TaskColumnProps {
-  title: string
-  status: TaskStatus
-  tasks: Task[]
-  onAddTask: (status: TaskStatus) => void
-  onTaskMove?: (taskId: string, newStatus: TaskStatus) => void
+  title: string;
+  status: TaskStatus;
+  tasks: Task[];
+  onAddTask: (status: TaskStatus) => void;
+  onTaskMove?: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-export function TaskColumn({ title, status, tasks, onAddTask, onTaskMove }: TaskColumnProps) {
-  const [isDragOver, setIsDragOver] = useState(false)
+export function TaskColumn({
+  title,
+  status,
+  tasks,
+  onAddTask,
+  onTaskMove,
+}: TaskColumnProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
       case "Pending":
-        return "bg-gray-500"
+        return "bg-gray-500";
       case "Assigned":
-        return "bg-blue-500"
+        return "bg-blue-500";
       case "InProcess":
-        return "bg-yellow-500"
+        return "bg-yellow-500";
       case "InReview":
-        return "bg-purple-500"
+        return "bg-purple-500";
       case "Finished":
-        return "bg-green-500"
+        return "bg-green-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
+    e.preventDefault();
+    setIsDragOver(true);
+  };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
+    e.preventDefault();
+    setIsDragOver(false);
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
+    e.preventDefault();
+    setIsDragOver(false);
 
-    const taskId = e.dataTransfer.getData("text/plain")
+    const taskId = e.dataTransfer.getData("text/plain");
     if (taskId && onTaskMove) {
-      onTaskMove(taskId, status)
+      onTaskMove(taskId, status);
     }
-  }
+  };
 
   const handleTaskDragStart = (e: React.DragEvent, taskId: string) => {
-    e.dataTransfer.setData("text/plain", taskId)
-  }
+    e.dataTransfer.setData("text/plain", taskId);
+  };
 
   return (
     <div className="flex flex-col h-full min-w-80 w-80">
       {/* Column Header */}
-      <div className={`${getStatusColor(status)} text-white px-4 py-3 rounded-t-lg flex items-center justify-between`}>
+      <div
+        className={`${getStatusColor(
+          status
+        )} text-white px-4 py-3 rounded-t-lg flex items-center justify-between`}
+      >
         <span className="font-medium">{title}</span>
         <div className="flex items-center space-x-2">
-          <span className="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">{tasks.length}</span>
+          <span className="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
+            {tasks.length}
+          </span>
           <Button
             size="sm"
             variant="ghost"
@@ -89,8 +101,13 @@ export function TaskColumn({ title, status, tasks, onAddTask, onTaskMove }: Task
       >
         <div className="space-y-3">
           {tasks.map((task) => (
-            <div key={task.id} draggable onDragStart={(e) => handleTaskDragStart(e, task.id)} className="cursor-move">
-              <TaskCard task={task} />
+            <div
+              key={task.id}
+              draggable
+              onDragStart={(e) => handleTaskDragStart(e, task.id)}
+              className="cursor-move group"
+            >
+              <TaskCard task={task} onStatusChange={onTaskMove} />
             </div>
           ))}
         </div>
@@ -106,5 +123,5 @@ export function TaskColumn({ title, status, tasks, onAddTask, onTaskMove }: Task
         </Button>
       </div>
     </div>
-  )
+  );
 }
