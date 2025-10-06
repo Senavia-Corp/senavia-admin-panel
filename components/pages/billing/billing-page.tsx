@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect, useCallback } from "react"
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog"
-import type { BillingRecord, Billings, Billing } from "@/types/billing-management"
+import type { Billings, Billing } from "@/types/billing-management"
 import { GeneralTable } from "@/components/organisms/tables/general-table"
 import { BillingDetailForm } from "@/components/organisms/billing-detail-form"
 import { BillingViewModel } from "./BillingViewModel"
@@ -21,29 +21,40 @@ export function BillingPage() {
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { toast } = useToast()
 
   useEffect(() => {
-    getBillings()
-    getLeads()
-    getPlans()
+    const initializeData = async () => {
+      setIsLoading(true)
+      setIsInitialLoad(true)
+      try {
+        await getBillings()
+        await getLeads()
+        await getPlans()
+      } finally {
+        setIsInitialLoad(false)
+      }
+    }
+    initializeData()
   }, []) // Solo se ejecuta al montar el componente
 
   useEffect(() => {
-    if (billings.length > 0) {
+    if (!isInitialLoad) {
       loadBillingRecords()
     }
-  }, [billings, searchTerm, statusFilter])
+  }, [billings, searchTerm, statusFilter, isInitialLoad])
 
   const loadBillingRecords = React.useCallback(async () => {
     try {
       setIsLoading(true)
       let filteredData = [...billings]
       
-      // Aplicar filtro de búsqueda
+      // Aplicar filtro de búsqueda por ID y título
       if (searchTerm) {
         filteredData = filteredData.filter(billing => 
-          billing.id.toString().includes(searchTerm)
+          billing.id.toString().includes(searchTerm) ||
+          billing.title?.toLowerCase().includes(searchTerm.toLowerCase())
         )
       }
 
@@ -102,7 +113,6 @@ export function BillingPage() {
   }, [getLeadById])
 
   const handleCreateBilling = useCallback(async () => {
-    console.log("Create new billing record")
     setShowCreateBilling(true)
   }, [])
 
@@ -111,10 +121,23 @@ export function BillingPage() {
     setShowCreateBilling(false)
   }
 
-  const handleSaveSuccess = () => {
+  const handleSaveSuccess = async () => {
     setShowBillingDetail(false)
     setShowCreateBilling(false)
-    loadBillingRecords()
+    setIsLoading(true)
+    try {
+      await getBillings()
+    } catch (error) {
+      setHasError(true)
+      toast({
+        title: "Error",
+        description: "Failed to refresh billings. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleFilterChange = (filter: string) => {
@@ -144,6 +167,9 @@ export function BillingPage() {
               lead={lead}
               plans={plans}
               onBack={handleBackToList}
+              onBackRefresh={async () => {
+                await getBillings();
+              }}
               onSave={handleSaveSuccess}
             />
           </div>
@@ -177,20 +203,20 @@ export function BillingPage() {
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
-              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
+              <h1 className="text-2xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "billing-page",
                 "Add Billing",
-                "Description",
+                "Create estimates, invoices, and payments for client projects.",
                 "All Billing",
                 "Description",
                 ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],
                 billingRecords,
                 handlers,
                 {
-                  isLoading,
+                  isLoading: isLoading || isInitialLoad,
                   hasError,
                   onRetry: loadBillingRecords,
                   emptyStateTitle: "No billing records found",
@@ -202,6 +228,7 @@ export function BillingPage() {
                     <TableRowSkeleton columns={4} actions={2} />
                   ),
                   skeletonCount: 5,
+                  searchPlaceholder: "Search by ID or title...",
                 }
               )}
             </div>

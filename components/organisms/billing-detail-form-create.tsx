@@ -32,7 +32,7 @@ interface BillingDetailCreateFormProps {
   lead: Lead[];
   plans: Plans[];
   onBack: () => void;
-  onSave: (billingData: CreateBillingData) => void;
+  onSave: () => void;
 }
 
 // Mover la función fuera del componente para evitar recreaciones
@@ -83,12 +83,6 @@ export function BillingDetailCreateForm({
   onBack,
   onSave,
 }: BillingDetailCreateFormProps) {
-  // Movemos los console.log dentro de un useEffect para que solo se ejecuten una vez al montar el componente
-  useEffect(() => {
-    console.log("selectedBilling recibido:", selectedBilling);
-    console.log("leads recibidos:", leads);
-    console.log("lead recibido:", lead);
-  }, []);
   const [showDocument, setShowDocument] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState({ type: "", message: "" });
@@ -150,7 +144,6 @@ export function BillingDetailCreateForm({
       description !== "" &&
       status !== "" &&
       associatedLeads.length > 0 &&
-      associatedPlan.length > 0 &&
       deadlineToPay !== ""
     );
   };
@@ -160,12 +153,14 @@ export function BillingDetailCreateForm({
     try {
       const billingData: CreateBillingData = {
         title: title,
-        totalValue: Number(plans.find((plan) => plan.id === associatedPlan[0])?.price ?? 0),
+        totalValue: associatedPlan.length > 0 
+          ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price ?? 0)
+          : 0,
         estimatedTime: estimatedTime,
         description: description,
         state: status,
         lead_id: associatedLeads[0] || 0,
-        plan_id: associatedPlan[0] || 0,
+        plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
         deadLineToPay: deadlineToPay,
         invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
         invoiceReference: invoiceReference,
@@ -180,14 +175,13 @@ export function BillingDetailCreateForm({
         toast({
           title: "Billing created successfully",
           description: "The billing has been created successfully.",
+          duration: 3000,
         });
-        if (newBilling && newBilling.id) {
-          console.log("Created billing with ID:", newBilling.id);
-        }
       } else if ("error" in response) {
         toast({
           title: "Failed to create billing",
           description: response.error || "The billing has not been created.",
+          duration: 3000,
         });
       }
     } catch (error) {
@@ -198,24 +192,13 @@ export function BillingDetailCreateForm({
           error instanceof Error
             ? error.message
             : "The billing has not been created.",
+          duration: 3000,
       });
     } finally {
       setIsCreating(false);
+      onSave();
     }
   };
-
-  if (showCosts) {
-    return (
-      <div className="">
-        <CostPage
-          costs={selectedBilling?.costs || []}
-          totalValue={parseInt(selectedBilling?.totalValue || "0")}
-          estimateId={selectedBilling?.id || 0}
-          onBack={() => setShowCosts(false)}
-        />
-      </div>
-    );
-  }
 
   if (showPayments) {
     return (
@@ -224,15 +207,12 @@ export function BillingDetailCreateForm({
           payments={selectedBilling?.payments || []}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
+          onRedirectToBillingDetails={() => setShowPayments(false)}
         />
       </div>
     );
   }
 
-
-  // if (showDocument && selectedBilling) {
-  //   return <DocumentPreviewBilling {...selectedBilling} onBack={() => setShowDocument(false)} />
-  // }
 
   return (
     <div className="flex flex-col">
@@ -271,7 +251,7 @@ export function BillingDetailCreateForm({
             />
             <p>Estimated Time:</p>
             <Input
-              type="text"
+              type="number"
               className="w-full h-7"
               value={estimatedTime}
               onChange={(e) => setEstimatedTime(e.target.value)}
@@ -291,11 +271,11 @@ export function BillingDetailCreateForm({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Enter the description of the Estimate"
                 rows={6}
-                maxLength={200}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                {description.length}/200
+                {description.length}/10000
               </div>
             </div>
             <hr className="border-[#EBEDF2]" />
@@ -359,7 +339,7 @@ export function BillingDetailCreateForm({
             </div>
             <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
-              <label>Associated Plan ID</label>
+              <label>Associated Plan ID (Optional)</label>
               <MultiSelectPlan
                 plans={plans}
                 value={associatedPlan}
@@ -424,11 +404,6 @@ export function BillingDetailCreateForm({
           </div>
         </div>
       </div>
-      <CardMokcup
-        type={popupMessage.type === "success" ? "success" : "error"}
-        message={popupMessage.message}
-        isOpen={showPopup}
-      />
     </div>
   );
 }

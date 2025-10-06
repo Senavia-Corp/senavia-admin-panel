@@ -6,7 +6,6 @@ import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { Cost, PatchCost } from "@/types/cost-management";
-import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 
 interface CostDetailFormProps {
@@ -35,12 +34,10 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
 
       // Primero actualizamos el costo
       await updateCost(costId, costData);
-      console.log("Cost updated successfully");
 
       // Después actualizamos el billing con el nuevo total
       // Restamos el valor anterior y sumamos el nuevo valor
       const newTotalValue = Number(totalValue) - Number(cost.value) + Number(costData.value);
-      console.log("Updating billing with new total:", newTotalValue);
       
       await PatchBilling(billingId, {
         totalValue: newTotalValue
@@ -59,7 +56,8 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
       
       toast({
         title: 'Cost updated successfully',
-        description: `The cost "${costData.name}" has been updated.`
+        description: `The cost "${costData.name}" has been updated.`,
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error updating cost:', error);
@@ -67,7 +65,10 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
       setLocalCost(cost);
       toast({
         title: 'Failed to update cost',
-        description: 'The cost has not been updated.'
+        description: 'The cost has not been updated.',
+        duration: 3000,
+        variant: "destructive",
+
       });
     } finally {
       setIsUpdating(false);
@@ -120,7 +121,7 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
                 onChange={(e) => handleFieldChange('description', e.target.value)}
                 placeholder="Enter the description of the Cost"
                 rows={6}
-                maxLength={200}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
             <hr className="border-[#EBEDF2]" />

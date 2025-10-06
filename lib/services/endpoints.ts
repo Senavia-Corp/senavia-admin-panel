@@ -5,7 +5,7 @@ const API_LOCAL = "http://localhost:3000/api";
 
 // Use local API for development, production API for production
 export const API = process.env.NODE_ENV === "development" ? API_LOCAL : API_BASE;
-//const API = "http://localhost:3000/api";
+// const API = process.env.API_URL;
 
 export const endpoints = {
   service: {
@@ -34,6 +34,10 @@ export const endpoints = {
     delete: (id: number) => `${API}/product?id=${id}`,
     create: `${API}/product`,
     update: (id: number) => `${API}/product?id=${id}`,
+  },
+
+  stripe : {
+    createCheckoutSession: `${API}/checkout`,
   },
 
   blog: {
@@ -67,6 +71,7 @@ export const endpoints = {
     deleteSchedule: (scheduleId: number) =>
       `${API}/lead/schedule?id=${scheduleId}`,
     creatCalendarEvent: `https://damddev.app.n8n.cloud/webhook/4e962737-09f2-461d-9f4b-5264f424ea39`,
+    createMultiGuestCalendarEvent: `https://damddev.app.n8n.cloud/webhook/a2d1235a-74bb-4349-bf50-e041978b11fe`,
   },
   project: {
     getPosts: `${API}/project`,
@@ -108,8 +113,8 @@ export const endpoints = {
     createEstimate: `${API}/estimate`,
     updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
     deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
-    patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
-    sendToClient: 'https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3',
+    sendToClient:
+      "https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3",
   },
   plan: {
     getPlans: `${API}/plan`,    
@@ -208,7 +213,8 @@ export const useFetch = () => {
       }
 
       // Siempre mantener withCredentials en true para las llamadas API, excepto para webhooks externos
-      const isExternalWebhook = url.includes('n8n.cloud') || url.includes('webhook');
+      const isExternalWebhook =
+        url.includes("n8n.cloud") || url.includes("webhook");
       axiosConfig = { ...axiosConfig, withCredentials: !isExternalWebhook };
 
       if (isValidHttpMethod(method)) {

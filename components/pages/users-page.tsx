@@ -10,27 +10,38 @@ import DashboardPage from "./dashboard/user-panel";
 import { CreateUserForm } from "./dashboard/create-user-form";
 import UserSettings from "./user-settings";
 import { useToast } from "@/hooks/use-toast";
+import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 
 export function UsersPage() {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showCreatePage, setShowCreatePage] = useState(false);
   const [showEditPage, setShowEditPage] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   const loadUsers = async () => {
     try {
-      setUsers(await UserManagementService.getUsers(searchTerm, roleFilter));
+      setIsLoading(true);
+      setHasError(false);
+      const usersData = await UserManagementService.getUsers();
+      setUsers(usersData);
+      setFilteredUsers(usersData);
     } catch (error) {
       console.error("Error loading users:", error);
+      setHasError(true);
       toast({
         title: "Error",
         description: "Failed to load users. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,54 +66,59 @@ export function UsersPage() {
     if (type === "role") setRoleFilter(value === "all" ? "" : value);
   };
 
-  const handleUserCreated = (newUser: User) => {
-    // Add the new user to the current list
-    setUsers((prevUsers) => [newUser, ...prevUsers]);
-    // Show success message (already handled in CreateUserForm)
-    // Optionally reload the full list to ensure consistency
-    // loadUsers();
+  const handleCreateUser = () => {
+    setShowCreatePage(true);
   };
 
-  const handleCreateSuccess = () => {
-    // Navigate back to the users list
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setShowEditPage(true);
+  };
+
+  const handleBackToList = () => {
+    setSelectedUser(null);
     setShowCreatePage(false);
+    setShowEditPage(false);
   };
 
-  const handleUserUpdated = (updatedUser: User) => {
-    // Update the user in the current list
-    setUsers((prevUsers) => {
-      console.log("📝 handleUserUpdated called with:", updatedUser);
-      console.log("📋 Current users before update:", users);
-      const userIndex = prevUsers.findIndex(
-        (user) => String(user.id) === String(updatedUser.id)
-      );
-      if (userIndex !== -1) {
-        const newUsers = [...prevUsers]; //TODO: Validar si lo hago asi o volver a hacer la peticion
-        newUsers[userIndex] = updatedUser;
-        return newUsers;
-      }
-      return prevUsers;
-    });
+  const handleSaveSuccess = () => {
+    setSelectedUser(null);
+    setShowCreatePage(false);
+    setShowEditPage(false);
+    loadUsers();
   };
+
+  // Local filtering like contracts and leads pages
+  useEffect(() => {
+    const lowerSearch = searchTerm.toLowerCase();
+    const filtered = users.filter((user) => {
+      const matchesSearch = !searchTerm
+        ? true
+        : user.name?.toLowerCase().includes(lowerSearch) ||
+          user.email?.toLowerCase().includes(lowerSearch) ||
+          user.phone?.includes(searchTerm);
+      const matchesRole = !roleFilter || user.role.id === parseInt(roleFilter);
+      return matchesSearch && matchesRole;
+    });
+    setFilteredUsers(filtered);
+  }, [users, searchTerm, roleFilter]);
 
   useEffect(() => {
     loadUsers();
-  }, [searchTerm, roleFilter]);
+  }, []);
 
   if (showEditPage) {
     return (
       <div className="min-h-screen w-full bg-white">
         <div className="p-6">
-          <DetailTabs
-            title="Edit User Information"
-            onBack={() => {
-              setShowEditPage(false);
-              setSelectedUser(null);
-            }}
-          >
+          <DetailTabs title="Edit User" onBack={handleBackToList}>
             <UserSettings
               user={selectedUser}
-              onUserUpdated={handleUserUpdated}
+              onUserUpdated={handleSaveSuccess}
             />
           </DetailTabs>
         </div>
@@ -114,14 +130,8 @@ export function UsersPage() {
     return (
       <div className="min-h-screen w-full bg-white">
         <div className="p-6">
-          <DetailTabs
-            title="User Details"
-            onBack={() => setShowCreatePage(false)}
-          >
-            <CreateUserForm
-              onUserCreated={handleUserCreated}
-              onSuccess={handleCreateSuccess}
-            />
+          <DetailTabs title="Create User" onBack={handleBackToList}>
+            <CreateUserForm onSuccess={handleSaveSuccess} />
           </DetailTabs>
         </div>
       </div>
@@ -136,7 +146,7 @@ export function UsersPage() {
             title="User Information"
             onBack={() => setSelectedUser(null)}
           >
-            <DashboardPage />
+            <DashboardPage userId={selectedUser.id} />
           </DetailTabs>
         </div>
       </div>
@@ -144,12 +154,9 @@ export function UsersPage() {
   }
 
   const handlers = {
-    onCreate: () => setShowCreatePage(true),
-    onView: setSelectedUser,
-    onEdit: (user: User) => {
-      setSelectedUser(user);
-      setShowEditPage(true);
-    },
+    onCreate: handleCreateUser,
+    onView: handleViewUser,
+    onEdit: handleEditUser,
     onDelete: setUserToDelete,
     onSearch: setSearchTerm,
     onFilter: handleFilterChange,
@@ -174,8 +181,22 @@ export function UsersPage() {
                 "All Users",
                 "View and manage all user accounts in the system",
                 ["User ID", "Name", "Role", "Email", "Phone", "Actions"],
-                users,
-                handlers
+                filteredUsers,
+                handlers,
+                {
+                  isLoading,
+                  hasError,
+                  onRetry: loadUsers,
+                  emptyStateTitle: "No users found",
+                  emptyStateDescription:
+                    searchTerm || roleFilter
+                      ? "No users match your current filters. Try adjusting your search criteria."
+                      : "No users have been created yet. Click the '+' button to create the first user.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={5} actions={3} />
+                  ),
+                  skeletonCount: 5,
+                }
               )}
             </div>
           </div>

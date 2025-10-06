@@ -1,4 +1,6 @@
 import type { Payment } from "./payment-management";
+import { Lead } from "./lead-management";
+import { Plans } from "./plan";
 
 export interface BillingRecord {
   id: string
@@ -30,6 +32,13 @@ export interface Billing {
   Project: any[] // TODO: Definir interfaz específica para Project
   costs: Cost[]
   payments?: Payment[] // Pagos asociados al billing
+}
+
+export interface CheckoutSession {
+  success: boolean
+  data: string
+  message: string
+  errors: string[]
 }
 
 export interface Cost {
@@ -69,6 +78,30 @@ export interface CreateBillingData {
   estimatedTime: string,
   description: string,
   state: string,
+  totalValue?: number,
+  percentagePaid?: number,
+  remainingPercentage?: number,
+  lead_id: number,
+  plan_id?: number,
+  deadLineToPay: string,
+  invoiceDateCreated: string,
+  invoiceReference: string
+}
+
+export interface SendToClientData {
+  name: string;
+  title: string;
+  description: string;
+  email: string;  
+  document?: string;
+  url: string;
+  }
+
+export interface BillingPDF{
+  title: string,
+  estimatedTime: string,
+  description: string,
+  state: string,
   totalValue: number,
   percentagePaid: number,
   remainingPercentage: number,
@@ -77,10 +110,7 @@ export interface CreateBillingData {
   deadLineToPay: string,
   invoiceDateCreated: string,
   invoiceReference: string
-}
-
-export interface SendToClientData {
-  name: string;
-  email: string;
-  document?: string;
+  costs: Cost[]
+  lead: Lead[]
+  plans: Plans[]
 }

@@ -18,25 +18,30 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+import { Lead } from "@/types/lead-management";
 import axios from "axios";
 
 interface PaymentDetailFormProps {
   paymentId: number;
   payment: Payment;
+  lead?: Lead[];
   onBack?: () => void;
   onUpdate?: (updatedPayment: Payment) => void;
+  onRedirectToBillingDetails?: () => void;
 }
 
 export function PaymentDetailForm({
   paymentId,
   payment,
+  lead,
   onBack,
   onUpdate,
+  onRedirectToBillingDetails,
 }: PaymentDetailFormProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment } = BillingViewModel();
+  const { updatePayment, createStripeSession } = BillingViewModel();
 
   const handleUpdatePayment = async () => {
     try {
@@ -66,8 +71,13 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Redirigir a la tabla de billing details después de actualizar
+        if (onRedirectToBillingDetails) {
+          onRedirectToBillingDetails();
+        }
       } else {
-        throw new Error(response.message || "Failed to update payment");
+        throw new Error("Failed to update payment");
       }
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -92,19 +102,51 @@ export function PaymentDetailForm({
     }));
   };
 
-  const handleSendEmail = () => {
-    fetch(
-      "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Juan Jose Jimenez",
-          email: "juan@senaviacorp.com", // TODO: Get client email from billing/lead data
-          paymentsignUrl: "https://example.com/sign",
-        }),
+  const handleSendEmail = async () => {
+    try {
+      //Usar localPayment para obtener los datos necesarios
+      const realAmount = localPayment.amount * 100;
+      const response = await createStripeSession(
+        localPayment.reference,
+        realAmount,
+        localPayment.id
+      );
+
+      if (response) {
+        const emailResponse = await fetch(
+          "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: lead?.[0]?.clientName || "Cliente",
+              email: lead?.[0]?.clientEmail || "client@example.com",
+              paymentsignUrl: response,
+            }),
+          }
+        );
+
+        if (emailResponse.ok) {
+          toast({
+            title: "Successful submission",
+            description:
+              "The payment notification has been sent to the client successfully.",
+          });
+        } else {
+          throw new Error(`HTTP error! status: ${emailResponse.status}`);
+        }
+      } else {
+        throw new Error("Error creating checkout session");
       }
-    );
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Error sending email",
+        description:
+          "There was an error sending the payment notification. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const paymentStates = PaymentManagementService.getPaymentStates();
@@ -256,7 +298,7 @@ export function PaymentDetailForm({
             </Button>
 
             <button
-              className="w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
               onClick={() => {
                 handleSendEmail();
               }}

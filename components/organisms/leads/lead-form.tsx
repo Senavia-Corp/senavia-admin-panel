@@ -254,7 +254,7 @@ export function LeadForm({
             )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              Client Address *
+              Client Address
             </label>
             <input
               type="text"
@@ -337,7 +337,7 @@ export function LeadForm({
             )}
 
             <label className="block text-sm font-medium mb-2 mt-4">
-              Description *
+              Description
             </label>
             <textarea
               className={`w-full border rounded-md px-3 py-2 text-sm min-h-[100px] resize-y ${
@@ -349,7 +349,7 @@ export function LeadForm({
               {...register("description")}
             />
             <div className="text-xs text-gray-500 text-right mt-1">
-              {(formMethods.watch("description") || "").length}/1000
+              {(formMethods.watch("description") || "").length}/10000
             </div>
             {errors.description && (
               <p className="text-red-500 text-xs mt-1">

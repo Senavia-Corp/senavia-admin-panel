@@ -23,6 +23,7 @@ export function CostDetailFormCreate({
   const { createCost, PatchBilling } = BillingViewModel();
   const [loadingPost, setLoadingPost] = useState(false)
   const { toast } = useToast();
+  
   const handleCreateCost = async () => {
     try {
       setLoadingPost(true);
@@ -33,7 +34,7 @@ export function CostDetailFormCreate({
         value: value,
         estimateId: estimateId
       };
-      await createCost(costData);
+      const response =await createCost(costData);
 
       const newTotalValue = totalValue + value;
       await PatchBilling(estimateId, {
@@ -44,24 +45,28 @@ export function CostDetailFormCreate({
       const newCost: Cost = {
         ...costData,
         // Puedes generar un número aleatorio para el ID así:
-        id: Math.floor(Math.random() * 10000), // ID temporal aleatorio entre 0 y 9999
+        id: response.data?.[0]?.id || 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
       toast({
         title: 'Cost created successfully',
-        description: 'The cost has been created successfully.'
+        description: 'The cost has been created successfully.',
+        duration: 3000,
       });
 
       // Notificar al componente padre
       onCreateSuccess?.(newCost);
-      
+      onBack?.();
     } catch (error) {
       console.error('Error creating cost:', error);
       toast({
         title: 'Failed to create cost',
-        description: 'The cost has not been created.'
+        description: 'The cost has not been created.',
+        duration: 3000,
+        variant: "destructive",
+
       });
     } finally {
       setLoadingPost(false);
@@ -120,7 +125,7 @@ export function CostDetailFormCreate({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Enter the description of the Cost"
                 rows={6}
-                maxLength={200}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
             <hr className="border-[#EBEDF2]" />
@@ -164,7 +169,7 @@ export function CostDetailFormCreate({
               onClick={handleCreateCost}
               disabled={loadingPost || !isFormValid}
             >
-              {loadingPost ? 'Updating...' : 'Add Cost'}  
+              {loadingPost ? 'Creating...' : 'Add Cost'}  
             </Button>
           </div>
         </div>

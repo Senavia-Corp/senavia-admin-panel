@@ -80,7 +80,11 @@ export function ProjectsPage() {
   const handleSaveSuccess = () => {
     setSelectedProjectId(null);
     setShowEditorForm(false);
-    loadProjects();
+    // Add a small delay to ensure the project is fully saved
+    setTimeout(() => {
+      console.log("Reloading projects after save...");
+      loadProjects();
+    }, 1000);
   };
 
   const handleViewTasks = (project: Project) => {
@@ -108,7 +112,9 @@ export function ProjectsPage() {
         <main className="flex-1 bg-gray-50 overflow-auto">
           <div className="p-6 h-full w-full">
             <ProjectEditor
-              projectId={selectedProjectId || undefined}
+              projectId={
+                selectedProjectId ? parseInt(selectedProjectId) : undefined
+              }
               onBack={handleBackToList}
               onSave={handleSaveSuccess}
             />
@@ -141,6 +147,7 @@ export function ProjectsPage() {
                   "Project ID",
                   "Name",
                   "Start Date",
+                  "Expected Duration",
                   "Current Phase",
                   "Tasks",
                   "Actions",
