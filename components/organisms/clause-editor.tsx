@@ -31,7 +31,7 @@ export function ClauseEditor({ entityId, onBack, onSave,onDelete }: EditorProps)
     watch,
     formState: { errors },
   } = useForm<ClauseFormData>({
-    defaultValues: { title: "", description: "" }, // ⬅️ ya no uso jsonData aquí
+    defaultValues: { title: "", description: "" }, 
   });
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -121,7 +121,7 @@ export function ClauseEditor({ entityId, onBack, onSave,onDelete }: EditorProps)
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold text-gray-900">
-          {entityId ? "Clause Editor" : "Clause Create"}
+          {entityId ? "Plan Editor" : "Plan Create"}
         </h1>
       </div>
 
@@ -164,13 +164,13 @@ export function ClauseEditor({ entityId, onBack, onSave,onDelete }: EditorProps)
               {...register("description", {
                 required: "Description is required",
                 maxLength: {
-                  value: 1000,
-                  message: "Max 1000 characters",
+                  value: 10000,
+                  message: "Max 10000 characters",
                 },
               })}
               placeholder="Lorem ipsum dolor sit amet..."
-              rows={4}
-              maxLength={1000}
+              rows={7}
+              maxLength={10000}
               className={`${
                 errors.description
                   ? "border-red-500 focus-visible:ring-red-500"
@@ -178,7 +178,7 @@ export function ClauseEditor({ entityId, onBack, onSave,onDelete }: EditorProps)
               }`}
             />
             <div className="text-right text-sm text-gray-500 mt-2">
-                        {descriptionValue.length}/1000
+                        {descriptionValue.length}/10000
                       </div>
             {errors.description && (
               <p className="text-red-500 text-sm mt-1">

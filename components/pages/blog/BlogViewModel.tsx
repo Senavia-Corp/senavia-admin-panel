@@ -48,8 +48,7 @@ export const BlogViewModel = ({
         params.append("simpleBlogsPerPage", simpleBlogsPerPage.toString());
       const url = `${endpoints.blog.getPosts}${
         params.toString() ? `?${params.toString()}` : ""
-      }`;
-      //const  url = "http://localhost:3000/api/blog"
+      }`;      
 
       if (simpleBlog) {
         const { response, status, errorLogs } =

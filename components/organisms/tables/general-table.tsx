@@ -10,6 +10,7 @@ import { BillingTableRow } from "@/components/organisms/tables/row/billing-table
 import { UserTableRow } from "@/components/organisms/tables/row/user-table-row";
 import { ContractTableRow } from "@/components/organisms/tables/row/contract-table-row";
 import { BlogTableRow } from "@/components/organisms/tables/row/blog-table-row";
+import { PlanTableRow } from "./row/plan-table-row";
 import { TestimonialVideoTableRow } from "@/components/organisms/tables/row/testimonial-video-table-row";
 import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
@@ -202,6 +203,15 @@ export function GeneralTable(
               onDelete={() => onDelete(item)}
             />
           );
+        case "plan-page":
+          return (
+            <PlanTableRow
+              key={item.id}
+              plan={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
         case "costs-page":
           return (
             <CostTableRow
@@ -277,8 +287,8 @@ export function GeneralTable(
                 {/* PoP over WIP */}
                 {filterComponent}
               </div>
-                {/* Contenedor de paginación + búsqueda */}
-                {pagination}
+              {/* Contenedor de paginación + búsqueda */}
+              {pagination}
               <div className="relative">
                 <Search
                   color="#04081E"
@@ -290,7 +300,7 @@ export function GeneralTable(
                   onChange={(e) => onSearch(e.target.value)}
                 />
               </div>
-                <div className="flex items-center space-x-3"></div>
+              <div className="flex items-center space-x-3"></div>
             </div>
           </div>
         </CardHeader>

@@ -77,6 +77,11 @@ const navigationItems = [
     url: "/leads",
     icon: Target,
   },
+  {
+    title: "plan",
+    url: "/plan",
+    icon: Target,
+  },
 
 ];
 
