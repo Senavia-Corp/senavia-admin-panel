@@ -34,12 +34,10 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
 
       // Primero actualizamos el costo
       await updateCost(costId, costData);
-      console.log("Cost updated successfully");
 
       // Después actualizamos el billing con el nuevo total
       // Restamos el valor anterior y sumamos el nuevo valor
       const newTotalValue = Number(totalValue) - Number(cost.value) + Number(costData.value);
-      console.log("Updating billing with new total:", newTotalValue);
       
       await PatchBilling(billingId, {
         totalValue: newTotalValue
@@ -123,7 +121,7 @@ export function CostDetailForm({ billingId, costId, totalValue, cost, onBack, on
                 onChange={(e) => handleFieldChange('description', e.target.value)}
                 placeholder="Enter the description of the Cost"
                 rows={6}
-                maxLength={5000}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
             <hr className="border-[#EBEDF2]" />
