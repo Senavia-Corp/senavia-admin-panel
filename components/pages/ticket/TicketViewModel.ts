@@ -42,9 +42,7 @@ export const TicketViewModel = ({paginacionTicket = false,offset = 0,ticketsPerP
         if(offset) params.append("offset",offset.toString());
         if(paginacionTicket )
         params.append("ticketsPerPage",ticketsPerPage.toString());
-        const url =`${endpoints.ticket.getTickets}${params.toString() ? `?${params.toString()}`:""}`
-        //const url = "http://localhost:3000/api/ticket"
-       
+        const url =`${endpoints.ticket.getTickets}${params.toString() ? `?${params.toString()}`:""}`               
         if(paginacionTicket){
             const { response, status, errorLogs } = await fetchData<TicketApiResponse>(url, "get",);
             if(status === 200 && response && response.success){

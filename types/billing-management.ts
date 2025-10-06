@@ -1,4 +1,6 @@
 import type { Payment } from "./payment-management";
+import { Lead } from "./lead-management";
+import { Plans } from "./plan";
 
 export interface BillingRecord {
   id: string
@@ -76,11 +78,11 @@ export interface CreateBillingData {
   estimatedTime: string,
   description: string,
   state: string,
-  totalValue: number,
-  percentagePaid: number,
-  remainingPercentage: number,
+  totalValue?: number,
+  percentagePaid?: number,
+  remainingPercentage?: number,
   lead_id: number,
-  plan_id: number,
+  plan_id?: number,
   deadLineToPay: string,
   invoiceDateCreated: string,
   invoiceReference: string
@@ -90,6 +92,25 @@ export interface SendToClientData {
   name: string;
   title: string;
   description: string;
-  email: string;
+  email: string;  
   document?: string;
+  url: string;
+  }
+
+export interface BillingPDF{
+  title: string,
+  estimatedTime: string,
+  description: string,
+  state: string,
+  totalValue: number,
+  percentagePaid: number,
+  remainingPercentage: number,
+  lead_id: number,
+  plan_id: number,
+  deadLineToPay: string,
+  invoiceDateCreated: string,
+  invoiceReference: string
+  costs: Cost[]
+  lead: Lead[]
+  plans: Plans[]
 }

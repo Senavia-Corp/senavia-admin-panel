@@ -3,16 +3,17 @@
 import { StatusBadge } from "@/components/atoms/cost-type-badge"
 import { ActionButton } from "@/components/atoms/action-button"
 
-import { Clause } from "@/components/pages/clause/clause"
 
-interface ClauseTableRowProps {
-  clause: Clause
-  onView: (clause: Clause) => void
-  onDelete: (clause: Clause) => void
+import { Plan } from "@/components/pages/plan/plan"
+
+interface PlanTableRowProps {
+  plan: Plan
+  onView: (plan: Plan) => void
+  onDelete: (plan: Plan) => void
 }
 
-export function ClauseTableRow({ clause, onView, onDelete }: ClauseTableRowProps) {
-  const formatCurrency = (amount: number) => {
+export function PlanTableRow({ plan, onView, onDelete }: PlanTableRowProps) {  
+    const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -22,18 +23,24 @@ export function ClauseTableRow({ clause, onView, onDelete }: ClauseTableRowProps
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {clause.id}        
+        {plan.id}        
       </td>
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {clause.title}
+        {plan.name}
       </td>
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {clause.description}
+        {plan.description}
+      </td>      
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
+        {plan.type}
+      </td>  
+      <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
+        {plan.price}
       </td>      
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
         <div className="flex space-x-2 justify-center">
-          <ActionButton type="view" onClick={() => onView(clause)} />
-          <ActionButton type="delete" onClick={() => onDelete(clause)} />
+          <ActionButton type="view" onClick={() => onView(plan)} />
+          <ActionButton type="delete" onClick={() => onDelete(plan)} />
         </div>
       </td>
     </tr>

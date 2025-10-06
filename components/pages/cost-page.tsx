@@ -5,6 +5,7 @@ import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialo
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
+import { TableRowSkeleton } from "@/components/atoms/table-row-skeleton";
 import { CostDetailFormCreate } from "@/components/organisms/cost-detail-form-create";
 import { BillingViewModel } from "./billing/BillingViewModel";
 import { useToast } from "@/hooks/use-toast";
@@ -35,11 +36,35 @@ export function CostPage({
   const [showCreateCost, setShowCreateCost] = useState(false);
   const [selectedBillingId, setSelectedBillingId] = useState<number>();
   const [showCostDetail, setShowCostDetail] = useState(false);
-  const { deleteCost, PatchBilling } = BillingViewModel();
+  const { deleteCost, PatchBilling, getBilling, billing } = BillingViewModel();
   const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
     filterCosts();
   }, [searchTerm, statusFilter, costs]);
+
+
+
+  // Cuando llegue billing del VM, sincronizar costos/total
+  useEffect(() => {
+    if (billing && Array.isArray(billing) && billing.length > 0) {
+      const latest = billing[0] as unknown as { costs?: Cost[]; totalValue?: number };
+      const latestCosts = latest.costs || [];
+      setCosts(latestCosts);
+      setFilteredCosts(latestCosts);
+      console.log("costs recibidos:", latestCosts);
+    }
+  }, [billing]);
+
+  const refreshFromBackend = async () => {
+    try {
+      setIsRefreshing(true);
+      await getBilling(estimateId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
 
   const filterCosts = () => {
     let filtered = costs;
@@ -61,6 +86,7 @@ export function CostPage({
 
   const handleDeleteBilling = async (costToDelete: Cost) => {
     try {
+      setIsRefreshing(true);
       await deleteCost(costToDelete.id);
 
       // Calcular el nuevo totalValue restando el valor del costo eliminado
@@ -74,6 +100,7 @@ export function CostPage({
       await PatchBilling(estimateId, {
         totalValue: newTotalValue,
       });
+      await refreshFromBackend();
       toast({
         title: "Cost deleted successfully",
         duration: 3000,
@@ -85,6 +112,8 @@ export function CostPage({
         duration: 3000,
         variant: "destructive",
       });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -93,11 +122,11 @@ export function CostPage({
     setShowCostDetail(true);
   };
 
-  const handleCostUpdate = (updatedCost: Cost) => {
+  const handleCostUpdate = async (updatedCost: Cost) => {
+    await refreshFromBackend();
     setCosts((prevCosts) => {
       const oldCost = prevCosts.find((cost) => cost.id === updatedCost.id);
       if (oldCost) {
-        // Actualizar totalValue: restar el valor anterior y sumar el nuevo
         const valueDifference = updatedCost.value - oldCost.value;
         setCurrentTotalValue((prevTotal) => prevTotal + valueDifference);
       }
@@ -105,16 +134,17 @@ export function CostPage({
         cost.id === updatedCost.id ? updatedCost : cost
       );
     });
+    
   };
 
-  const handleCostCreate = (newCost: Cost) => {
+  const handleCostCreate = async (newCost: Cost) => {
+    await refreshFromBackend();
     setCosts((prevCosts) => [...prevCosts, newCost]);
-    // Agregar el valor del nuevo costo al totalValue
     setCurrentTotalValue((prevTotal) => prevTotal + newCost.value);
+    
   };
 
   const handleCreateCost = () => {
-    console.log("Create new billing record");
     setShowCreateCost(true);
   };
 
@@ -215,7 +245,22 @@ export function CostPage({
                 "Description",
                 ["Cost ID", "Name", "Type", "Value", "Actions"],
                 filteredCosts,
-                handlers
+                handlers,
+                {
+                  isLoading: isRefreshing,
+                  hasError: false,
+                  onRetry: refreshFromBackend,
+                  emptyStateTitle: "No costs found",
+                  emptyStateDescription:
+                    searchTerm || statusFilter
+                      ? "No costs match your current filters. Try adjusting your search criteria."
+                      : "No costs have been created yet. Click the '+' button to add the first cost.",
+                  skeletonComponent: () => (
+                    <TableRowSkeleton columns={4} actions={2} />
+                  ),
+                  skeletonCount: 5,
+                  searchPlaceholder: "Search by name or type...",
+                }
               )}
             </div>
           </div>

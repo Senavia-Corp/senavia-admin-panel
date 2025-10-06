@@ -17,6 +17,13 @@ import { ArrowLeft, Bold, Italic, Underline, Type, Upload } from "lucide-react";
 import { BlogManagementService } from "@/services/blog-management-service";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Blog, ContentJson, BlogTopic } from "@/types/blog-management";
+import { API } from "@/lib/services/endpoints";
+
+
+
+// Puedes cambiar con NODE_ENV o variable de entorno
+
+
 
 const topics = [
   { id: "1", name: "WEBDESIGN", displayName: "Web Design" },
@@ -158,7 +165,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
     form_data.append("userId", "1");
     form_data.append("content", JSON.stringify(formData2.content));
 
-    const response = await fetch("http://localhost:3000/api/blog", {
+    const response = await fetch(`${API}/blog`, {
       method: "POST",
       body: form_data,
     });
@@ -229,7 +236,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
       _formData.append("userId", formData2.userId);
     }
     const response = await fetch(
-      `http://localhost:3000/api/blog?id=${blogId}`,
+      `${API}/blog?id=${blogId}`,
       {
         method: "PATCH",
         body: _formData,
@@ -240,7 +247,7 @@ export function BlogEditor({ blogId, onBack, onSave }: BlogEditorProps) {
   const handleDelete = async () => {
     if (blogId) {
       const response = await fetch(
-        `http://localhost:3000/api/blog?id=${blogId}`,
+        `${API}/blog?id=${blogId}`,
         {
           method: "DELETE",
         }

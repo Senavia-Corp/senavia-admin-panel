@@ -29,11 +29,11 @@ export function CreateContractForm({
     clauses: [],
     signedDate: "",
     userId: undefined as unknown as number,
-    leadId: undefined as unknown as number,
+    leadId: undefined as unknown as number | null,
     companyEmail: "",
     companyAdd: "",
     companyPhone: "",
-    ownerName: "",
+    ownerName: "Sebastian Navia",
     ownerSignDate: "",
     recipientName: "",
     recipientSignDate: "",
@@ -56,6 +56,9 @@ export function CreateContractForm({
       id: l.id,
       name: l.clientName,
       subtitle: l.description,
+      address: l.clientAddress,
+      phone: l.clientPhone,
+      email: l.clientEmail,
     }));
   };
 
@@ -79,9 +82,7 @@ export function CreateContractForm({
   };
 
   return (
-    <div
-      className={`w-full border-[20px] border-[#04081E] rounded-lg p-4 md:p-[60px] lg:p-[111px] bg-white `}
-    >
+    <div className="w-full border-[20px] border-[#04081E] rounded-lg bg-white">
       <ContractForm
         mode="create"
         initialValues={initialValues}

@@ -16,6 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/senavia/senavia.ico" />
+        <link rel="apple-touch-icon" href="/senavia/senavia.png" />
+        <meta name="theme-color" content="#04081E" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body className={`${inter.className}`}>
         <SessionExpiryProvider>
           <SidebarProvider>

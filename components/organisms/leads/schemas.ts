@@ -8,11 +8,11 @@ export const leadFormSchema = z.object({
     .string()
     .min(10, "Phone number must be at least 10 characters")
     .regex(/^[\+]?[1-9][\d\-\s\(\)]{8,}$/i, "Invalid phone number format"),
-  clientAddress: z.string().min(5, "Address must be at least 5 characters"),
+  clientAddress: z.string().optional(),
   description: z
     .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(1000, "Description cannot exceed 1000 characters"),
+    .max(10000, "Description cannot exceed 10000 characters")
+    .optional(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
   serviceId: z.number({

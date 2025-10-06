@@ -19,6 +19,7 @@ import {
   Payment,
 } from "@/types/payment-management";
 import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { PatchBillingData } from "@/types/billing-management";
 
 export function BillingViewModel() {
@@ -30,9 +31,11 @@ export function BillingViewModel() {
   const [billings, setBillings] = useState<Billings[]>([]);
   const [lead, setLead] = useState<Lead[]>([]);
   const [plans, setPlans] = useState<Plans[]>([]);
+  const [plan, setPlan] = useState<Plan[]>([]);
   const [cost, setCost] = useState<CreateCostData[]>([]);
   const [payment, setPayment] = useState<CreatePaymentData[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const { toast } = useToast();
 
   const getBillings = async () => {
     setError(null);
@@ -50,11 +53,10 @@ export function BillingViewModel() {
 
   const getBilling = async (id: number) => {
     setError(null);
-    const { response, status, errorLogs } = await fetchData<
-      apiResponse<Billing>
-    >(endpoints.estimate.getEstimate(id), "get");
-    if (status === 200 && response && response.success) {
-      setBilling(response.data);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.getEstimate(id), "get");
+    if ((status === 200 || status === 201) && response && response.success) {
+      const billingData = Array.isArray(response.data) ? response.data : [response.data];
+      setBilling(billingData);
     } else {
       setError(
         errorLogs?.message || response?.message || "Failed to fetch billing"
@@ -68,18 +70,16 @@ export function BillingViewModel() {
       setSuccessMessage(null);
 
       // Validar datos requeridos
-      if (!billing.lead_id || !billing.plan_id) {
-        throw new Error("Total value, lead ID and plan ID are required");
+      if (!billing.lead_id) {
+        throw new Error("Lead ID is required");
       }
 
       const { response, status, errorLogs } = await fetchData<
         apiResponse<Billing>
       >(endpoints.estimate.createEstimate, "post", billing);
 
-      if (status === 201 && response?.success) {
-        const billingData = Array.isArray(response.data)
-          ? response.data
-          : [response.data];
+      if ((status === 200 || status === 201) && response?.success) {
+        const billingData = Array.isArray(response.data) ? response.data : [response.data];
         setBilling(billingData);
         setSuccessMessage("Estimate created successfully!");
         return { success: true, data: billingData };
@@ -222,6 +222,18 @@ export function BillingViewModel() {
     }
   };
 
+  const getPlanById = async (id: number) => {
+    setError(null);
+    const { response, status, errorLogs } = await fetchData<apiResponse<Plan>>(endpoints.plan.getPlan(id), "get");
+    if (status === 200 && response && response.success) {
+      setPlan(response.data);
+
+    } else {
+      setError(errorLogs?.message || response?.message || "Failed to fetch plan");
+      return null;
+    }
+  }
+
   const createCost = async (cost: CreateCostData) => {
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Cost>>(
@@ -231,12 +243,10 @@ export function BillingViewModel() {
     );
     if (status === 201 && response && response.success) {
       setCost(response.data);
-      return true;
+      return { success: true, data: response.data };
     } else {
-      setError(
-        errorLogs?.message || response?.message || "Failed to create cost"
-      );
-      return false;
+      setError(errorLogs?.message || response?.message || "Failed to create cost");
+      return { success: false, error: errorLogs?.message || response?.message || "Failed to create cost" };
     }
   };
 
@@ -247,7 +257,6 @@ export function BillingViewModel() {
         apiResponse<Cost>
       >(endpoints.cost.deleteCost(id), "delete");
       if (status === 200 && response && response.success) {
-        toast.success("Costo eliminado"); // No funciona
       } else {
         setError(
           errorLogs?.message || response?.message || "Failed to delete Cost"
@@ -343,7 +352,6 @@ export function BillingViewModel() {
             : [mockResponse.data];
           // Actualizar la lista de payments agregando el nuevo payment
           setPayments((prevPayments) => [...prevPayments, ...newPayments]);
-          toast.success("Payment created successfully (mock)");
           return mockResponse;
         } else {
           setError(mockResponse.message || "Failed to create payment");
@@ -362,7 +370,6 @@ export function BillingViewModel() {
           : [mockResponse.data];
         // Actualizar la lista de payments agregando el nuevo payment
         setPayments((prevPayments) => [...prevPayments, ...newPayments]);
-        toast.success("Payment created successfully (mock)");
         return mockResponse;
       } else {
         setError("Error creating payment");
@@ -390,7 +397,6 @@ export function BillingViewModel() {
           setPayments((prevPayments) =>
             prevPayments.filter((payment) => payment.id !== id)
           );
-          toast.success("Payment deleted successfully");
           return true;
         } else {
           // Si la API falla, usar el servicio mock
@@ -401,7 +407,6 @@ export function BillingViewModel() {
             setPayments((prevPayments) =>
               prevPayments.filter((payment) => payment.id !== id)
             );
-            toast.success("Payment deleted successfully (mock)");
             return true;
           } else {
             setError("Failed to delete Payment");
@@ -419,7 +424,6 @@ export function BillingViewModel() {
           setPayments((prevPayments) =>
             prevPayments.filter((payment) => payment.id !== id)
           );
-          toast.success("Payment deleted successfully (mock)");
           return true;
         } else {
           setError("Error deleting payment");
@@ -455,7 +459,6 @@ export function BillingViewModel() {
                 : payment
             )
           );
-          toast.success("Payment updated successfully");
           return { success: true, data: response.data };
         } else {
           // Si la API falla, usar el servicio mock
@@ -478,7 +481,6 @@ export function BillingViewModel() {
                   : payment
               )
             );
-            toast.success("Payment updated successfully (mock)");
             return mockResponse;
           } else {
             setError(mockResponse.message || "Failed to update Payment");
@@ -508,7 +510,7 @@ export function BillingViewModel() {
                 : payment
             )
           );
-          toast.success("Payment updated successfully (mock)");
+
           return mockResponse;
         } else {
           setError("Error updating payment");
@@ -547,7 +549,9 @@ export function BillingViewModel() {
         toast.error("Error sending billing to client");
       }
     } catch (error) {
-      setError("Error sending billing to client");
+      const errorMessage = "Error sending billing to client";
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -577,5 +581,7 @@ export function BillingViewModel() {
     updatePayment,
     sendToClient,
     createStripeSession,
+    getPlanById,
+    plan,
   };
 }

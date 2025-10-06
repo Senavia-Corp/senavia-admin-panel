@@ -10,6 +10,7 @@ import { BillingTableRow } from "@/components/organisms/tables/row/billing-table
 import { UserTableRow } from "@/components/organisms/tables/row/user-table-row";
 import { ContractTableRow } from "@/components/organisms/tables/row/contract-table-row";
 import { BlogTableRow } from "@/components/organisms/tables/row/blog-table-row";
+import { PlanTableRow } from "./row/plan-table-row";
 import { TestimonialVideoTableRow } from "@/components/organisms/tables/row/testimonial-video-table-row";
 import { LeadTableRow } from "@/components/organisms/tables/row/lead-table-row";
 import { ProjectTableRow } from "@/components/organisms/tables/row/project-table-row";
@@ -199,6 +200,15 @@ export function GeneralTable(
             <ClauseTableRow
               key={item.id}
               clause={item}
+              onView={() => onView(item)}
+              onDelete={() => onDelete(item)}
+            />
+          );
+        case "plan-page":
+          return (
+            <PlanTableRow
+              key={item.id}
+              plan={item}
               onView={() => onView(item)}
               onDelete={() => onDelete(item)}
             />
