@@ -50,7 +50,7 @@ export type ContractPDFProps = {
     signedDate?: string | null;
     recipientName: string;
     companyEmail: string;
-    companyAdd: string;
+    companyAdd?: string;
     companyPhone: string;
     content: string;
     clauses?: Array<{
@@ -121,6 +121,9 @@ const pdfStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 4,
     color: "#374151",
+    maxWidth: "80%",
+    alignSelf: "center",
+    lineHeight: 1.6,
   },
   separator: {
     height: 1,
@@ -276,7 +279,14 @@ export const ContractPDF = (props: ContractPDFProps) => (
         </Text>
 
         {/* Título principal */}
-        <Text style={pdfStyles.mainTitle}>{props.contract.title}</Text>
+        <View style={{ width: "100%", alignItems: "center", marginBottom: 4 }}>
+          <Text
+            style={pdfStyles.mainTitle}
+            hyphenationCallback={(word) => [word]} // no partir palabras, sin guion
+          >
+            {props.contract.title}
+          </Text>
+        </View>
 
         {/* Línea separadora */}
         <View style={pdfStyles.separator} />
@@ -300,9 +310,11 @@ export const ContractPDF = (props: ContractPDFProps) => (
             <Text style={pdfStyles.contactInfo}>
               {props.contract.companyEmail}
             </Text>
-            <Text style={pdfStyles.contactInfo}>
-              {props.contract.companyAdd}
-            </Text>
+            {props.contract.companyAdd && ( //Revisar esto si funciona si no esta la direccion
+              <Text style={pdfStyles.contactInfo}>
+                {props.contract.companyAdd}
+              </Text>
+            )}
             <Text style={pdfStyles.contactInfo}>
               {props.contract.companyPhone}
             </Text>

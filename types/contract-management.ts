@@ -6,6 +6,15 @@ export type ContractStatus =
   | "EXPIRED"
   | "TERMINATED";
 
+export interface Clause {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  state?: string;
+}
+
 export interface ContractClauseLink {
   contractId: number;
   clauseId: number;
@@ -41,7 +50,7 @@ export interface Contract {
   state: ContractStatus;
   signedDate: string | null;
   companyEmail: string;
-  companyAdd: string;
+  companyAdd?: string;
   companyPhone: string;
   content: string;
   ownerName: string;
@@ -63,12 +72,12 @@ export interface CreateContractData {
   title: string;
   content: string;
   state: ContractStatus;
-  clauses: number[];
+  clauses?: number[];
   signedDate: string; // UI label: Deadline to Sign
   userId?: number | null;
-  leadId: number;
+  leadId?: number | null;
   companyEmail: string;
-  companyAdd: string;
+  companyAdd?: string;
   companyPhone: string;
   ownerName: string;
   ownerSignDate?: string | null;

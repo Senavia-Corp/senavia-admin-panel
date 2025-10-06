@@ -59,6 +59,9 @@ export function EditContractForm({
       id: l.id,
       name: l.clientName,
       subtitle: l.description,
+      address: l.clientAddress,
+      phone: l.clientPhone,
+      email: l.clientEmail,
     }));
   };
 
@@ -83,9 +86,7 @@ export function EditContractForm({
   };
 
   return (
-    <div
-      className={`w-full border-[20px] border-[#04081E] rounded-lg p-4 md:p-[60px] lg:p-[111px] bg-white `}
-    >
+    <div className="w-full border-[20px] border-[#04081E] rounded-lg bg-white">
       <ContractForm
         mode="edit"
         initialValues={initialValues}
