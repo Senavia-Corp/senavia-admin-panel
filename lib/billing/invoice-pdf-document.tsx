@@ -12,15 +12,15 @@ import {
 } from "@react-pdf/renderer";
 import { Billing } from "@/types/billing-management";
 import { Lead } from "@/types/lead-management";
-import { Plans } from "@/types/plan";
+import { Plan } from "@/types/plan";
 
 /* -------------------------------------------------- *
 | *  Props interface
 | * -------------------------------------------------- */
 interface InvoicePDFDocumentProps {
-  lead: Lead[];
+  lead: Lead;
   billing: Billing;
-  plans?: Plans[];
+  plans?: Plan;
 }
 
 /* -------------------------------------------------- *
@@ -71,9 +71,15 @@ export const InvoicePDFDocument = ({
             <Text>(954) 706-4084</Text>
           </View>
           <View
-            style={{ paddingLeft: 100, alignSelf: "flex-end", justifyContent: "flex-end" }}
+            style={{
+              paddingLeft: 70,
+              alignSelf: "flex-end",
+              justifyContent: "flex-end",
+            }}
           >
-            <Text style={{marginBottom: 10}}>{"Estimate #" + billing.id}</Text>
+            <Text style={{ marginBottom: 10 }}>
+              {`Estimate # 100_${billing.id}`}
+            </Text>
             <Text style={{ fontWeight: "bold" }}>Issued Date</Text>
             <Text>{billing.deadLineToPay || "No value found"}</Text>
           </View>
@@ -82,12 +88,9 @@ export const InvoicePDFDocument = ({
         <Image src="/senaviaLogo.png" style={styles.headerImage} />
 
         <View style={styles.inner}>
-        
           {/* Servicios */}
           <View style={styles.serviceSection}>
-            <Text style={styles.serviceText}>
-              {billing.title}
-            </Text>
+            <Text style={styles.serviceText}>{billing.title}</Text>
           </View>
           <Text style={styles.paragraph}>{billing.description}</Text>
 
@@ -96,9 +99,9 @@ export const InvoicePDFDocument = ({
             <CardPDF
               title="Customer"
               lines={[
-                lead[0].clientName,
-                lead[0].clientEmail || "email@example.com",
-                lead[0].clientPhone || "(000) 000-0000",
+                lead.clientName,
+                lead.clientEmail || "email@example.com",
+                lead.clientPhone || "(000) 000-0000",
               ]}
             />
             <CardPDF
@@ -116,9 +119,7 @@ export const InvoicePDFDocument = ({
             <CardPDF
               title="Payment"
               lines={[
-                `Payment Date: ${new Date(
-                  billing.deadLineToPay
-                ).toLocaleDateString()}`,
+                `Payment Date: ${billing.deadLineToPay}`,
                 formatCurrency(billing.totalValue),
               ]}
             />
@@ -126,23 +127,47 @@ export const InvoicePDFDocument = ({
 
           {/* Información del plan */}
           <View style={styles.summaryContainer}>
-            <Text style={styles.sectionTitle}>
-              {plans?.find((p) => p.id === billing.plan_id)?.name ||
-                "No name detected"}
-            </Text>
-            <Text style={[styles.paragraph, { marginBottom: 10 }]}>
-              {formatCurrency(
-                Number(plans?.find((p) => p.id === billing.plan_id)?.price)
-              ) || "No price detected"}
-            </Text>
-            <Text style={[styles.paragraph, { fontSize: 10 }]}>
-              {plans?.find((p) => p.id === billing.plan_id)?.description ||
-                "No description"}
-            </Text>
+            {plans ? (
+              <>
+                <Text style={styles.sectionTitle}>
+                  {plans.name || "No name detected"}
+                </Text>
+                <Text style={[styles.paragraph, { marginBottom: 10 }]}>
+                  {formatCurrency(Number(plans.price)) || "No price detected"}
+                </Text>
+                <Text style={[styles.paragraph, { fontSize: 10 }]}>
+                  {plans.description || "No description"}
+                </Text>
+              </>
+            ) : (
+              <Text></Text>
+            )}
+            {(billing.costs || []).map((cost) => (
+              <View key={cost.id}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { fontSize: 12, marginBottom: 8 },
+                  ]}
+                >
+                  {cost.name}
+                </Text>
+                <Text
+                  style={[styles.paragraph, { fontSize: 10, marginBottom: 4 }]}
+                >
+                  {formatCurrency(cost.value)}
+                </Text>
+                <Text
+                  style={[styles.paragraph, { fontSize: 10, marginBottom: 4 }]}
+                >
+                  {cost.description}
+                </Text>
+              </View>
+            ))}
           </View>
 
           {/* Resumen de factura */}
-          <View style={styles.summaryContainer} break>
+          <View style={styles.summaryContainer}>
             <Text style={styles.sectionTitle}>Invoice summary</Text>
             <View style={styles.tableWrapper}>
               <View style={[styles.tableRow, styles.tableHead]}>
@@ -153,25 +178,16 @@ export const InvoicePDFDocument = ({
               </View>
 
               {/* Plan como primer elemento */}
-              {plans?.find((p) => p.id === billing.plan_id) && (
+              {plans && (
                 <View style={styles.tableRow}>
                   <Text style={[styles.td, { flex: 1.5 }]}>
-                    {plans.find((p) => p.id === billing.plan_id)?.name ||
-                      "Plan"}
+                    {plans.name || "Plan"}
                   </Text>
                   <Text style={[styles.td, { flex: 3 }]}>
-                    {truncateText(
-                      plans.find((p) => p.id === billing.plan_id)
-                        ?.description || "",
-                      50
-                    )}
+                    {truncateText(plans.description || "No description", 50)}
                   </Text>
                   <Text style={[styles.td, { flex: 1 }]}>
-                    {formatCurrency(
-                      Number(
-                        plans.find((p) => p.id === billing.plan_id)?.price
-                      ) || 0
-                    )}
+                    {formatCurrency(Number(plans.price) || 0)}
                   </Text>
                   <Text style={[styles.td, { flex: 0.7 }]}>1</Text>
                 </View>
@@ -211,8 +227,12 @@ export const InvoicePDFDocument = ({
         <Image src="/senaviaLogo.png" style={styles.footerImage} />
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>(954) 706-4084 | info@senaviacorp.com</Text>
-          <Text style={styles.footerText}>150 S Pine Island Rd Office FORT LAUDERDALE FL 33324</Text>
+          <Text style={styles.footerText}>
+            (954) 706-4084 | info@senaviacorp.com
+          </Text>
+          <Text style={styles.footerText}>
+            150 S Pine Island Rd Office FORT LAUDERDALE FL 33324
+          </Text>
         </View>
 
         {/* Banner inferior fijo al final de la página */}
@@ -246,9 +266,8 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     backgroundColor: "white",
     position: "relative",
-    paddingBottom:50,
+    paddingBottom: 50,
     paddingTop: 50,
-
   },
 
   /* Banners */
@@ -410,7 +429,7 @@ const styles = StyleSheet.create({
     color: "white",
     position: "absolute",
     top: 10,
-    left: 240,
+    left: 220,
     width: 350,
     flexDirection: "row",
     gap: "10",
@@ -420,13 +439,12 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "column",
     position: "absolute",
-    bottom: 5,        
-    left: 20,          
+    bottom: 5,
+    left: 20,
     width: 500,
-
   },
   footerText: {
-    color: 'white',
+    color: "white",
     marginBottom: 2,
     lineHeight: 1.3,
   },

@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -41,11 +41,154 @@ export function PaymentDetailForm({
   const [isUpdating, setIsUpdating] = useState(false);
   const [localPayment, setLocalPayment] = useState(payment);
   const { toast } = useToast();
-  const { updatePayment, createStripeSession } = BillingViewModel();
+  const {
+    updatePayment,
+    createStripeSession,
+    getPayments,
+    payments,
+    getBilling,
+    billing,
+    PatchBilling,
+  } = BillingViewModel();
+  const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
+  const [billingTotalValue, setBillingTotalValue] = useState<number>(0);
+
+  // Cargar billing data para obtener el valor total
+  useEffect(() => {
+    const loadBillingData = async () => {
+      try {
+        await getBilling(payment.estimateId);
+      } catch (error) {
+        console.error("Error loading billing data:", error);
+      }
+    };
+
+    loadBillingData();
+  }, [payment.estimateId, getBilling]);
+
+  // Actualizar billingTotalValue cuando cambie el billing
+  useEffect(() => {
+    if (billing && billing.length > 0) {
+      const currentBilling = billing.find(
+        (b: any) => b.id === payment.estimateId
+      );
+      if (currentBilling) {
+        setBillingTotalValue(Number(currentBilling.totalValue) || 0);
+      }
+    }
+  }, [billing, payment.estimateId]);
+
+  // Cargar payments existentes para validar porcentaje
+  useEffect(() => {
+    const loadExistingPayments = async () => {
+      try {
+        await getPayments(); // Esto actualiza el estado en BillingViewModel
+      } catch (error) {
+        console.error("Error loading existing payments:", error);
+      }
+    };
+
+    loadExistingPayments();
+  }, [payment.estimateId, getPayments]);
+
+  // Actualizar existingPayments cuando cambien los payments del BillingViewModel
+  useEffect(() => {
+    if (payments && payments.length > 0) {
+      const paymentsForEstimate = payments.filter(
+        (p: Payment) => p.estimateId === payment.estimateId
+      );
+      setExistingPayments(paymentsForEstimate);
+    }
+  }, [payments, payment.estimateId]);
+
+  // Función para calcular el porcentaje total actual (excluyendo el payment actual)
+  const getCurrentTotalPercentage = () => {
+    return existingPayments
+      .filter((p) => p.id !== payment.id) // Excluir el payment actual
+      .reduce((total, p) => total + p.percentagePaid, 0);
+  };
+
+  // Función para validar si se puede actualizar el porcentaje
+  const validatePercentage = (newPercentage: number) => {
+    const currentTotal = getCurrentTotalPercentage();
+    return currentTotal + newPercentage <= 100;
+  };
+
+  // Función para calcular automáticamente el amount basado en el porcentaje
+  const calculateAmountFromPercentage = (percentage: number) => {
+    if (billingTotalValue > 0 && percentage > 0) {
+      return (billingTotalValue * percentage) / 100;
+    }
+    return 0;
+  };
+
+  // Función para actualizar el billing con los nuevos porcentajes
+  const updateBillingPercentages = async () => {
+    try {
+      console.log("Starting billing percentage update...");
+
+      // Obtener payments frescos directamente del servicio
+      const freshPayments =
+        await PaymentManagementService.getPaymentsByEstimateId(
+          payment.estimateId
+        );
+      console.log("Fresh payments from service:", freshPayments);
+
+      const totalPercentagePaid = freshPayments.reduce(
+        (total: number, p: Payment) => {
+          const percentage = Number(p.percentagePaid) || 0;
+          console.log(`Payment ${p.id}: ${percentage}%`);
+          return total + percentage;
+        },
+        0
+      );
+
+      const remainingPercentage = Math.max(0, 100 - totalPercentagePaid);
+
+      console.log("Calculated percentages:", {
+        totalPercentagePaid,
+        remainingPercentage,
+        paymentsCount: freshPayments.length,
+      });
+
+      // Actualizar el billing con los nuevos porcentajes
+      await PatchBilling(payment.estimateId, {
+        percentagePaid: totalPercentagePaid,
+        remainingPercentage: remainingPercentage,
+      });
+
+      console.log("Billing updated successfully with new percentages");
+
+      // Recargar el billing para refrescar la UI
+      await getBilling(payment.estimateId);
+    } catch (error) {
+      console.error("Error updating billing percentages:", error);
+    }
+  };
 
   const handleUpdatePayment = async () => {
     try {
       setIsUpdating(true);
+
+      // Solo validar porcentaje si ha cambiado respecto al valor original
+      // Esto permite actualizar otros campos (reference, description, amount, etc.) sin restricciones
+      const percentageChanged =
+        localPayment.percentagePaid !== payment.percentagePaid;
+
+      if (
+        percentageChanged &&
+        !validatePercentage(localPayment.percentagePaid)
+      ) {
+        const currentTotal = getCurrentTotalPercentage();
+        const maxAllowed = 100 - currentTotal;
+        toast({
+          title: "Percentage limit exceeded",
+          description: `Cannot update payment. Current total (excluding this payment): ${currentTotal}%. Maximum allowed: ${maxAllowed}%`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const paymentData: PatchPaymentData = {
         reference: localPayment.reference,
         description: localPayment.description,
@@ -71,6 +214,9 @@ export function PaymentDetailForm({
           title: "Payment updated successfully",
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
+
+        // Actualizar los porcentajes del billing
+        await updateBillingPercentages();
 
         // Redirigir a la tabla de billing details después de actualizar
         if (onRedirectToBillingDetails) {
@@ -106,10 +252,13 @@ export function PaymentDetailForm({
     try {
       //Usar localPayment para obtener los datos necesarios
       const realAmount = localPayment.amount * 100;
+      console.log(localPayment, "localPayment");
       const response = await createStripeSession(
         localPayment.reference,
         realAmount,
-        localPayment.id
+        localPayment.id,
+        localPayment.percentagePaid,
+        localPayment.estimateId
       );
 
       if (response) {
@@ -161,7 +310,7 @@ export function PaymentDetailForm({
     <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
             size="sm"
@@ -172,6 +321,12 @@ export function PaymentDetailForm({
           </Button>
           <h1 className="text-4xl font-medium text-[#04081E]">Edit Payment</h1>
         </div>
+        <Button
+          className="rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-semibold text-sm px-4 py-2"
+          onClick={handleSendEmail}
+        >
+          Send Payment by Email
+        </Button>
       </div>
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1">
         <div className="bg-white rounded-lg p-6 sm:p-10 lg:p-12 mx-auto">
@@ -193,9 +348,12 @@ export function PaymentDetailForm({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Enter the description of the Payment"
               rows={6}
-              maxLength={1000}
+              maxLength={10000}
               className="w-full h-28 resize-none text-xs"
             />
+            <div className="text-xs text-gray-500 text-right mt-1">
+              {localPayment.description.length}/10000
+            </div>
             <hr className="border-[#EBEDF2]" />
 
             <p>Amount</p>
@@ -214,13 +372,16 @@ export function PaymentDetailForm({
                   : ""
               }
               onChange={(e) => {
-                // Eliminar todo excepto números
-                const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   handleFieldChange("amount", 0);
                   return;
                 }
-                handleFieldChange("amount", parseInt(rawValue));
+                const numericValue = parseFloat(rawValue);
+                if (!isNaN(numericValue)) {
+                  handleFieldChange("amount", numericValue);
+                }
               }}
             />
             <hr className="border-[#EBEDF2]" />
@@ -229,14 +390,56 @@ export function PaymentDetailForm({
             <Input
               placeholder="0"
               className="w-full h-7"
-              type="number"
-              min="0"
-              max="100"
-              value={localPayment.percentagePaid}
-              onChange={(e) =>
-                handleFieldChange("percentagePaid", Number(e.target.value))
+              type="text"
+              value={
+                localPayment.percentagePaid === 0
+                  ? ""
+                  : localPayment.percentagePaid.toString()
               }
+              onChange={(e) => {
+                // Eliminar todo excepto números y punto decimal
+                const rawValue = e.target.value.replace(/[^0-9.]/g, "");
+                if (rawValue === "") {
+                  handleFieldChange("percentagePaid", 0);
+                  handleFieldChange("amount", 0);
+                  return;
+                }
+                const numericValue = parseFloat(rawValue);
+                if (
+                  !isNaN(numericValue) &&
+                  numericValue >= 0 &&
+                  numericValue <= 100
+                ) {
+                  handleFieldChange("percentagePaid", numericValue);
+                  // Calcular automáticamente el amount basado en el porcentaje
+                  const calculatedAmount =
+                    calculateAmountFromPercentage(numericValue);
+                  handleFieldChange(
+                    "amount",
+                    Math.round(calculatedAmount * 100) / 100
+                  );
+                }
+              }}
             />
+            <div className="text-xs text-right mt-1">
+              <div className="space-y-1">
+                <div className="text-gray-500">
+                  Current total (excluding this): {getCurrentTotalPercentage()}%
+                  | Available: {100 - getCurrentTotalPercentage()}%
+                </div>
+                {billingTotalValue > 0 && (
+                  <div className="text-blue-600 font-medium">
+                    Billing Total: ${billingTotalValue.toLocaleString()} |
+                    {localPayment.percentagePaid > 0 &&
+                      ` ${
+                        localPayment.percentagePaid
+                      }% = $${calculateAmountFromPercentage(
+                        localPayment.percentagePaid
+                      ).toLocaleString()}`}
+                  </div>
+                )}
+              </div>
+            </div>
             <hr className="border-[#EBEDF2]" />
 
             <p>State</p>
@@ -296,15 +499,6 @@ export function PaymentDetailForm({
             >
               {isUpdating ? "Updating..." : "Update Payment"}
             </Button>
-
-            <button
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 w-full rounded-full bg-[#95C11F] hover:bg-[#84AD1B] text-white font-bold text-lg"
-              onClick={() => {
-                handleSendEmail();
-              }}
-            >
-              Send Payment by Email
-            </button>
           </div>
         </div>
       </div>

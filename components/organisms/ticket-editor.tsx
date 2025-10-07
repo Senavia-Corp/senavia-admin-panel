@@ -19,6 +19,7 @@ import { BlogManagementService } from "@/services/blog-management-service";
 import { SupportTicket } from "@/types/support-management";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Blog, ContentJson, BlogTopic } from "@/types/blog-management";
+import { API } from "@/lib/services/endpoints";
 
 const ticketPlan = [
   { id: 1, name: "BUG", displayName: "Bug" },
@@ -135,7 +136,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
       description: ticketData.description,
     };
 
-    const response = await fetch("http://localhost:3000/api/ticket", {
+    const response = await fetch(`${API}/ticket`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -158,7 +159,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
       )
     );
     const response = await fetch(
-      `http://localhost:3000/api/ticket?id=${ticketId}`,
+      `${API}/ticket?id=${ticketId}`,
       {
         method: "PATCH",
         body: JSON.stringify(_ticketData),
@@ -172,7 +173,7 @@ export function TicketEditor({ ticketId, onBack, onSave }: TicketEditorProps) {
   const handleDelete = async () => {
     if (ticketId) {
       const response = await fetch(
-        `http://localhost:3000/api/ticket?id=${ticketId}`,
+        `${API}/ticket?id=${ticketId}`,
         {
           method: "DELETE",
         }

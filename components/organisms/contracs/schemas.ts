@@ -9,13 +9,12 @@ export const contractFormSchema = z.object({
       required_error: "Please select a status for the contract.",
     }
   ),
-  clauses: z.array(z.number()).min(1, "Please select at least one clause."),
   signedDate: z.string().min(1, "Deadline to sign is required"),
   userId: z.number().optional().nullable(),
-  leadId: z.number({ required_error: "Please select a lead." }),
+  leadId: z.number().optional().nullable(),
   // Sign Information
   companyEmail: z.string().email("Invalid email address"),
-  companyAdd: z.string().min(5, "Address must be at least 5 characters"),
+  companyAdd: z.string().optional(),
   companyPhone: z
     .string()
     .regex(/^[\+]?[1-9][\d]{0,15}$/i, "Invalid phone number format"),

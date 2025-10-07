@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import React from "react";
 import { Billing, Cost } from "@/types/billing-management";
 import { Lead } from "@/types/lead-management";
@@ -10,26 +11,45 @@ import {
   PDFViewer,
 } from "@react-pdf/renderer";
 import { InvoicePDFDocument } from "./invoice-pdf-document";
-import { Plans } from "@/types/plan";
+import { Plan } from "@/types/plan";
+import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
+
+
 
 /* -------------------------------------------------- *
 | *  Props
 | * -------------------------------------------------- */
 interface DocumentPreviewBillingProps {
-  lead: Lead[];
-  billing: Billing;
+  BillingID: number;
   onBack: () => void;
-  costs?: Cost[];
-  plans?: Plans[];
 }
 
 /* -------------------------------------------------- *
 | *  Componente principal
 | * -------------------------------------------------- */
 export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
-  const { onBack, lead, billing, plans } = props;
+  const { onBack, BillingID } = props;
+  const { getLeadById, getBilling, getPlanById, billing, lead, plan } = BillingViewModel();
+  const [No_Billing, setNo_Billing] = useState<boolean>(false);
+  const isLoading = !billing || billing.length === 0 || !lead || lead.length === 0;
 
+  // cargar billing al cambiar BillingID
+  useEffect(() => {
+    if (!BillingID) return;
+    getBilling(BillingID);
+  }, []);
+
+  // cuando billing cambie, cargar lead y plan
+  useEffect(() => {
+    if (!billing || billing.length === 0) return;
+    const current = billing[0];
+    if (current.lead_id) getLeadById(current.lead_id);
+    if (current.plan_id) getPlanById(current.plan_id);
+  }, [billing]);
   /* -------- Render web -------- */
+
+  const planForPdf = plan && plan.length > 0 ? plan[0] : undefined;
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -47,25 +67,33 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
             Document Preview
           </h1>
         </div>
-        <PDFDownloadLink
-          document={<InvoicePDFDocument lead={lead} billing={billing} plans={plans} />}
-          fileName={`invoice-${billing.id}.pdf`}
-          className="no-underline"
-        >
-          {({ loading }) => (
-            <Button className="rounded-full bg-[#99CC33] text-white font-bold text-base py-2 px-4">
-              {loading ? "Generando PDF…" : "Download Document"}
-            </Button>
-          )}
-        </PDFDownloadLink>
+        {billing && lead && billing.length > 0 && lead.length > 0 ? (
+          <PDFDownloadLink
+            document={
+                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={planForPdf} />
+            }
+            fileName={`invoice-${billing[0]?.id ?? "preview"}.pdf`}
+            className="no-underline"
+          >
+          </PDFDownloadLink>
+        ) : null}
       </div>
 
       {/* Contenedor estético + PDFViewer */}
       <div className="bg-black rounded-lg p-5 sm:p-6 flex-1 h-screen">
         <div className="flex flex-col h-screen">
-          <PDFViewer className="w-full flex-1 rounded-md border">
-            <InvoicePDFDocument lead={lead} billing={billing} plans={plans} />
-          </PDFViewer>
+            {isLoading ? (
+              <div className="flex-1 w-full rounded-md border bg-white p-6 animate-pulse">
+                <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
+                <div className="h-4 w-72 bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-64 bg-gray-200 rounded mb-6" />
+                <div className="h-[70vh] w-full bg-gray-100 rounded" />
+              </div>
+            ) : (
+              <PDFViewer className="w-full flex-1 rounded-md border">
+                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={planForPdf} />
+              </PDFViewer>
+            )}
         </div>
       </div>
     </div>

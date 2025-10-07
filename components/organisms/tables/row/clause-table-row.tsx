@@ -22,7 +22,7 @@ export function ClauseTableRow({ clause, onView, onDelete }: ClauseTableRowProps
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50 bg-[#F8F8F8] h-9">
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
-        {clause.id}.        
+        {clause.id}        
       </td>
       <td className="w-1/6 p-5 text-base font-light text-[#04081E] truncate text-center">
         {clause.title}

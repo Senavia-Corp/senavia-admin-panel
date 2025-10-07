@@ -62,7 +62,11 @@ export function ClausePage() {
         //setDataProducts((prev) => prev.filter((p) => p.id !== id));
       } else {
         console.error(`❌ No se pudo eliminar el producto ${id}`);
-         toast({ title: "Error", description: "The product could not be deleted; it is associated with a contract." });
+        toast({
+          title: "Error",
+          description:
+            "The product could not be deleted; it is associated with a contract.",
+        });
       }
     } catch (error) {
       console.error("Error eliminando producto:", error);
@@ -115,17 +119,20 @@ export function ClausePage() {
       <main className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6 flex-shrink-0">
-              Clause{" "}
-            </h1>
+            <div className="flex items-center mb-6 flex-shrink-0">
+              <div className="w-1 h-[36px] bg-[#99CC33] mr-3" />
+              <h1 className="text-2xl font-bold text-gray-900">
+                Clause Management
+              </h1>
+            </div>
 
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "clause-page",
-                "Add clause",
-                "Description",
+                "Add Clause",
+                "Create a new clause to add to one of your contracts.",
                 "All Clauses",
-                "Description",
+                "View and manage all clauses available for contracts.",
                 ["Clause ID", "Title", "Description", "Actions"],
                 clauses,
                 handlers,

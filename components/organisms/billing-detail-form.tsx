@@ -1,4 +1,4 @@
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, Loader2 } from "lucide-react";
 import { MultiSelectBilling } from "../atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,12 +16,11 @@ import { DocumentPreviewBilling } from "../../lib/billing/document-preview-billi
 import { Billings, Billing } from "@/types/billing-management";
 import { Leads, Lead } from "@/types/lead-management";
 import { Input } from "../ui/input";
-import { Plans } from "@/types/plan";
+import { Plans, Plan } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
 import { PaymentPage } from "@/components/pages/payment-page";
-import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
-import { BillingStatus, CreateBillingData } from "@/types/billing-management";
+import { BillingStatus, CreateBillingData, BillingPDF } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
 import { Progress } from "../ui/progress";
@@ -36,6 +35,7 @@ interface BillingDetailFormProps {
   plans: Plans[];
   onBack: () => void;
   onSave: () => void;
+  onBackRefresh?: () => Promise<void> | void;
 }
 
 const servicesID = (service_ID: number) => {
@@ -57,11 +57,12 @@ export function BillingDetailForm({
   plans,
   onBack,
   onSave,
+  onBackRefresh,
 }: BillingDetailFormProps) {
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const { PatchBilling, sendToClient } = BillingViewModel();
+  const { PatchBilling, sendToClient, getBilling, billing, getLeadById, getPlanById, plan, lead: vmLead } = BillingViewModel();
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -69,16 +70,11 @@ export function BillingDetailForm({
   const [service, setService] = useState("");
   const [associatedPlan, setAssociatedPlan] = useState<number[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [localEstimateData, setLocalEstimateData] =
-    useState<CreateBillingData | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("selectedBilling recibido:", selectedBilling);
-    console.log("billingId recibido:", billingId);
-    console.log("leads recibidos:", leads);
-    console.log("lead recibido:", lead);
-    console.log("plans recibidos:", plans);
     // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
@@ -100,7 +96,7 @@ export function BillingDetailForm({
       description: selectedBilling?.description || "",
       state: selectedBilling?.state || "",
       lead_id: selectedBilling?.lead_id || 0,
-      plan_id: selectedBilling?.plan_id || 0,
+      plan_id: selectedBilling?.plan_id || undefined,
       deadLineToPay: selectedBilling?.deadLineToPay || "",
       invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
       invoiceReference: selectedBilling?.invoiceReference || "",
@@ -108,6 +104,40 @@ export function BillingDetailForm({
       remainingPercentage: selectedBilling?.remainingPercentage || 0,
     });
   }, []);
+
+  // Sincronizar datos locales cuando llegue el billing desde backend
+  useEffect(() => {
+    if (billing && Array.isArray(billing) && billing.length > 0) {
+      const b = billing[0] as unknown as Billing;
+      setLocalEstimateData({
+        title: b.title || "",
+        totalValue: Number(b.totalValue) || 0,
+        estimatedTime: b.estimatedTime?.toString() || "",
+        description: b.description || "",
+        state: b.state || "",
+        lead_id: b.lead_id || 0,
+        plan_id: b.plan_id || undefined,
+        deadLineToPay: b.deadLineToPay || "",
+        invoiceDateCreated: b.invoiceDateCreated || "",
+        invoiceReference: b.invoiceReference || "",
+        percentagePaid: b.percentagePaid || 0,
+        remainingPercentage: b.remainingPercentage || 0,
+      });
+    }
+  }, [billing]);
+
+  const refreshFromBackend = async () => {
+    try {
+      setIsRefreshing(true);
+      await getBilling(billingId);
+      const refreshedLeadId = (localEstimateData?.lead_id || selectedBilling?.lead_id || 0);
+      const refreshedPlanId = (localEstimateData?.plan_id || selectedBilling?.plan_id || 0);
+      if (refreshedLeadId) await getLeadById(refreshedLeadId);
+      if (refreshedPlanId) await getPlanById(refreshedPlanId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -142,38 +172,58 @@ export function BillingDetailForm({
     return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
   };
 
+  const openCosts = async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshFromBackend();
+      setShowCosts(true);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const UpdateBilling = async () => {
     try {
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
 
-      const planPrice =
-        Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) ||
-        Number(localEstimateData?.totalValue) ||
-        0;
-      const costsTotal =
-        selectedBilling?.costs?.reduce(
-          (sum, cost) => sum + Number(cost.value),
-          0
-        ) || 0;
+      const planPrice = associatedPlan.length > 0
+        ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
+        : 0;
+      // Usar costos del backend si están disponibles, sino del selectedBilling
+      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
+      const currentCosts = latestBilling?.costs || selectedBilling?.costs || [];
+      const costsTotal = currentCosts.reduce(
+        (sum, cost) => sum + Number(cost.value),
+        0
+      );
+
+      // Si no hay plan seleccionado, mantener el totalValue actual
+      const newTotalValue = associatedPlan.length > 0
+        ? planPrice + costsTotal
+        : Number(localEstimateData?.totalValue) + costsTotal || 0;
 
       const billingData: CreateBillingData = {
         ...localEstimateData!,
         state: status,
-        totalValue: planPrice + costsTotal,
-        deadLineToPay: status === "INVOICE" ? getTodayDate() : "",
-        invoiceDateCreated: status === "INVOICE" ? getTodayDate() : "",
-        invoiceReference: "INV-2025-0456",
+        totalValue: newTotalValue,
+        plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
+        deadLineToPay: selectedBilling?.deadLineToPay || "",
+        invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
+        invoiceReference: (localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== "")
+          ? localEstimateData.invoiceReference
+          : (selectedBilling?.invoiceReference || "INV-2025-0456"),
       };
       await PatchBilling(ID_estimate, billingData);
       setLocalEstimateData(billingData);
+      // Recargar del backend para reflejar datos actualizados
+      await refreshFromBackend();
       toast({
         title: "Billing updated successfully",
         description: "The billing has been updated successfully.",
         duration: 3000,
       });
     } catch (error) {
-      console.log("An error has occured " + error);
       toast({
         title: "Failed to update billing",
         description: "The billing has not been updated.",
@@ -181,22 +231,51 @@ export function BillingDetailForm({
       });
     } finally {
       setIsUpdating(false);
-      onSave();
+
     }
   };
   const handleSendToClient = async () => {
     try {
+      // Asegurar datos frescos
+      await refreshFromBackend();
+      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : (selectedBilling as Billing | null);
+      const selectedLead = leads.find((l) => l.id === associatedLeads[0]);
+      const selectedPlan = plans.find((p) => p.id === associatedPlan[0]);
+      const backendLead = vmLead && vmLead.length > 0 ? (vmLead[0] as unknown as Lead) : undefined;
+      const backendPlan = plan && plan.length > 0 ? (plan[0] as unknown as Plans) : undefined;
+      const effectiveLead = backendLead ?? selectedLead;
+      const effectivePlan = backendPlan ?? selectedPlan;
+      if (!effectiveLead || !latestBilling) {
+        throw new Error("Missing lead/plan/billing for PDF generation");
+      }
+      // Adaptar tipos: Leads -> Lead (asegurar clientAddress) y Plans -> Plan (agregar serviceId/fechas)
+      const leadForPdf: Lead = {
+        ...effectiveLead,
+        clientAddress: effectiveLead.clientAddress || "",
+      } as Lead;
+
+      const planForPdf: Plan | undefined = effectivePlan
+        ? {
+          id: effectivePlan.id,
+          name: effectivePlan.name,
+          description: effectivePlan.description,
+          type: effectivePlan.type,
+          price: effectivePlan.price,
+          serviceId: effectivePlan.service.id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          service: effectivePlan.service,
+        }
+        : undefined;
       const pdfBlob = await pdfRenderer(
         <InvoicePDFDocument
-          lead={lead}
-          billing={
-            {
-              ...selectedBilling,
-              description: selectedBilling?.description || "",
-              totalValue: selectedBilling?.totalValue || "0",
-            } as Billing
-          }
-          plans={plans}
+          lead={leadForPdf}
+          billing={{
+            ...(latestBilling as Billing),
+            description: (latestBilling as Billing)?.description || "",
+            totalValue: (latestBilling as Billing)?.totalValue || "0",
+          } as Billing}
+          plans={planForPdf}
         />
       ).toBlob();
 
@@ -205,20 +284,24 @@ export function BillingDetailForm({
         String.fromCharCode(...new Uint8Array(arrayBuffer))
       );
 
+      // Determinar la URL base según el entorno
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+      const baseUrl = isDevelopment
+        ? 'http://localhost:3000/es/estimate'
+        : 'https://senaviacorp.com/en/estimate';
+      const estimateUrl = `${baseUrl}?ID=${latestBilling?.id || 0}`;
+
       await sendToClient({
-        name: leads.find((lead) => lead.id === associatedLeads[0])?.clientName || "",
-        title: localEstimateData?.title || "",
-        description: localEstimateData?.description || "",
-        email: leads.find((lead) => lead.id === associatedLeads[0])?.clientEmail || "",
+        name: effectiveLead?.clientName || "",
+        title: localEstimateData?.title || (latestBilling?.title ?? ""),
+        description: localEstimateData?.description || (latestBilling?.description ?? ""),
+        email: effectiveLead?.clientEmail || "",
         document: base64String,
+        url: estimateUrl,
       });
 
-      toast({
-        title: "Billing sent to client successfully",
-        description: "The billing has been sent to the client.",
-      });
+
     } catch (error) {
-      console.error("Error sending to client:", error);
       toast({
         title: "Failed to send to client",
         description: "The billing has not been sent to the client.",
@@ -227,13 +310,21 @@ export function BillingDetailForm({
   };
 
   if (showCosts) {
+    // Usar datos más recientes del backend si están disponibles
+    const latestFromVm = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
+    const latestCosts = latestFromVm?.costs ?? selectedBilling?.costs ?? [];
+    const latestTotalValue = latestFromVm?.totalValue ? Number(latestFromVm.totalValue) : Number(selectedBilling?.totalValue || 0);
+
     return (
       <div className="">
         <CostPage
-          costs={selectedBilling?.costs || []}
-          totalValue={parseInt(selectedBilling?.totalValue || "0")}
+          costs={latestCosts}
+          totalValue={latestTotalValue}
           estimateId={selectedBilling?.id || 0}
-          onBack={() => setShowCosts(false)}
+          onBack={async () => {
+            await refreshFromBackend();
+            setShowCosts(false);
+          }}
         />
       </div>
     );
@@ -244,7 +335,7 @@ export function BillingDetailForm({
       <div className="">
         <PaymentPage
           payments={selectedBilling?.payments || []}
-          lead = {lead}
+          lead={lead}
           estimateId={selectedBilling?.id || 0}
           onBack={() => setShowPayments(false)}
           onRedirectToBillingDetails={() => setShowPayments(false)}
@@ -256,16 +347,7 @@ export function BillingDetailForm({
   if (showDocument && selectedBilling) {
     return (
       <DocumentPreviewBilling
-        billing={
-          {
-            ...selectedBilling,
-            description: selectedBilling.description || "",
-            totalValue: selectedBilling.totalValue || "0",
-          } as Billing
-        }
-        lead={lead}
-        costs={selectedBilling.costs}
-        plans={plans}
+        BillingID={billingId || 0}
         onBack={() => setShowDocument(false)}
       />
     );
@@ -279,7 +361,12 @@ export function BillingDetailForm({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onBack}
+            onClick={async () => {
+              if (onBackRefresh) {
+                await onBackRefresh();
+              }
+              onBack();
+            }}
             className="bg-gray-900 text-white hover:bg-gray-800 rounded-full w-10 h-10 p-0"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -312,7 +399,7 @@ export function BillingDetailForm({
               Total:{" "}
               {localEstimateData?.totalValue
                 ? formatCurrency(localEstimateData.totalValue)
-                : "N/A"}
+                : "$0"}
             </p>
             <hr className="border-[#EBEDF2]" />
             <p>Title</p>
@@ -360,11 +447,11 @@ export function BillingDetailForm({
                 }}
                 placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sodales nibh. Fusce fermentum dapibus arcu, id hendrerit odio consectetur vitae."
                 rows={6}
-                maxLength={5000}
+                maxLength={10000}
                 className="w-full h-28 resize-none text-xs"
               />
               <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2">
-                {localEstimateData?.description?.length || 0}/200
+                {localEstimateData?.description?.length || 0}/10000
               </div>
             </div>
             <hr className="border-[#EBEDF2]" />
@@ -457,7 +544,7 @@ export function BillingDetailForm({
                 onChange={(value) => {
                   setAssociatedPlan(value);
                   setLocalEstimateData((prev) =>
-                    prev ? { ...prev, plan_id: value[0] || 0 } : null
+                    prev ? { ...prev, plan_id: value[0] || undefined } : null
                   );
                 }}
               />
@@ -475,10 +562,10 @@ export function BillingDetailForm({
                         {plans.find((plan) => plan.id === associatedPlan[0])
                           ?.price
                           ? formatCurrency(
-                              plans.find(
-                                (plan) => plan.id === associatedPlan[0]
-                              )?.price!
-                            )
+                            plans.find(
+                              (plan) => plan.id === associatedPlan[0]
+                            )?.price!
+                          )
                           : "No price"}
                       </p>
                       <p>
@@ -497,10 +584,13 @@ export function BillingDetailForm({
               )}
             </div>
             <hr className="border-[#EBEDF2]" />
-            <p>service</p>
+            <p>Service</p>
             <Select
               disabled={true}
-              value={servicesID(localEstimateData?.lead_id || 0)}
+              value={servicesID(
+                lead.find((lead) => lead.id === associatedLeads[0])?.service
+                  ?.id || 0
+              )}
             >
               <SelectTrigger className="w-full h-7">
                 <SelectValue placeholder="Dropdown here" />
@@ -517,34 +607,48 @@ export function BillingDetailForm({
               <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                 <div>
                   <h2 className="text-2xl font-normal">Costs Details</h2>
-                  <p className="font-light text-base">Description</p>
+                  <p className="font-light text-base">
+                    Creates extra costs for customer estimates
+                  </p>
                 </div>
                 <Button
-                  onClick={() => setShowCosts(true)}
+                  onClick={openCosts}
+                  disabled={isRefreshing || isUpdating}
                   className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
                 >
-                  <Eye color="#04081E" />
+                  {isRefreshing ? (
+                    <Loader2 className="animate-spin" color="#04081E" />
+                  ) : (
+                    <Eye color="#04081E" />
+                  )}
                 </Button>
               </CardHeader>
             </Card>
 
-            <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
-              <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
-                <div>
-                  <h2 className="text-2xl font-normal">Payments Details</h2>
-                  <p className="font-light text-base">Description</p>
-                </div>
-                <Button
-                  onClick={() => setShowPayments(true)}
-                  className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
-                >
-                  <Eye color="#04081E" />
-                </Button>
-              </CardHeader>
-            </Card>
+            {/* Payments Details */}
+            {localEstimateData?.state === "ACCEPTED" ||
+              localEstimateData?.state === "INVOICE" ||
+              localEstimateData?.state === "PAID" ? (
+              <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
+                <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
+                  <div>
+                    <h2 className="text-2xl font-normal">Payments Details</h2>
+                    <p className="font-light text-base">Create your deferred payments in a personalized way</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowPayments(true)}
+                    className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
+                  >
+                    <Eye color="#04081E" />
+                  </Button>
+                </CardHeader>
+              </Card>
+            ) : (
+              <></>
+            )}
             <Button
               className={
-                "rounded-full text-3xl items-center py-2 px-4 bg-[#99CC33] text-white hover:bg-[#99CC33]/80"
+                "rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
               }
               onClick={UpdateBilling}
               disabled={isUpdating}

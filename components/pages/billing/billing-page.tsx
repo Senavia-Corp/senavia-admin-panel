@@ -21,19 +21,29 @@ export function BillingPage() {
   const [selectedBilling, setSelectedBilling] = useState<Billing | null>(null)
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { toast } = useToast()
 
   useEffect(() => {
-    getBillings()
-    getLeads()
-    getPlans()
+    const initializeData = async () => {
+      setIsLoading(true)
+      setIsInitialLoad(true)
+      try {
+        await getBillings()
+        await getLeads()
+        await getPlans()
+      } finally {
+        setIsInitialLoad(false)
+      }
+    }
+    initializeData()
   }, []) // Solo se ejecuta al montar el componente
 
   useEffect(() => {
-    if (billings.length > 0) {
+    if (!isInitialLoad) {
       loadBillingRecords()
     }
-  }, [billings, searchTerm, statusFilter])
+  }, [billings, searchTerm, statusFilter, isInitialLoad])
 
   const loadBillingRecords = React.useCallback(async () => {
     try {
@@ -103,7 +113,6 @@ export function BillingPage() {
   }, [getLeadById])
 
   const handleCreateBilling = useCallback(async () => {
-    console.log("Create new billing record")
     setShowCreateBilling(true)
   }, [])
 
@@ -158,6 +167,9 @@ export function BillingPage() {
               lead={lead}
               plans={plans}
               onBack={handleBackToList}
+              onBackRefresh={async () => {
+                await getBillings();
+              }}
               onSave={handleSaveSuccess}
             />
           </div>
@@ -191,20 +203,20 @@ export function BillingPage() {
         <div className="p-6 h-full w-full">
           <div className="flex flex-col h-full w-full">
             <div className="my-3">
-              <h1 className="text-4xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
+              <h1 className="text-2xl font-medium text-gray-900 border-l-4 border-[#99CC33] pl-4">Billing Management</h1>
             </div>
             <div className="flex-1 min-h-0">
               {GeneralTable(
                 "billing-page",
                 "Add Billing",
-                "Description",
+                "Create estimates, invoices, and payments for client projects.",
                 "All Billing",
-                "Description",
+                "View and manage all billing records including estimates, invoices, and payments.",
                 ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],
                 billingRecords,
                 handlers,
                 {
-                  isLoading,
+                  isLoading: isLoading || isInitialLoad,
                   hasError,
                   onRetry: loadBillingRecords,
                   emptyStateTitle: "No billing records found",

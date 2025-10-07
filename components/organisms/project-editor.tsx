@@ -12,11 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { ProjectManagementService } from "@/services/project-management-service";
+import { EstimateManagementService } from "@/services/estimate-management-service";
+import { PhaseManagementService } from "@/services/phase-management-service";
+import { PhaseManagementPage } from "@/components/pages/phase-management-page";
 import type { Project, ProjectPhase } from "@/types/project-management";
+import type {
+  EstimateOption,
+  WorkTeamOption,
+  PhaseOption,
+} from "@/types/estimate-management";
+import type { ProjectPhaseDetail } from "@/types/phase-management";
 import { PhaseName } from "@/types/project-management";
 import { toast } from "@/components/ui/use-toast";
+import { GenericDropdown } from "@/components/atoms/generic-dropdown";
 
 interface ProjectEditorProps {
   projectId?: number;
@@ -28,7 +38,7 @@ interface ProjectFormData {
   name: string;
   description: string;
   expectedDuration: string;
-  currentPhase: ProjectPhase;
+  currentPhase: number; // ID de la fase seleccionada
   status: string;
   startDate: string;
   endDate: string;
@@ -46,7 +56,7 @@ export function ProjectEditor({
     name: "",
     description: "",
     expectedDuration: "",
-    currentPhase: "Analysis",
+    currentPhase: 1, // ID de la fase por defecto (Analysis = 1)
     status: "Active",
     startDate: "",
     endDate: "",
@@ -55,28 +65,87 @@ export function ProjectEditor({
     estimate_id: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [estimateOptions, setEstimateOptions] = useState<EstimateOption[]>([]);
+  const [workTeamOptions, setWorkTeamOptions] = useState<WorkTeamOption[]>([]);
+  const [phaseOptions, setPhaseOptions] = useState<PhaseOption[]>([]);
+  const [isLoadingEstimates, setIsLoadingEstimates] = useState(false);
+  const [isLoadingWorkTeams, setIsLoadingWorkTeams] = useState(false);
+  const [estimatesError, setEstimatesError] = useState<string | null>(null);
+  const [workTeamsError, setWorkTeamsError] = useState<string | null>(null);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [showPhaseManagement, setShowPhaseManagement] = useState(false);
+  const [projectPhases, setProjectPhases] = useState<ProjectPhaseDetail[]>([]);
 
   useEffect(() => {
     const loadProject = async () => {
       if (projectId) {
+        console.log("Loading project with ID:", projectId);
         try {
           const project = await ProjectManagementService.getProjectById(
             projectId.toString()
           );
+          console.log("Loaded project data:", project);
+
           if (project) {
-            const currentPhase = getPhaseLabel(project);
-            setFormData({
+            setCurrentProject(project);
+            const phaseOptions =
+              EstimateManagementService.createPhaseOptions(project);
+            console.log(
+              "Setting phase options for existing project:",
+              phaseOptions
+            );
+            setPhaseOptions(phaseOptions);
+
+            const currentPhaseId =
+              EstimateManagementService.getCurrentPhaseId(project);
+            console.log("Determined current phase ID:", currentPhaseId);
+
+            // Handle different possible structures for relations
+            let workTeamId = 0;
+            let estimateId = 0;
+
+            // Try different possible structures for workTeam_id
+            if (typeof project.workTeam_id === "number") {
+              workTeamId = project.workTeam_id;
+            } else if (project.workTeam_id?.id) {
+              workTeamId = project.workTeam_id.id;
+            } else if ((project as any).workTeamId) {
+              workTeamId = (project as any).workTeamId;
+            }
+
+            // Try different possible structures for estimate_id
+            if (typeof project.estimate_id === "number") {
+              estimateId = project.estimate_id;
+            } else if (project.estimate_id?.id) {
+              estimateId = project.estimate_id.id;
+            } else if ((project as any).estimateId) {
+              estimateId = (project as any).estimateId;
+            }
+
+            console.log("Mapping relations:", {
+              originalWorkTeam: project.workTeam_id,
+              mappedWorkTeamId: workTeamId,
+              originalEstimate: project.estimate_id,
+              mappedEstimateId: estimateId,
+            });
+
+            const newFormData = {
               name: project.name || "",
               description: project.description || "",
               expectedDuration: project.expectedDuration || "",
-              currentPhase: currentPhase as ProjectPhase,
+              currentPhase: currentPhaseId,
               status: "Active",
               startDate: project.startDate || "",
               endDate: project.endDate || "",
               imagePreviewUrl: project.imagePreviewUrl || "",
-              workTeam_id: project.workTeam_id?.id || 0,
-              estimate_id: project.estimate_id?.id || 0,
-            });
+              workTeam_id: workTeamId,
+              estimate_id: estimateId,
+            };
+
+            console.log("Setting form data:", newFormData);
+            setFormData(newFormData);
+          } else {
+            console.log("No project data received");
           }
         } catch (error) {
           console.error("Error loading project:", error);
@@ -86,11 +155,71 @@ export function ProjectEditor({
             variant: "destructive",
           });
         }
+      } else {
+        console.log("No projectId provided, using default form data");
+        // Para proyectos nuevos, crear opciones de fases por defecto
+        const defaultPhaseOptions =
+          EstimateManagementService.createPhaseOptions(null);
+        console.log(
+          "Setting phase options for new project:",
+          defaultPhaseOptions
+        );
+        setPhaseOptions(defaultPhaseOptions);
+        setCurrentProject(null);
       }
     };
 
     loadProject();
+    loadEstimateOptions();
+    loadWorkTeamOptions();
+    loadProjectPhases();
   }, [projectId]);
+
+  const loadEstimateOptions = async () => {
+    setIsLoadingEstimates(true);
+    setEstimatesError(null);
+    try {
+      const options = await EstimateManagementService.getEstimateOptions();
+      setEstimateOptions(options);
+    } catch (error) {
+      console.error("Error loading estimate options:", error);
+      setEstimatesError("Failed to load estimates");
+    } finally {
+      setIsLoadingEstimates(false);
+    }
+  };
+
+  const loadWorkTeamOptions = async () => {
+    setIsLoadingWorkTeams(true);
+    setWorkTeamsError(null);
+    try {
+      const options = await EstimateManagementService.getWorkTeamOptions();
+      setWorkTeamOptions(options);
+    } catch (error) {
+      console.error("Error loading work team options:", error);
+      setWorkTeamsError("Failed to load work teams");
+    } finally {
+      setIsLoadingWorkTeams(false);
+    }
+  };
+
+  const loadProjectPhases = async () => {
+    if (projectId) {
+      try {
+        const phases = await PhaseManagementService.getPhasesByProject(
+          projectId
+        );
+        setProjectPhases(phases);
+      } catch (error) {
+        console.error("Error loading project phases:", error);
+        toast({
+          title: "Warning",
+          description: "Failed to load project phases",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -136,12 +265,26 @@ export function ProjectEditor({
         return;
       }
 
-      // Create payload similar to backend expectations
-      const phaseEnum: Record<ProjectPhase, PhaseName> = {
-        Analysis: PhaseName.ANALYSIS,
-        Design: PhaseName.DESIGN,
-        Development: PhaseName.DEVELOPMENT,
-        Deployment: PhaseName.DEPLOY,
+      // Get the selected phase information
+      const selectedPhase = phaseOptions.find(
+        (p) => p.id === formData.currentPhase
+      );
+      const selectedPhaseName = selectedPhase ? selectedPhase.name : "Analysis";
+
+      // Map phase name to enum
+      const getPhaseEnum = (phaseName: string): PhaseName => {
+        switch (phaseName.toLowerCase()) {
+          case "analysis":
+            return PhaseName.ANALYSIS;
+          case "design":
+            return PhaseName.DESIGN;
+          case "development":
+            return PhaseName.DEVELOPMENT;
+          case "deployment":
+            return PhaseName.DEPLOY;
+          default:
+            return PhaseName.ANALYSIS;
+        }
       };
 
       const projectData = {
@@ -153,7 +296,7 @@ export function ProjectEditor({
         imagePreviewUrl: formData.imagePreviewUrl || "",
         phases: [
           {
-            name: phaseEnum[formData.currentPhase],
+            name: getPhaseEnum(selectedPhaseName),
             startDate:
               formData.startDate || new Date().toISOString().split("T")[0],
             endDate: formData.endDate || "",
@@ -192,12 +335,31 @@ export function ProjectEditor({
     }
   };
 
-  const phases: ProjectPhase[] = [
-    "Analysis",
-    "Design",
-    "Development",
-    "Deployment",
-  ];
+  const handleManagePhases = () => {
+    if (!projectId) {
+      toast({
+        title: "Error",
+        description: "Please save the project first before managing phases",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPhaseManagement(true);
+  };
+
+  const handleBackFromPhases = () => {
+    setShowPhaseManagement(false);
+    // Recargar las fases por si se actualizaron
+    loadProjectPhases();
+  };
+
+  // Debug logging for render
+  console.log("ProjectEditor render state:", {
+    currentPhase: formData.currentPhase,
+    phaseOptions: phaseOptions,
+    phaseOptionsLength: phaseOptions.length,
+    projectId: projectId,
+  });
 
   function getPhaseLabel(project: Project): ProjectPhase {
     const lastPhase = (project.phases || [])
@@ -221,6 +383,18 @@ export function ProjectEditor({
       default:
         return "Analysis";
     }
+  }
+
+  // Si está mostrando la gestión de fases
+  if (showPhaseManagement) {
+    return (
+      <PhaseManagementPage
+        phases={projectPhases}
+        projectId={projectId!}
+        projectName={currentProject?.name || `Project ${projectId}`}
+        onBack={handleBackFromPhases}
+      />
+    );
   }
 
   return (
@@ -256,40 +430,49 @@ export function ProjectEditor({
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Estimated Id
+                Estimate *
               </Label>
-              <Input
-                type="number"
-                value={formData.estimate_id || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
+              <GenericDropdown
+                value={formData.estimate_id || undefined}
+                onChange={(value, option) => {
                   setFormData({
                     ...formData,
-                    estimate_id: value === "" ? 0 : parseInt(value) || 0,
+                    estimate_id: value,
                   });
                 }}
-                placeholder="Enter estimate ID (e.g., 1)"
-                className="mt-1"
-                min="1"
+                placeholder="Select an estimate..."
+                className="mt-1 w-full"
+                options={estimateOptions}
+                isLoading={isLoadingEstimates}
+                error={estimatesError}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="estimates"
               />
             </div>
+
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                WorkTeam Id
+                Work Team *
               </Label>
-              <Input
-                type="number"
-                value={formData.workTeam_id || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
+              <GenericDropdown
+                value={formData.workTeam_id || undefined}
+                onChange={(value, option) => {
                   setFormData({
                     ...formData,
-                    workTeam_id: value === "" ? 0 : parseInt(value) || 0,
+                    workTeam_id: value,
                   });
                 }}
-                placeholder="Enter work team ID (e.g., 1)"
-                className="mt-1"
-                min="1"
+                placeholder="Select a work team..."
+                className="mt-1 w-full"
+                options={workTeamOptions}
+                isLoading={isLoadingWorkTeams}
+                error={workTeamsError}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="work teams"
               />
             </div>
 
@@ -316,34 +499,41 @@ export function ProjectEditor({
                 }
                 placeholder="Briefly describe your project. "
                 className="mt-1 min-h-[100px]"
-                maxLength={200}
+                maxLength={10000}
               />
               <div className="text-xs text-gray-500 text-right mt-1">
-                {formData.description.length}/200
+                {formData.description.length}/10000
               </div>
             </div>
 
             <div>
               <Label className="text-sm font-medium text-gray-700">
-                Current Phase
+                Current Phase *
               </Label>
-              <Select
+              <GenericDropdown
                 value={formData.currentPhase}
-                onValueChange={(value: ProjectPhase) =>
-                  setFormData({ ...formData, currentPhase: value })
-                }
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Dropdown here" />
-                </SelectTrigger>
-                <SelectContent>
-                  {phases.map((phase) => (
-                    <SelectItem key={phase} value={phase}>
-                      {phase}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value, option) => {
+                  console.log("Phase selection changed:", {
+                    value,
+                    option,
+                    currentValue: formData.currentPhase,
+                    valueType: typeof value,
+                  });
+                  setFormData({
+                    ...formData,
+                    currentPhase: value,
+                  });
+                }}
+                placeholder="Select a phase..."
+                className="mt-1 w-full"
+                options={phaseOptions}
+                isLoading={false}
+                error={null}
+                searchFields={["name", "subtitle"]}
+                displayField="name"
+                subtitleField="subtitle"
+                errorLabel="phases"
+              />
             </div>
 
             <div>
@@ -387,17 +577,42 @@ export function ProjectEditor({
               </div>
             </div>
 
-            <Button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
-            >
-              {isLoading
-                ? "Saving..."
-                : projectId
-                ? "Update Task"
-                : "Add / Update Task"}
-            </Button>
+            <div className="space-y-4">
+              {/* Manage Phases Button - Solo si el proyecto existe */}
+              {projectId && (
+                <Button
+                  onClick={handleManagePhases}
+                  className="w-full py-6 px-6 bg-[#1e293b] hover:bg-[#334155] text-white rounded-lg flex items-center justify-between min-h-[80px]"
+                >
+                  <div className="flex items-center">
+                    <Calendar className="h-6 w-6 mr-4" />
+                    <div className="text-left">
+                      <div className="font-semibold text-lg">
+                        Project Phases
+                      </div>
+                      <div className="text-sm text-gray-300">
+                        Manage project phases and timeline
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#95C11F] text-[#1e293b] px-4 py-2 rounded-full text-sm font-medium">
+                    {projectPhases.length} phases
+                  </div>
+                </Button>
+              )}
+
+              <Button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="w-full bg-[#95C11F] hover:bg-[#84AD1B] text-white py-3"
+              >
+                {isLoading
+                  ? "Saving..."
+                  : projectId
+                  ? "Update Project"
+                  : "Create Project"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

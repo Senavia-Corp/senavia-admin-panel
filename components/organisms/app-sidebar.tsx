@@ -11,6 +11,8 @@ import {
   Settings,
   BarChart3,
   ChevronDown,
+  FileUserIcon,
+  MonitorCheck 
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -47,15 +49,25 @@ const navigationItems = [
     icon: Users,
   },
   {
-    title: "Contracts",
-    url: "/contracts",
-    icon: FileText,
+    title: "Leads",
+    url: "/leads",
+    icon: Target,
   },
-    { title: "Clause", url: "/clause", icon: Target },
   {
     title: "Billing",
     url: "/billing",
     icon: DollarSign,
+  },
+  {
+    title: "Contracts",
+    url: "/contracts",
+    icon: FileText,
+  },
+  { title: "Clause", url: "/clause", icon: FileUserIcon },
+  {
+    title: "Plan",
+    url: "/plan",
+    icon: MonitorCheck,
   },
   {
     title: "Projects",
@@ -71,11 +83,6 @@ const navigationItems = [
     title: "Manage Content",
     url: "/content",
     icon: Edit3,
-  },
-  {
-    title: "Leads",
-    url: "/leads",
-    icon: Target,
   },
 
 ];

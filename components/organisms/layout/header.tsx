@@ -10,6 +10,9 @@ import { ProfileDrawer } from "@/components/molecules/profile-drawer";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<{
+    name?: string;
+  }>({});
   const [mobileDropdowns, setMobileDropdowns] = useState<
     Record<string, boolean>
   >({});
@@ -17,6 +20,22 @@ export function Header() {
     {}
   );
   // const { user, isLoggedIn, setUser, setIsLoggedIn } = useUser();
+useEffect(() => {
+    fetch("http://localhost:3000/api/auth/me", {
+      method: "GET",
+      credentials: "include", // 👈 para enviar cookies
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        //console.log("✅ Datos del usuario recibidos desde header:", data);
+        setUser({
+          name: data.data.name,        
+        });
+      })
+      .catch((err) => {
+        //console.error("❌ Error al traer usuario desde header:", err);
+      });
+  }, []);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -60,7 +79,7 @@ export function Header() {
               <div className="w-8 h-8 bg-gradient-to-r from-[#8ECF0A] via-[#39cac0] to-[#8ECF0A] rounded-full flex items-center justify-center">
                 <span className="text-white text-sm">{ '迅'}</span>
               </div>
-              <span className="text-sm font-medium">{ 'Username'}</span>
+              <span className="text-sm font-medium">{ user?user.name:'Username'}</span>
             </button>
           </div>
         </div>

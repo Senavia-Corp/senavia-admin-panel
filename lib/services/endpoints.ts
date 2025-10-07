@@ -4,7 +4,7 @@ const API_BASE = "https://senaviacorp.com/api";
 const API_LOCAL = "http://localhost:3000/api";
 
 // Use local API for development, production API for production
-const API = process.env.NODE_ENV === "development" ? API_LOCAL : API_BASE;
+export const API = process.env.NODE_ENV === "development" ? API_LOCAL : API_BASE;
 // const API = process.env.API_URL;
 
 export const endpoints = {
@@ -113,13 +113,15 @@ export const endpoints = {
     createEstimate: `${API}/estimate`,
     updateEstimate: (id: number) => `${API}/estimate?id=${id}`,
     deleteEstimate: (id: number) => `${API}/estimate?id=${id}`,
-    patchEstimate: (id: number) => `${API}/estimate?id=${id}`,
     sendToClient:
       "https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3",
   },
   plan: {
-    getPlans: `${API}/plan`,
-    getPlan: (id: number) => `${API}/plan?id=${id}`,
+    getPlans: `${API}/plan`,    
+    getById: (id: number) => `${API}/plan?id=${id}`,
+    delete: (id: number) => `${API}/plan?id=${id}`,
+    update: (id: number) => `${API}/plan?id=${id}`,
+    create: `${API}/plan`,
   },
   cost: {
     createCost: `${API}/cost`,

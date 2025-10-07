@@ -42,6 +42,21 @@ export function StatusBadge({
         return "bg-purple-500 text-white";
       case "type":
         return "bg-[#99CC33] text-white";
+      // Billing states
+      case "created":
+        return "bg-blue-500 text-white";
+      case "processing":
+        return "bg-yellow-500 text-white";
+      case "in_review":
+        return "bg-orange-500 text-white";
+      case "rejected":
+        return "bg-red-500 text-white";
+      case "accepted":
+        return "bg-green-500 text-white";
+      case "invoice":
+        return "bg-purple-500 text-white";
+      case "paid":
+        return "bg-[#99CC33] text-white";
       default:
         return "bg-gray-500 text-white";
     }
