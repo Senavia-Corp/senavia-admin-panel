@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DeleteConfirmDialog } from "@/components/organisms/delete-confirm-dialog";
 import type { Clause } from "./clause/clause";
-import type{Plan} from"./plan/plan";
+import type { Plan } from "./plan/plan";
 import { PlanEditor } from "../organisms/plan-editor";
 import { GeneralTable } from "@/components/organisms/tables/general-table";
 //import ClauseViewModel from "./clause/ClauseViewModel";
@@ -23,9 +23,9 @@ export function PlanPage() {
   const [itemsPerPage, setitemsPerPage] = useState(10);
   const [offset, setOffset] = useState(0);
   const {
-    getAllPlans,plans, loading,deletePlan
+    getAllPlans, plans, loading, deletePlan
   } = PlanViewModel({ isPaginated: true, offset, itemsPerPage, searchTerm });
-  
+
   const [entityToDelete, setEntityToDelete] = useState<Clause | null>(null);
   const [dataClauses, setDataClauses] = useState<Clause[]>([]);
   const { toast } = useToast();
@@ -43,7 +43,7 @@ export function PlanPage() {
     setEditingId(null);
     setShowEditor(true);
   };
-  const handleFilterChange = () => {};
+  const handleFilterChange = () => { };
   const handlers = {
     onCreate: handleCreateBlog,
     onView: handleView,
@@ -128,16 +128,16 @@ export function PlanPage() {
               {GeneralTable(
                 "plan-page",
                 "Add Plan",
-                "Description",
+                "Create and manage your service plans.",
                 "All Plans",
-                "Description",
-                ["Plan ID", "Name","Description","Type","price",  "Actions"],
+                "View and manage all available service plans.",
+                ["Plan ID", "Name", "Description", "Type", "Price", "Actions"],
                 plans,
                 handlers,
                 {
                   isLoading: loading,
                   //pagination: <PaginadoComponent />,
-                  skeletonComponent: ClauseTableRowSkeleton, 
+                  skeletonComponent: ClauseTableRowSkeleton,
                   skeletonCount: 5,
                 }
               )}

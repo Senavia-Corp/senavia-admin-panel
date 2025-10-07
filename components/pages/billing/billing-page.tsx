@@ -211,7 +211,7 @@ export function BillingPage() {
                 "Add Billing",
                 "Create estimates, invoices, and payments for client projects.",
                 "All Billing",
-                "Description",
+                "View and manage all billing records including estimates, invoices, and payments.",
                 ["Billing ID","Title", "Estimated Time", "State", "Total", "Actions"],
                 billingRecords,
                 handlers,

@@ -245,7 +245,7 @@ export function BillingDetailForm({
       const backendPlan = plan && plan.length > 0 ? (plan[0] as unknown as Plans) : undefined;
       const effectiveLead = backendLead ?? selectedLead;
       const effectivePlan = backendPlan ?? selectedPlan;
-      if (!effectiveLead || !effectivePlan || !latestBilling) {
+      if (!effectiveLead || !latestBilling) {
         throw new Error("Missing lead/plan/billing for PDF generation");
       }
       // Adaptar tipos: Leads -> Lead (asegurar clientAddress) y Plans -> Plan (agregar serviceId/fechas)
@@ -254,17 +254,19 @@ export function BillingDetailForm({
         clientAddress: effectiveLead.clientAddress || "",
       } as Lead;
 
-      const planForPdf: Plan = {
-        id: effectivePlan.id,
-        name: effectivePlan.name,
-        description: effectivePlan.description,
-        type: effectivePlan.type,
-        price: effectivePlan.price,
-        serviceId: effectivePlan.service.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        service: effectivePlan.service,
-      } as Plan;
+      const planForPdf: Plan | undefined = effectivePlan
+        ? {
+          id: effectivePlan.id,
+          name: effectivePlan.name,
+          description: effectivePlan.description,
+          type: effectivePlan.type,
+          price: effectivePlan.price,
+          serviceId: effectivePlan.service.id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          service: effectivePlan.service,
+        }
+        : undefined;
       const pdfBlob = await pdfRenderer(
         <InvoicePDFDocument
           lead={leadForPdf}

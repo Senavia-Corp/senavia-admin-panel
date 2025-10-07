@@ -99,7 +99,9 @@ export function BillingViewModel() {
   const createStripeSession = async (
     reference: string,
     amount: number,
-    id: number
+    id: number,
+    percentagePaid: number,
+    estimateId: number
   ) => {
     setError(null);
     setSuccessMessage(null);
@@ -117,6 +119,8 @@ export function BillingViewModel() {
       reference,
       amount,
       id,
+      percentagePaid,
+      estimateId,
     });
     if (status === 200 && response && response.success) {
       const url = response.data;
@@ -543,7 +547,8 @@ export function BillingViewModel() {
       const { response, status, errorLogs } = await fetchData<
         apiResponse<Billing>
       >(endpoints.estimate.sendToClient, "post", sendToClientData);
-      if (status === 200 && response && response.success) {
+      console.log(status, response);
+      if (status === 200 || status === 201) {
         //toast.success("Billing sent to client successfully");
         toast({
           title: "Billing sent to client successfully",

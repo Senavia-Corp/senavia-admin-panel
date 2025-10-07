@@ -187,7 +187,7 @@ export function PlanEditor({
         {/* Left Column - Content Editor */}
         <div className="flex-1 bg-white rounded-lg p-8 mr-6 max-w-none">
           {/* Title */}
-          <CardTitle className="text-lg">Name *</CardTitle>
+          <CardTitle className="block text-base font-medium mb-2 mt-4">Name *</CardTitle>
           <div className="mb-6">
             <Input
               {...register("name", { required: "Title is required" })}
@@ -205,7 +205,7 @@ export function PlanEditor({
           </div>
           {/* Description */}
           <CardHeader className="p-0">
-            <CardTitle className="text-lg">Description *</CardTitle>
+            <CardTitle className="block text-base font-medium mb-2 mt-4">Description *</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Textarea
@@ -234,7 +234,7 @@ export function PlanEditor({
               </p>
             )}
             {/* Fin Description */}
-            <label className="block text-sm font-medium mb-2 mt-4">
+            <label className="block text-base font-medium mb-2 mt-4">
               Type *
             </label>
 
@@ -256,7 +256,7 @@ export function PlanEditor({
               )}
             />
             {/* Price */}
-            <CardTitle className="text-lg">Price *</CardTitle>
+            <CardTitle className="block text-base font-medium mb-2 mt-4">Price *</CardTitle>
             <div className="mb-6">
               <Input
                 {...register("price", {
@@ -279,7 +279,7 @@ export function PlanEditor({
             </div>
           </CardContent>
           {/* Service */}
-          <CardTitle className="text-lg">Service *</CardTitle>
+          <CardTitle className="block text-base font-medium mb-2 mt-4">Service *</CardTitle>
           {/*Service*/}
           <Controller
             name="serviceId"

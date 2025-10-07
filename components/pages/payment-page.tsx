@@ -241,7 +241,7 @@ export function PaymentPage({
                 )}`,
                 "Create your deferred payments in a personalized way",
                 "All Payments",
-                "Description",
+                "View and manage all payment records associated with estimates.",
                 [
                   "ID",
                   "Reference",

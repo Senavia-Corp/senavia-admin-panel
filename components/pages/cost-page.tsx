@@ -240,9 +240,9 @@ export function CostPage({
                     0
                   )
                 )}`,
-                "Description",
+                "Create and manage costs associated with estimates.",
                 "All Costs",
-                "Description",
+                "View and manage all costs associated with estimates.",
                 ["Cost ID", "Name", "Type", "Value", "Actions"],
                 filteredCosts,
                 handlers,

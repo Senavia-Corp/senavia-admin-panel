@@ -20,7 +20,7 @@ import { Plan } from "@/types/plan";
 interface InvoicePDFDocumentProps {
   lead: Lead;
   billing: Billing;
-  plans: Plan;
+  plans?: Plan;
 }
 
 /* -------------------------------------------------- *
@@ -127,21 +127,27 @@ export const InvoicePDFDocument = ({
 
           {/* Información del plan */}
           <View style={styles.summaryContainer}>
-            <Text style={styles.sectionTitle}>
-              {plans.name || "No name detected"}
-            </Text>
-            <Text style={[styles.paragraph, { marginBottom: 10 }]}>
-              {formatCurrency(Number(plans.price)) || "No price detected"}
-            </Text>
-            <Text style={[styles.paragraph, { fontSize: 10 }]}>
-              {plans.description || "No description"}
-            </Text>
+            {plans ? (
+              <>
+                <Text style={styles.sectionTitle}>
+                  {plans.name || "No name detected"}
+                </Text>
+                <Text style={[styles.paragraph, { marginBottom: 10 }]}>
+                  {formatCurrency(Number(plans.price)) || "No price detected"}
+                </Text>
+                <Text style={[styles.paragraph, { fontSize: 10 }]}>
+                  {plans.description || "No description"}
+                </Text>
+              </>
+            ) : (
+              <Text></Text>
+            )}
             {(billing.costs || []).map((cost) => (
               <View key={cost.id}>
                 <Text
                   style={[
                     styles.sectionTitle,
-                    { fontSize: 10, marginBottom: 4 },
+                    { fontSize: 12, marginBottom: 8 },
                   ]}
                 >
                   {cost.name}

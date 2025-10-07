@@ -252,10 +252,13 @@ export function PaymentDetailForm({
     try {
       //Usar localPayment para obtener los datos necesarios
       const realAmount = localPayment.amount * 100;
+      console.log(localPayment, "localPayment");
       const response = await createStripeSession(
         localPayment.reference,
         realAmount,
-        localPayment.id
+        localPayment.id,
+        localPayment.percentagePaid,
+        localPayment.estimateId
       );
 
       if (response) {

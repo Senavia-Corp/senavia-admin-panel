@@ -31,7 +31,7 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
   const { onBack, BillingID } = props;
   const { getLeadById, getBilling, getPlanById, billing, lead, plan } = BillingViewModel();
   const [No_Billing, setNo_Billing] = useState<boolean>(false);
-  const isLoading = !billing || billing.length === 0 || !lead || lead.length === 0 || !plan || plan.length === 0;
+  const isLoading = !billing || billing.length === 0 || !lead || lead.length === 0;
 
   // cargar billing al cambiar BillingID
   useEffect(() => {
@@ -47,6 +47,8 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
     if (current.plan_id) getPlanById(current.plan_id);
   }, [billing]);
   /* -------- Render web -------- */
+
+  const planForPdf = plan && plan.length > 0 ? plan[0] : undefined;
 
   return (
     <div className="flex flex-col h-full">
@@ -65,10 +67,10 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
             Document Preview
           </h1>
         </div>
-        {billing && lead && plan && billing.length > 0 && lead.length > 0 && plan.length > 0 ? (
+        {billing && lead && billing.length > 0 && lead.length > 0 ? (
           <PDFDownloadLink
             document={
-                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={plan[0]} />
+                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={planForPdf} />
             }
             fileName={`invoice-${billing[0]?.id ?? "preview"}.pdf`}
             className="no-underline"
@@ -89,7 +91,7 @@ export function DocumentPreviewBilling(props: DocumentPreviewBillingProps) {
               </div>
             ) : (
               <PDFViewer className="w-full flex-1 rounded-md border">
-                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={plan[0]} />
+                <InvoicePDFDocument lead={lead[0]} billing={billing[0]} plans={planForPdf} />
               </PDFViewer>
             )}
         </div>

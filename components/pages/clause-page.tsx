@@ -132,7 +132,7 @@ export function ClausePage() {
                 "Add Clause",
                 "Create a new clause to add to one of your contracts.",
                 "All Clauses",
-                "Description",
+                "View and manage all clauses available for contracts.",
                 ["Clause ID", "Title", "Description", "Actions"],
                 clauses,
                 handlers,
