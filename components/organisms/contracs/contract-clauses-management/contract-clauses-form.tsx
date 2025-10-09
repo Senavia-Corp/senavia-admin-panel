@@ -21,14 +21,16 @@ type ClauseFormValues = z.infer<typeof clauseFormSchema>;
 interface ContractClausesFormProps {
   clause?: Clause;
   onSuccess?: () => void;
+  contractId?: number;
 }
 
 export function ContractClausesForm({
   clause,
   onSuccess,
+  contractId
 }: ContractClausesFormProps) {
   const { toast } = useToast();
-  const { saveClause } = ClauseViewModel();
+  const { saveClause, saveClauseForContract } = ClauseViewModel();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formMethods = useForm<ClauseFormValues>({
@@ -48,17 +50,28 @@ export function ContractClausesForm({
   const onSubmit = async (values: ClauseFormValues) => {
     try {
       setIsSubmitting(true);
-      const success = await saveClause(
-        { title: values.title, description: values.description },
-        clause?.id
-      );
-
+      let success = false;
+      if (!clause && contractId) {
+        // Crear y VINCULAR en un solo paso cuando estamos en el contexto del contrato
+        success = await saveClauseForContract(contractId, {
+          title: values.title,
+          description: values.description,
+        });
+      } else {
+        // Actualizar (global) o crear (global) fuera de contexto de contrato
+        success = await saveClause(
+          { title: values.title, description: values.description },
+          clause?.id
+        );
+      }
       if (success) {
         toast({
           title: "Success",
           description: clause
             ? "Clause updated successfully!"
-            : "Clause created successfully!",
+            : contractId
+              ? "Clause created and attached to contract!"
+              : "Clause created successfully!",
         });
         onSuccess?.();
       } else {
@@ -82,9 +95,8 @@ export function ContractClausesForm({
       <FormProvider {...formMethods}>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className={`w-full mx-auto ${
-            isSubmitting ? "opacity-50 pointer-events-none" : ""
-          }`}
+          className={`w-full mx-auto ${isSubmitting ? "opacity-50 pointer-events-none" : ""
+            }`}
         >
           <div className="grid grid-cols-1 gap-6">
             {/* Title Field */}
@@ -92,9 +104,8 @@ export function ContractClausesForm({
               <label className="block text-sm font-medium mb-2">Title *</label>
               <input
                 type="text"
-                className={`w-full h-10 rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${
-                  errors.title ? "border-red-500" : "border-input"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                className={`w-full h-10 rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${errors.title ? "border-red-500" : "border-input"
+                  } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 placeholder="Enter clause title"
                 disabled={isSubmitting}
                 {...register("title")}
@@ -112,9 +123,8 @@ export function ContractClausesForm({
                 Description *
               </label>
               <textarea
-                className={`w-full border rounded-md px-3 py-2 text-sm min-h-[120px] resize-y ${
-                  errors.description ? "border-red-500" : "border-gray-300"
-                } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                className={`w-full border rounded-md px-3 py-2 text-sm min-h-[120px] resize-y ${errors.description ? "border-red-500" : "border-gray-300"
+                  } ${isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 placeholder="Enter clause description..."
                 rows={5}
                 disabled={isSubmitting}

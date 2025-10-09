@@ -250,6 +250,10 @@ const pdfStyles = StyleSheet.create({
     marginBottom: 40,
     paddingBottom: 20,
   },
+  hiddenAnchor: {
+    color: "#FFFFFF",    // blanco sobre fondo blanco: no se ve
+    fontSize: 1,         // 1pt para que sea mínimamente “seleccionable”
+  },
 });
 
 export const ContractPDF = (props: ContractPDFProps) => (
@@ -270,11 +274,11 @@ export const ContractPDF = (props: ContractPDFProps) => (
           Signature requested on{" "}
           {props.contract.signedDate
             ? new Date(props.contract.signedDate).toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
             : "Not signed yet"}
         </Text>
 
@@ -381,18 +385,23 @@ export const ContractPDF = (props: ContractPDFProps) => (
             </View>
             <View style={pdfStyles.signatureRow}>
               <Text style={pdfStyles.signatureLabel}>Owner Signature</Text>
-              <Text style={pdfStyles.signatureValue}></Text>
+              <Text style={pdfStyles.signatureValue}>
+                {/* Marcador invisible para anclar la firma del dueño */}
+                <Text style={pdfStyles.hiddenAnchor} wrap={false}>
+                  **signature_owner**
+                </Text>
+              </Text>
             </View>
             <View style={pdfStyles.signatureRowLast}>
-              <Text style={pdfStyles.signatureLabel}>
-                Signed on Business Day Date
-              </Text>
+              <Text style={pdfStyles.signatureLabel}>Signed on Business Day Date</Text>
               <Text style={pdfStyles.signatureValue}>
+                {/* Marcador invisible para anclar la fecha del dueño */}
+                <Text style={pdfStyles.hiddenAnchor} wrap={false}>
+                  **date_owner**
+                </Text>
                 {props.contract.ownerSignDate
-                  ? new Date(props.contract.ownerSignDate).toLocaleDateString(
-                      "en-US"
-                    )
-                  : "Not signed yet"}
+                  ? ` ${new Date(props.contract.ownerSignDate).toLocaleDateString("en-US")}`
+                  : " Not signed yet"}
               </Text>
             </View>
           </View>
@@ -408,18 +417,23 @@ export const ContractPDF = (props: ContractPDFProps) => (
             </View>
             <View style={pdfStyles.signatureRow}>
               <Text style={pdfStyles.signatureLabel}>Recipient Signature</Text>
-              <Text style={pdfStyles.signatureValue}></Text>
+              <Text style={pdfStyles.signatureValue}>
+                {/* Marcador invisible para anclar la firma del cliente */}
+                <Text style={pdfStyles.hiddenAnchor} wrap={false}>
+                  **signature_client**
+                </Text>
+              </Text>
             </View>
             <View style={pdfStyles.signatureRowLast}>
-              <Text style={pdfStyles.signatureLabel}>
-                Signed with Reception Date
-              </Text>
+              <Text style={pdfStyles.signatureLabel}>Signed with Reception Date</Text>
               <Text style={pdfStyles.signatureValue}>
+                {/* Marcador invisible para anclar la fecha del cliente */}
+                <Text style={pdfStyles.hiddenAnchor} wrap={false}>
+                  **date_client**
+                </Text>
                 {props.contract.recipientSignDate
-                  ? new Date(
-                      props.contract.recipientSignDate
-                    ).toLocaleDateString("en-US")
-                  : "Not signed yet"}
+                  ? ` ${new Date(props.contract.recipientSignDate).toLocaleDateString("en-US")}`
+                  : " Not signed yet"}
               </Text>
             </View>
           </View>
