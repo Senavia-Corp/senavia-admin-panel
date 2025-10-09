@@ -27,6 +27,13 @@ export const endpoints = {
         term
       )}&isPaginated=${isPaginated}&offset=${offset}&itemsPerPage=${itemsPerPage}`,
   },
+  contractClause: {
+    getByContract: (contractId: number) => `${API}/contract-clause?contractId=${contractId}`,
+    link: `${API}/contract-clause`, // POST { contractId, clauseId }
+    createAndAttach: `${API}/contract-clause`, // POST { contractId, title, description }
+    unlink: (contractId: number, clauseId: number) =>
+      `${API}/contract-clause?contractId=${contractId}&clauseId=${clauseId}`, // DELETE
+  },
 
   product: {
     getAll: `${API}/product`,
@@ -36,7 +43,7 @@ export const endpoints = {
     update: (id: number) => `${API}/product?id=${id}`,
   },
 
-  stripe : {
+  stripe: {
     createCheckoutSession: `${API}/checkout`,
   },
 
@@ -117,7 +124,7 @@ export const endpoints = {
       "https://damddev.app.n8n.cloud/webhook/a7bc5d49-a603-4741-9cae-f62bc7ce98d3",
   },
   plan: {
-    getPlans: `${API}/plan`,    
+    getPlans: `${API}/plan`,
     getById: (id: number) => `${API}/plan?id=${id}`,
     delete: (id: number) => `${API}/plan?id=${id}`,
     update: (id: number) => `${API}/plan?id=${id}`,
@@ -142,6 +149,9 @@ export const endpoints = {
     updateContract: (id: number) => `${API}/contract?id=${id}`,
     sendEmail: `https://damddev.app.n8n.cloud/webhook-test/29008715-57c9-40c4-abac-6bad9a0d6f9e`,
   },
+  docusign: {
+    createEnvelope: `${API}/docusign/create-envelope`,
+  }
 };
 
 // Header configurations

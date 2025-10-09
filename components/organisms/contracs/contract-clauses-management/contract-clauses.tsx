@@ -11,27 +11,27 @@ import { ContractClausesForm } from "@/components/organisms/contracs/contract-cl
 import ClauseViewModel from "@/components/pages/clause/ClauseViewModel";
 
 interface ContractClausesProps {
+  contractId: number;
   onBackToContract?: () => void;
 }
 
-export function ContractClauses({ onBackToContract }: ContractClausesProps) {
+export function ContractClauses({ contractId, onBackToContract }: ContractClausesProps) {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [clauseToDelete, setClauseToDelete] = useState<Clause | null>(null);
   const [selectedClause, setSelectedClause] = useState<Clause | null>(null);
   const [showEditorForm, setShowEditorForm] = useState(false);
   // ViewModel (sin paginación en esta vista)
-  const { clauses, loading, getAllClauses, deleteClause } = ClauseViewModel({
-    isPaginated: false,
+  const { clauses, loading, getClausesByContract, unlinkClauseFromContract } = ClauseViewModel({
+    isPaginated: false, autoFetch: false
   });
 
   // Campos de búsqueda para clauses (coinciden con clause-page)
   const SEARCHABLE_FIELDS = ["title", "description"] as const;
 
   useEffect(() => {
-    getAllClauses();
-    // getAllClauses es estable por cierre del hook; no agregarlo como dep para evitar re-fetch infinito
-  }, []);
+    getClausesByContract(contractId);
+  }, [contractId]);
 
   const handleCreateClause = () => {
     setSelectedClause(null);
@@ -49,23 +49,22 @@ export function ContractClauses({ onBackToContract }: ContractClausesProps) {
   };
 
   const handleDeleteClause = async (clause: Clause) => {
-    const ok = await deleteClause(clause.id);
+    const ok = await unlinkClauseFromContract(contractId, clause.id);
     if (ok) {
       setClauseToDelete(null);
-      toast({ title: "Success", description: "Clause deleted successfully" });
-      // refrescar lista
-      await getAllClauses();
+      toast({ title: "Success", description: "Clause removed from contract" });
+      await getClausesByContract(contractId);
     } else {
       toast({
         title: "Error",
         description:
-          "The clause could not be deleted; it is associated with a contract.",
+          "The clause could not be removed from this contract.",
         variant: "destructive",
       });
     }
   };
 
-  const handleFilterChange = () => {};
+  const handleFilterChange = () => { };
 
   const handleBackToList = () => {
     setSelectedClause(null);
@@ -75,7 +74,7 @@ export function ContractClauses({ onBackToContract }: ContractClausesProps) {
   const handleSaveSuccess = () => {
     setSelectedClause(null);
     setShowEditorForm(false);
-    getAllClauses();
+    getClausesByContract(contractId);
   };
 
   const handlers = {
@@ -107,7 +106,7 @@ export function ContractClauses({ onBackToContract }: ContractClausesProps) {
             title="Create Clause"
             onBack={() => setShowEditorForm(false)}
           >
-            <ContractClausesForm onSuccess={handleSaveSuccess} />
+            <ContractClausesForm contractId={contractId} onSuccess={handleSaveSuccess} />
           </DetailTabs>
         </div>
       </div>
@@ -157,8 +156,8 @@ export function ContractClauses({ onBackToContract }: ContractClausesProps) {
                 "clause-page",
                 "Add Clause",
                 "Create new contract clauses and terms",
-                "All Clauses",
-                "View and manage all contract clauses in the system",
+                "Contract Clauses",
+                "View and manage clauses linked to this contract",
                 ["Clause ID", "Title", "Description", "Actions"],
                 filteredClauses,
                 handlers,
@@ -179,8 +178,8 @@ export function ContractClauses({ onBackToContract }: ContractClausesProps) {
         open={!!clauseToDelete}
         onClose={() => setClauseToDelete(null)}
         onConfirm={() => clauseToDelete && handleDeleteClause(clauseToDelete)}
-        title="Delete Clause"
-        description={`Are you sure you want to delete "${clauseToDelete?.title}"? This action cannot be undone.`}
+        title="Remove Clause from Contract"
+        description={`Are you sure you want to remove "${clauseToDelete?.title}" from this contract?`}
       />
     </div>
   );

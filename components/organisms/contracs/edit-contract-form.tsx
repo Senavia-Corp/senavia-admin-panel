@@ -102,6 +102,7 @@ export function EditContractForm({
         contractStatuses={contractStatuses}
         userLoadOptions={loadUserOptions}
         leadLoadOptions={loadLeadOptions}
+        contract={contract}
       />
     </div>
   );
