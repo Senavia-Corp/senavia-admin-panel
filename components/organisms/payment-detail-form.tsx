@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -52,19 +52,21 @@ export function PaymentDetailForm({
   } = BillingViewModel();
   const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
   const [billingTotalValue, setBillingTotalValue] = useState<number>(0);
+  const didFetchBilling = useRef(false);
+  const didFetchPayments = useRef(false);
 
   // Cargar billing data para obtener el valor total
   useEffect(() => {
-    const loadBillingData = async () => {
+    if (didFetchBilling.current) return; // evita doble llamado en StrictMode
+    didFetchBilling.current = true;
+    (async () => {
       try {
         await getBilling(payment.estimateId);
       } catch (error) {
         console.error("Error loading billing data:", error);
       }
-    };
-
-    loadBillingData();
-  }, [payment.estimateId, getBilling]);
+    })();
+  }, [payment.estimateId]);
 
   // Actualizar billingTotalValue cuando cambie el billing
   useEffect(() => {
@@ -80,16 +82,16 @@ export function PaymentDetailForm({
 
   // Cargar payments existentes para validar porcentaje
   useEffect(() => {
-    const loadExistingPayments = async () => {
+    if (didFetchPayments.current) return; // evita doble llamado en StrictMode
+    didFetchPayments.current = true;
+    (async () => {
       try {
-        await getPayments(); // Esto actualiza el estado en BillingViewModel
+        await getPayments();
       } catch (error) {
         console.error("Error loading existing payments:", error);
       }
-    };
-
-    loadExistingPayments();
-  }, [payment.estimateId, getPayments]);
+    })();
+  }, [payment.estimateId]);
 
   // Actualizar existingPayments cuando cambien los payments del BillingViewModel
   useEffect(() => {
@@ -218,6 +220,8 @@ export function PaymentDetailForm({
         // Actualizar los porcentajes del billing
         await updateBillingPercentages();
 
+        // PONER AQUI LA FUNCION QUE SACA LOS NUEVOS PORCENTAJES DE BILLING Y ACTUALIZA EL BILLING
+
         // Redirigir a la tabla de billing details después de actualizar
         if (onRedirectToBillingDetails) {
           onRedirectToBillingDetails();
@@ -241,11 +245,38 @@ export function PaymentDetailForm({
     }
   };
 
+  const calculateNewBillingPercentages = async () => {
+    const billing = await getBilling(payment.estimateId);
+    if (billing) {
+      const billingPorcentagePaid = Number(billing[0]?.percentagePaid) || 0;
+      const billingRemainingPorcentage = Number(billing[0]?.remainingPercentage) || 0;
+      const paymentPorcentagePaid = Number(payment.percentagePaid) || 0;
+
+      const newBillingPercentagePaid =
+        billingPorcentagePaid + paymentPorcentagePaid;
+      const newBillingRemaininPercentage =
+        billingRemainingPorcentage - paymentPorcentagePaid;
+
+      return { totalPercentagePaid: newBillingPercentagePaid, remainingPercentage: newBillingRemaininPercentage };
+    }
+  };
+
   const handleFieldChange = (field: keyof typeof localPayment, value: any) => {
     setLocalPayment((prev) => ({
       ...prev,
       [field]: value,
     }));
+    if (field === "state" && value === "PAID" && !localPayment.paidDate) {
+      setLocalPayment((prev) => ({
+        ...prev,
+        paidDate: new Date().toISOString(),
+      }));
+    } else if (field === "state" && value === "PENDING" && localPayment.paidDate) {
+      setLocalPayment((prev) => ({
+        ...prev,
+        paidDate: "",
+      }));
+    }
   };
 
   const handleSendEmail = async () => {
@@ -364,11 +395,11 @@ export function PaymentDetailForm({
               value={
                 localPayment.amount
                   ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    }).format(localPayment.amount)
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(localPayment.amount)
                   : ""
               }
               onChange={(e) => {
@@ -431,8 +462,7 @@ export function PaymentDetailForm({
                   <div className="text-blue-600 font-medium">
                     Billing Total: ${billingTotalValue.toLocaleString()} |
                     {localPayment.percentagePaid > 0 &&
-                      ` ${
-                        localPayment.percentagePaid
+                      ` ${localPayment.percentagePaid
                       }% = $${calculateAmountFromPercentage(
                         localPayment.percentagePaid
                       ).toLocaleString()}`}

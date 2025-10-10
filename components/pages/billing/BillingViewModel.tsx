@@ -54,9 +54,11 @@ export function BillingViewModel() {
   const getBilling = async (id: number) => {
     setError(null);
     const { response, status, errorLogs } = await fetchData<apiResponse<Billing>>(endpoints.estimate.getEstimate(id), "get");
+    console.log(errorLogs, response, status);
     if ((status === 200 || status === 201) && response && response.success) {
       const billingData = Array.isArray(response.data) ? response.data : [response.data];
       setBilling(billingData);
+      return billingData;
     } else {
       setError(
         errorLogs?.message || response?.message || "Failed to fetch billing"
