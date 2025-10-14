@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -45,6 +45,9 @@ export function PaymentDetailFormCreate({
   const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
   const [billingTotalValue, setBillingTotalValue] = useState<number>(0);
 
+  const didFetchBilling = useRef(false);
+  const didFetchPayments = useRef(false);
+
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
   const [state, setState] = useState<PaymentState>("PENDING");
@@ -53,18 +56,23 @@ export function PaymentDetailFormCreate({
   const [paidDate, setPaidDate] = useState("");
   const [method, setMethod] = useState("");
 
+  useEffect(() => {
+    didFetchBilling.current = false;
+    didFetchPayments.current = false;
+  }, [estimateId]);
+
   // Cargar billing data para obtener el valor total
   useEffect(() => {
-    const loadBillingData = async () => {
+    if (didFetchBilling.current) return;
+    didFetchBilling.current = true;
+    (async () => {
       try {
         await getBilling(estimateId);
       } catch (error) {
         console.error("Error loading billing data:", error);
       }
-    };
-
-    loadBillingData();
-  }, [estimateId, getBilling]);
+    })();
+  }, [estimateId]);
 
   // Actualizar billingTotalValue cuando cambie el billing
   useEffect(() => {
@@ -78,16 +86,16 @@ export function PaymentDetailFormCreate({
 
   // Cargar payments existentes para validar porcentaje
   useEffect(() => {
-    const loadExistingPayments = async () => {
+    if (didFetchPayments.current) return;
+    didFetchPayments.current = true;
+    (async () => {
       try {
-        await getPayments(); // Esto actualiza el estado en BillingViewModel
+        await getPayments();
       } catch (error) {
         console.error("Error loading existing payments:", error);
       }
-    };
-
-    loadExistingPayments();
-  }, [estimateId, getPayments]);
+    })();
+  }, [estimateId]);
 
   // Actualizar existingPayments cuando cambien los payments del BillingViewModel
   useEffect(() => {
@@ -143,7 +151,7 @@ export function PaymentDetailFormCreate({
   const updateBillingPercentages = async () => {
     try {
       console.log("Starting billing percentage update...");
-      
+
       // Obtener payments frescos directamente del servicio
       const freshPayments = await PaymentManagementService.getPaymentsByEstimateId(estimateId);
       console.log("Fresh payments from service:", freshPayments);
@@ -172,7 +180,7 @@ export function PaymentDetailFormCreate({
       });
 
       console.log("Billing updated successfully with new percentages");
-      
+
       // Recargar el billing para refrescar la UI
       await getBilling(estimateId);
     } catch (error) {
@@ -339,11 +347,11 @@ export function PaymentDetailFormCreate({
               value={
                 amount
                   ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    }).format(amount)
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(amount)
                   : ""
               }
               onChange={(e) => {
@@ -471,8 +479,8 @@ export function PaymentDetailFormCreate({
               {loadingPost
                 ? "Creating..."
                 : isFullyPaid()
-                ? "Payment Plan Completed"
-                : "Add Payment"}
+                  ? "Payment Plan Completed"
+                  : "Add Payment"}
             </Button>
           </div>
         </div>

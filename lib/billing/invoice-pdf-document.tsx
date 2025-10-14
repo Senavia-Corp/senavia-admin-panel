@@ -172,7 +172,6 @@ export const InvoicePDFDocument = ({
             <View style={styles.tableWrapper}>
               <View style={[styles.tableRow, styles.tableHead]}>
                 <Text style={[styles.th, { flex: 1.5 }]}>Items</Text>
-                <Text style={[styles.th, { flex: 3 }]}>Description</Text>
                 <Text style={[styles.th, { flex: 1 }]}>Price</Text>
                 <Text style={[styles.th, { flex: 0.7 }]}>Amount</Text>
               </View>
@@ -182,9 +181,6 @@ export const InvoicePDFDocument = ({
                 <View style={styles.tableRow}>
                   <Text style={[styles.td, { flex: 1.5 }]}>
                     {plans.name || "Plan"}
-                  </Text>
-                  <Text style={[styles.td, { flex: 3 }]}>
-                    {truncateText(plans.description || "No description", 50)}
                   </Text>
                   <Text style={[styles.td, { flex: 1 }]}>
                     {formatCurrency(Number(plans.price) || 0)}
@@ -197,9 +193,6 @@ export const InvoicePDFDocument = ({
               {(billing.costs || []).map((cost) => (
                 <View key={cost.id} style={styles.tableRow}>
                   <Text style={[styles.td, { flex: 1.5 }]}>{cost.name}</Text>
-                  <Text style={[styles.td, { flex: 3 }]}>
-                    {truncateText(cost.description, 50)}
-                  </Text>
                   <Text style={[styles.td, { flex: 1 }]}>
                     {formatCurrency(cost.value)}
                   </Text>

@@ -276,6 +276,6 @@ export class PaymentManagementService {
    * Obtiene los métodos de pago disponibles
    */
   static getPaymentMethods(): string[] {
-    return ["Bank Transfer", "Credit Card", "Debit Card", "Cash", "Check"];
+    return ["Bank Transfer", "Credit Card", "Debit Card", "Cash", "Check", "Sell"];
   }
 }

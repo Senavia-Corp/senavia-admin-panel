@@ -2,7 +2,7 @@ import { ArrowLeft, Eye, Loader2 } from "lucide-react";
 import { MultiSelectBilling } from "../atoms/multiselect-billing";
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -20,7 +20,7 @@ import { Plans, Plan } from "@/types/plan";
 import { CostPage } from "@/components/pages/cost-page";
 import { PaymentPage } from "@/components/pages/payment-page";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
-import { BillingStatus, CreateBillingData, BillingPDF } from "@/types/billing-management";
+import { BillingStatus, CreateBillingData } from "@/types/billing-management";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelectPlan } from "../atoms/multiselect-plan";
 import { Progress } from "../ui/progress";
@@ -39,16 +39,12 @@ interface BillingDetailFormProps {
 }
 
 const servicesID = (service_ID: number) => {
-  if (service_ID === 1) {
-    return "Digital Marketing Service";
-  } else if (service_ID === 2) {
-    return "Web Design";
-  } else if (service_ID === 3) {
-    return "Web Development Service";
-  } else {
-    return "Service not found";
-  }
+  if (service_ID === 1) return "Digital Marketing Service";
+  if (service_ID === 2) return "Web Design";
+  if (service_ID === 3) return "Web Development Service";
+  return "Service not found";
 };
+
 export function BillingDetailForm({
   selectedBilling,
   billingId,
@@ -62,7 +58,17 @@ export function BillingDetailForm({
   const [showDocument, setShowDocument] = useState(false);
   const [showCosts, setShowCosts] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
-  const { PatchBilling, sendToClient, getBilling, billing, getLeadById, getPlanById, plan, lead: vmLead } = BillingViewModel();
+  const {
+    PatchBilling,
+    sendToClient,
+    getBilling,
+    billing,
+    getLeadById,
+    getPlanById,
+    plan,
+    lead: vmLead,
+  } = BillingViewModel();
+
   const [estimatedTime, setEstimatedTime] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
@@ -74,19 +80,18 @@ export function BillingDetailForm({
   const [localEstimateData, setLocalEstimateData] = useState<CreateBillingData | null>(null);
   const { toast } = useToast();
 
+  // evita refresh concurrentes/duplicados
+  const refreshingRef = useRef(false);
+
+  // init con selectedBilling
   useEffect(() => {
-    // Inicializar estados con selectedBilling si existe
     if (selectedBilling) {
       setEstimatedTime(selectedBilling.estimatedTime?.toString() || "");
       setDescription(selectedBilling.description || "");
       setStatus(selectedBilling.state || "");
-      setAssociatedLeads(
-        selectedBilling.lead_id ? [selectedBilling.lead_id] : []
-      );
-      setAssociatedPlan(
-        selectedBilling.plan_id ? [selectedBilling.plan_id] : []
-      );
-      setService(""); // No hay service en estos datos
+      setAssociatedLeads(selectedBilling.lead_id ? [selectedBilling.lead_id] : []);
+      setAssociatedPlan(selectedBilling.plan_id ? [selectedBilling.plan_id] : []);
+      setService("");
     }
 
     setLocalEstimateData({
@@ -103,52 +108,75 @@ export function BillingDetailForm({
       percentagePaid: selectedBilling?.percentagePaid || 0,
       remainingPercentage: selectedBilling?.remainingPercentage || 0,
     });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // <- solo una vez, no dependas de objetos/funciones inestables
 
-  // Sincronizar datos locales cuando llegue el billing desde backend
+  // sincroniza con VM billing pero SOLO si cambió algo (shallow)
   useEffect(() => {
-    if (billing && Array.isArray(billing) && billing.length > 0) {
-      const b = billing[0] as unknown as Billing;
-      setLocalEstimateData({
-        title: b.title || "",
-        totalValue: Number(b.totalValue) || 0,
-        estimatedTime: b.estimatedTime?.toString() || "",
-        description: b.description || "",
-        state: b.state || "",
-        lead_id: b.lead_id || 0,
-        plan_id: b.plan_id || undefined,
-        deadLineToPay: b.deadLineToPay || "",
-        invoiceDateCreated: b.invoiceDateCreated || "",
-        invoiceReference: b.invoiceReference || "",
-        percentagePaid: b.percentagePaid || 0,
-        remainingPercentage: b.remainingPercentage || 0,
-      });
+    if (!billing || !Array.isArray(billing) || billing.length === 0) return;
+
+    const b = billing[0] as unknown as Billing;
+    const next: CreateBillingData = {
+      title: b.title || "",
+      totalValue: Number(b.totalValue) || 0,
+      estimatedTime: b.estimatedTime?.toString() || "",
+      description: b.description || "",
+      state: b.state || "",
+      lead_id: b.lead_id || 0,
+      plan_id: b.plan_id || undefined,
+      deadLineToPay: b.deadLineToPay || "",
+      invoiceDateCreated: b.invoiceDateCreated || "",
+      invoiceReference: b.invoiceReference || "",
+      percentagePaid: b.percentagePaid || 0,
+      remainingPercentage: b.remainingPercentage || 0,
+    };
+
+    // shallow compare para evitar renders innecesarios
+    const prev = localEstimateData;
+    const changed =
+      !prev ||
+      prev.title !== next.title ||
+      prev.totalValue !== next.totalValue ||
+      prev.estimatedTime !== next.estimatedTime ||
+      prev.description !== next.description ||
+      prev.state !== next.state ||
+      prev.lead_id !== next.lead_id ||
+      prev.plan_id !== next.plan_id ||
+      prev.deadLineToPay !== next.deadLineToPay ||
+      prev.invoiceDateCreated !== next.invoiceDateCreated ||
+      prev.invoiceReference !== next.invoiceReference ||
+      prev.percentagePaid !== next.percentagePaid ||
+      prev.remainingPercentage !== next.remainingPercentage;
+
+    if (changed) {
+      setLocalEstimateData(next);
     }
-  }, [billing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billing]); // <- solo depende de billing (VM)
 
   const refreshFromBackend = async () => {
+    if (refreshingRef.current) return; // evita solapes
+    refreshingRef.current = true;
     try {
       setIsRefreshing(true);
       await getBilling(billingId);
-      const refreshedLeadId = (localEstimateData?.lead_id || selectedBilling?.lead_id || 0);
-      const refreshedPlanId = (localEstimateData?.plan_id || selectedBilling?.plan_id || 0);
+
+      // lee ids de la última foto local/prop sin volver a computar mucho
+      const refreshedLeadId = localEstimateData?.lead_id || selectedBilling?.lead_id || 0;
+      const refreshedPlanId = localEstimateData?.plan_id || selectedBilling?.plan_id || 0;
+
       if (refreshedLeadId) await getLeadById(refreshedLeadId);
       if (refreshedPlanId) await getPlanById(refreshedPlanId);
     } finally {
       setIsRefreshing(false);
+      refreshingRef.current = false;
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
-  const handleDocumentPreview = () => {
-    setShowDocument(true);
-  };
+  const handleDocumentPreview = () => setShowDocument(true);
 
   const statuses: BillingStatus[] = [
     "CREATED",
@@ -169,10 +197,14 @@ export function BillingDetailForm({
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
+    return today.toISOString().split("T")[0];
   };
 
   const openCosts = async () => {
+    if (refreshingRef.current) {
+      setShowCosts(true);
+      return;
+    }
     try {
       setIsRefreshing(true);
       await refreshFromBackend();
@@ -187,21 +219,21 @@ export function BillingDetailForm({
       setIsUpdating(true);
       const ID_estimate = selectedBilling?.id || 0;
 
-      const planPrice = associatedPlan.length > 0
-        ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
-        : 0;
-      // Usar costos del backend si están disponibles, sino del selectedBilling
-      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
-      const currentCosts = latestBilling?.costs || selectedBilling?.costs || [];
-      const costsTotal = currentCosts.reduce(
-        (sum, cost) => sum + Number(cost.value),
-        0
-      );
+      const planPrice =
+        associatedPlan.length > 0
+          ? Number(plans.find((plan) => plan.id === associatedPlan[0])?.price) || 0
+          : 0;
 
-      // Si no hay plan seleccionado, mantener el totalValue actual
-      const newTotalValue = associatedPlan.length > 0
-        ? planPrice + costsTotal
-        : Number(localEstimateData?.totalValue) + costsTotal || 0;
+      const latestBilling =
+        billing && Array.isArray(billing) && billing.length > 0
+          ? (billing[0] as unknown as Billing)
+          : null;
+
+      const currentCosts = latestBilling?.costs || selectedBilling?.costs || [];
+      const costsTotal = currentCosts.reduce((sum, cost) => sum + Number(cost.value || 0), 0);
+
+      // ✅ Sin duplicar costos cuando no hay plan:
+      const newTotalValue = (associatedPlan.length > 0 ? planPrice : 0) + costsTotal;
 
       const billingData: CreateBillingData = {
         ...localEstimateData!,
@@ -210,14 +242,17 @@ export function BillingDetailForm({
         plan_id: associatedPlan.length > 0 ? associatedPlan[0] : undefined,
         deadLineToPay: selectedBilling?.deadLineToPay || "",
         invoiceDateCreated: selectedBilling?.invoiceDateCreated || "",
-        invoiceReference: (localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== "")
-          ? localEstimateData.invoiceReference
-          : (selectedBilling?.invoiceReference || "INV-2025-0456"),
+        invoiceReference:
+          localEstimateData?.invoiceReference && localEstimateData.invoiceReference !== ""
+            ? localEstimateData.invoiceReference
+            : selectedBilling?.invoiceReference || "INV-2025-0456",
       };
+
       await PatchBilling(ID_estimate, billingData);
       setLocalEstimateData(billingData);
-      // Recargar del backend para reflejar datos actualizados
+
       await refreshFromBackend();
+
       toast({
         title: "Billing updated successfully",
         description: "The billing has been updated successfully.",
@@ -231,24 +266,30 @@ export function BillingDetailForm({
       });
     } finally {
       setIsUpdating(false);
-
     }
   };
+
   const handleSendToClient = async () => {
     try {
-      // Asegurar datos frescos
-      await refreshFromBackend();
-      const latestBilling = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : (selectedBilling as Billing | null);
+      if (!refreshingRef.current) {
+        await refreshFromBackend();
+      }
+      const latestBilling =
+        billing && Array.isArray(billing) && billing.length > 0
+          ? (billing[0] as unknown as Billing)
+          : (selectedBilling as Billing | null);
+
       const selectedLead = leads.find((l) => l.id === associatedLeads[0]);
       const selectedPlan = plans.find((p) => p.id === associatedPlan[0]);
       const backendLead = vmLead && vmLead.length > 0 ? (vmLead[0] as unknown as Lead) : undefined;
       const backendPlan = plan && plan.length > 0 ? (plan[0] as unknown as Plans) : undefined;
       const effectiveLead = backendLead ?? selectedLead;
       const effectivePlan = backendPlan ?? selectedPlan;
+
       if (!effectiveLead || !latestBilling) {
         throw new Error("Missing lead/plan/billing for PDF generation");
       }
-      // Adaptar tipos: Leads -> Lead (asegurar clientAddress) y Plans -> Plan (agregar serviceId/fechas)
+
       const leadForPdf: Lead = {
         ...effectiveLead,
         clientAddress: effectiveLead.clientAddress || "",
@@ -256,17 +297,18 @@ export function BillingDetailForm({
 
       const planForPdf: Plan | undefined = effectivePlan
         ? {
-          id: effectivePlan.id,
-          name: effectivePlan.name,
-          description: effectivePlan.description,
-          type: effectivePlan.type,
-          price: effectivePlan.price,
-          serviceId: effectivePlan.service.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          service: effectivePlan.service,
-        }
+            id: effectivePlan.id,
+            name: effectivePlan.name,
+            description: effectivePlan.description,
+            type: effectivePlan.type,
+            price: effectivePlan.price,
+            serviceId: effectivePlan.service.id,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            service: effectivePlan.service,
+          }
         : undefined;
+
       const pdfBlob = await pdfRenderer(
         <InvoicePDFDocument
           lead={leadForPdf}
@@ -280,15 +322,13 @@ export function BillingDetailForm({
       ).toBlob();
 
       const arrayBuffer = await pdfBlob.arrayBuffer();
-      const base64String = btoa(
-        String.fromCharCode(...new Uint8Array(arrayBuffer))
-      );
+      const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
-      // Determinar la URL base según el entorno
-      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+      const isDevelopment =
+        process.env.NODE_ENV === "development" || window.location.hostname === "localhost";
       const baseUrl = isDevelopment
-        ? 'http://localhost:3000/es/estimate'
-        : 'https://senaviacorp.com/en/estimate';
+        ? "http://localhost:3000/es/estimate"
+        : "https://senaviacorp.com/en/estimate";
       const estimateUrl = `${baseUrl}?ID=${latestBilling?.id || 0}`;
 
       await sendToClient({
@@ -299,8 +339,6 @@ export function BillingDetailForm({
         document: base64String,
         url: estimateUrl,
       });
-
-
     } catch (error) {
       toast({
         title: "Failed to send to client",
@@ -310,10 +348,14 @@ export function BillingDetailForm({
   };
 
   if (showCosts) {
-    // Usar datos más recientes del backend si están disponibles
-    const latestFromVm = billing && Array.isArray(billing) && billing.length > 0 ? (billing[0] as unknown as Billing) : null;
+    const latestFromVm =
+      billing && Array.isArray(billing) && billing.length > 0
+        ? (billing[0] as unknown as Billing)
+        : null;
     const latestCosts = latestFromVm?.costs ?? selectedBilling?.costs ?? [];
-    const latestTotalValue = latestFromVm?.totalValue ? Number(latestFromVm.totalValue) : Number(selectedBilling?.totalValue || 0);
+    const latestTotalValue = latestFromVm?.totalValue
+      ? Number(latestFromVm.totalValue)
+      : Number(selectedBilling?.totalValue || 0);
 
     return (
       <div className="">
@@ -346,10 +388,7 @@ export function BillingDetailForm({
 
   if (showDocument && selectedBilling) {
     return (
-      <DocumentPreviewBilling
-        BillingID={billingId || 0}
-        onBack={() => setShowDocument(false)}
-      />
+      <DocumentPreviewBilling BillingID={billingId || 0} onBack={() => setShowDocument(false)} />
     );
   }
 
@@ -371,9 +410,7 @@ export function BillingDetailForm({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-4xl font-medium text-[#04081E]">
-            Billing Details
-          </h1>
+          <h1 className="text-4xl font-medium text-[#04081E]">Billing Details</h1>
         </div>
         <div className="flex flex-col lg:flex-row lg:justify-end gap-3 ml-auto">
           <Button
@@ -397,18 +434,14 @@ export function BillingDetailForm({
             <hr className="border-[#EBEDF2]" />
             <p>
               Total:{" "}
-              {localEstimateData?.totalValue
-                ? formatCurrency(localEstimateData.totalValue)
-                : "$0"}
+              {localEstimateData?.totalValue ? formatCurrency(localEstimateData.totalValue) : "$0"}
             </p>
             <hr className="border-[#EBEDF2]" />
             <p>Title</p>
             <Input
               value={localEstimateData?.title || ""}
               onChange={(e) => {
-                setLocalEstimateData((prev) =>
-                  prev ? { ...prev, title: e.target.value } : null
-                );
+                setLocalEstimateData((prev) => (prev ? { ...prev, title: e.target.value } : null));
               }}
               placeholder="Enter title"
             />
@@ -429,10 +462,7 @@ export function BillingDetailForm({
               />
             </Label>
             <hr className="border-[#EBEDF2]" />
-            <Label
-              htmlFor="description"
-              className="text-[#393939] text-base/4 font-normal block"
-            >
+            <Label htmlFor="description" className="text-[#393939] text-base/4 font-normal block">
               Description
             </Label>
             <div className="relative">
@@ -460,30 +490,27 @@ export function BillingDetailForm({
               value={localEstimateData?.state || ""}
               onValueChange={(value) => {
                 setStatus(value);
-                setLocalEstimateData((prev) =>
-                  prev ? { ...prev, state: value } : null
-                );
+                setLocalEstimateData((prev) => (prev ? { ...prev, state: value } : null));
               }}
             >
               <SelectTrigger className="w-full h-7 ">
                 <SelectValue placeholder="Dropdown here" />
               </SelectTrigger>
               <SelectContent>
-                {statuses.map((statusOption) => (
-                  <SelectItem key={statusOption} value={statusOption}>
-                    {statusOption}
-                  </SelectItem>
-                ))}
+                {["CREATED", "PROCESSING", "IN_REVIEW", "REJECTED", "ACCEPTED", "INVOICE", "PAID"].map(
+                  (statusOption) => (
+                    <SelectItem key={statusOption} value={statusOption}>
+                      {statusOption}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
             <hr className="border-[#EBEDF2]" />
             <p>Percentage Paid: {localEstimateData?.percentagePaid || 0}%</p>
             <Progress value={localEstimateData?.percentagePaid || 0} />
             <hr className="border-[#EBEDF2]" />
-            <p>
-              Remaining Percentage for paid:{" "}
-              {localEstimateData?.remainingPercentage || 0}%
-            </p>
+            <p>Remaining Percentage for paid: {localEstimateData?.remainingPercentage || 0}%</p>
             <Progress value={localEstimateData?.remainingPercentage || 0} />
             <hr className="border-[#EBEDF2]" />
             <div className="space-y-2">
@@ -492,7 +519,6 @@ export function BillingDetailForm({
                 value={associatedLeads}
                 onChange={(value) => {
                   setAssociatedLeads(value);
-                  // Tomamos el primer lead seleccionado como el lead principal
                   const primaryLeadId = value[0];
                   setLocalEstimateData((prev) =>
                     prev ? { ...prev, lead_id: primaryLeadId || 0 } : null
@@ -506,24 +532,13 @@ export function BillingDetailForm({
                 <Card className="w-auto text-base">
                   <CardHeader>
                     <CardTitle className="text-base">
-                      {
-                        leads.find((lead) => lead.id === associatedLeads[0])
-                          ?.clientName
-                      }
+                      {leads.find((lead) => lead.id === associatedLeads[0])?.clientName}
                     </CardTitle>
                     <CardDescription>
                       <p className="font-bold">
-                        {
-                          leads.find((lead) => lead.id === associatedLeads[0])
-                            ?.service?.name
-                        }
+                        {leads.find((lead) => lead.id === associatedLeads[0])?.service?.name}
                       </p>
-                      <p>
-                        {
-                          leads.find((lead) => lead.id === associatedLeads[0])
-                            ?.description
-                        }
-                      </p>
+                      <p>{leads.find((lead) => lead.id === associatedLeads[0])?.description}</p>
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -552,25 +567,17 @@ export function BillingDetailForm({
                 <Card className="w-auto text-base">
                   <CardHeader>
                     <CardTitle className="text-base">
-                      {
-                        plans.find((plan) => plan.id === associatedPlan[0])
-                          ?.name
-                      }
+                      {plans.find((plan) => plan.id === associatedPlan[0])?.name}
                     </CardTitle>
                     <CardDescription>
                       <p>
-                        {plans.find((plan) => plan.id === associatedPlan[0])
-                          ?.price
-                          ? formatCurrency(
-                            plans.find(
-                              (plan) => plan.id === associatedPlan[0]
-                            )?.price!
-                          )
+                        {plans.find((plan) => plan.id === associatedPlan[0])?.price
+                          ? formatCurrency(plans.find((plan) => plan.id === associatedPlan[0])?.price!)
                           : "No price"}
                       </p>
                       <p>
-                        {plans.find((plan) => plan.id === associatedPlan[0])
-                          ?.description || "No description"}
+                        {plans.find((plan) => plan.id === associatedPlan[0])?.description ||
+                          "No description"}
                       </p>
                     </CardDescription>
                   </CardHeader>
@@ -588,52 +595,51 @@ export function BillingDetailForm({
             <Select
               disabled={true}
               value={servicesID(
-                lead.find((lead) => lead.id === associatedLeads[0])?.service
-                  ?.id || 0
+                lead.find((lead) => lead.id === associatedLeads[0])?.service?.id || 0
               )}
             >
               <SelectTrigger className="w-full h-7">
                 <SelectValue placeholder="Dropdown here" />
               </SelectTrigger>
               <SelectContent>
-                {services.map((serviceOption) => (
-                  <SelectItem key={serviceOption} value={serviceOption}>
-                    {serviceOption}
-                  </SelectItem>
-                ))}
+                {["Digital Marketing Service", "Web Design", "Web Development Service", "Service not found"].map(
+                  (serviceOption) => (
+                    <SelectItem key={serviceOption} value={serviceOption}>
+                      {serviceOption}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
+
+            {/* Costs */}
             <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
               <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                 <div>
                   <h2 className="text-2xl font-normal">Costs Details</h2>
-                  <p className="font-light text-base">
-                    Creates extra costs for customer estimates
-                  </p>
+                  <p className="font-light text-base">Creates extra costs for customer estimates</p>
                 </div>
                 <Button
                   onClick={openCosts}
                   disabled={isRefreshing || isUpdating}
                   className="[&_svg]:size-9 bg-[#99CC33] hover:bg-[#99CC33]/80 text-white rounded-full w-12 h-12 p-0"
                 >
-                  {isRefreshing ? (
-                    <Loader2 className="animate-spin" color="#04081E" />
-                  ) : (
-                    <Eye color="#04081E" />
-                  )}
+                  {isRefreshing ? <Loader2 className="animate-spin" color="#04081E" /> : <Eye color="#04081E" />}
                 </Button>
               </CardHeader>
             </Card>
 
             {/* Payments Details */}
-            {localEstimateData?.state === "ACCEPTED" ||
+            {(localEstimateData?.state === "ACCEPTED" ||
               localEstimateData?.state === "INVOICE" ||
-              localEstimateData?.state === "PAID" ? (
+              localEstimateData?.state === "PAID") && (
               <Card className="bg-[#04081E] text-white flex-shrink-0 h-24 w-full items-center ">
                 <CardHeader className="flex flex-row items-center justify-between py-5 px-5 h-full">
                   <div>
                     <h2 className="text-2xl font-normal">Payments Details</h2>
-                    <p className="font-light text-base">Create your deferred payments in a personalized way</p>
+                    <p className="font-light text-base">
+                      Create your deferred payments in a personalized way
+                    </p>
                   </div>
                   <Button
                     onClick={() => setShowPayments(true)}
@@ -643,13 +649,10 @@ export function BillingDetailForm({
                   </Button>
                 </CardHeader>
               </Card>
-            ) : (
-              <></>
             )}
+
             <Button
-              className={
-                "rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"
-              }
+              className={"rounded-full bg-[#99CC33] text-white font-bold text-base items-center py-2 px-3 md:py-2 md:px-4"}
               onClick={UpdateBilling}
               disabled={isUpdating}
             >
