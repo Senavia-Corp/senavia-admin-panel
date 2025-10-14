@@ -13,13 +13,16 @@ import {
 import {
   Payment,
   PatchPaymentData,
-  PaymentState,
+  // ❌ PaymentState NO existe públicamente en tu types
 } from "@/types/payment-management";
 import { useToast } from "@/hooks/use-toast";
 import { PaymentManagementService } from "@/services/payment-management-service";
 import { BillingViewModel } from "@/components/pages/billing/BillingViewModel";
 import { Lead } from "@/types/lead-management";
 import axios from "axios";
+
+// ✅ Alias local para el estado (runtime-friendly)
+type PaymentState = "PENDING" | "PAID";
 
 interface PaymentDetailFormProps {
   paymentId: number;
@@ -52,12 +55,16 @@ export function PaymentDetailForm({
   } = BillingViewModel();
   const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
   const [billingTotalValue, setBillingTotalValue] = useState<number>(0);
+  const [currentBilling, setCurrentBilling] = useState<any | null>(null);
   const didFetchBilling = useRef(false);
   const didFetchPayments = useRef(false);
 
-  // Cargar billing data para obtener el valor total
+  // clamp helper
+  const clamp01 = (n: number) => Math.max(0, Math.min(100, n));
+
+  // Cargar billing (evita doble fetch en StrictMode)
   useEffect(() => {
-    if (didFetchBilling.current) return; // evita doble llamado en StrictMode
+    if (didFetchBilling.current) return;
     didFetchBilling.current = true;
     (async () => {
       try {
@@ -68,21 +75,20 @@ export function PaymentDetailForm({
     })();
   }, [payment.estimateId]);
 
-  // Actualizar billingTotalValue cuando cambie el billing
+  // Sincronizar totalValue y billing actual
   useEffect(() => {
     if (billing && billing.length > 0) {
-      const currentBilling = billing.find(
-        (b: any) => b.id === payment.estimateId
-      );
-      if (currentBilling) {
-        setBillingTotalValue(Number(currentBilling.totalValue) || 0);
+      const cb = billing.find((b: any) => b.id === payment.estimateId);
+      if (cb) {
+        setBillingTotalValue(Number(cb.totalValue) || 0);
+        setCurrentBilling(cb);
       }
     }
   }, [billing, payment.estimateId]);
 
-  // Cargar payments existentes para validar porcentaje
+  // Cargar payments (evita doble fetch en StrictMode)
   useEffect(() => {
-    if (didFetchPayments.current) return; // evita doble llamado en StrictMode
+    if (didFetchPayments.current) return;
     didFetchPayments.current = true;
     (async () => {
       try {
@@ -93,7 +99,7 @@ export function PaymentDetailForm({
     })();
   }, [payment.estimateId]);
 
-  // Actualizar existingPayments cuando cambien los payments del BillingViewModel
+  // Actualizar existingPayments cuando cambien
   useEffect(() => {
     if (payments && payments.length > 0) {
       const paymentsForEstimate = payments.filter(
@@ -103,20 +109,18 @@ export function PaymentDetailForm({
     }
   }, [payments, payment.estimateId]);
 
-  // Función para calcular el porcentaje total actual (excluyendo el payment actual)
+  // Porcentaje total actual (excluyendo este payment)
   const getCurrentTotalPercentage = () => {
     return existingPayments
-      .filter((p) => p.id !== payment.id) // Excluir el payment actual
-      .reduce((total, p) => total + p.percentagePaid, 0);
+      .filter((p) => p.id !== payment.id)
+      .reduce((total, p) => total + (Number(p.percentagePaid) || 0), 0);
   };
 
-  // Función para validar si se puede actualizar el porcentaje
   const validatePercentage = (newPercentage: number) => {
     const currentTotal = getCurrentTotalPercentage();
     return currentTotal + newPercentage <= 100;
   };
 
-  // Función para calcular automáticamente el amount basado en el porcentaje
   const calculateAmountFromPercentage = (percentage: number) => {
     if (billingTotalValue > 0 && percentage > 0) {
       return (billingTotalValue * percentage) / 100;
@@ -124,63 +128,78 @@ export function PaymentDetailForm({
     return 0;
   };
 
-  // Función para actualizar el billing con los nuevos porcentajes
-  const updateBillingPercentages = async () => {
-    try {
-      console.log("Starting billing percentage update...");
-
-      // Obtener payments frescos directamente del servicio
-      const freshPayments =
-        await PaymentManagementService.getPaymentsByEstimateId(
-          payment.estimateId
-        );
-      console.log("Fresh payments from service:", freshPayments);
-
-      const totalPercentagePaid = freshPayments.reduce(
-        (total: number, p: Payment) => {
-          const percentage = Number(p.percentagePaid) || 0;
-          console.log(`Payment ${p.id}: ${percentage}%`);
-          return total + percentage;
-        },
-        0
-      );
-
-      const remainingPercentage = Math.max(0, 100 - totalPercentagePaid);
-
-      console.log("Calculated percentages:", {
-        totalPercentagePaid,
-        remainingPercentage,
-        paymentsCount: freshPayments.length,
-      });
-
-      // Actualizar el billing con los nuevos porcentajes
-      await PatchBilling(payment.estimateId, {
-        percentagePaid: totalPercentagePaid,
-        remainingPercentage: remainingPercentage,
-      });
-
-      console.log("Billing updated successfully with new percentages");
-
-      // Recargar el billing para refrescar la UI
+  /**
+   * Recalcula explícitamente los porcentajes del estimate
+   * en función de la transición del payment (delta incremental).
+   * - nextState: estado NUEVO (localPayment.state)
+   * - prevState: estado ANTERIOR (payment.state)
+   */
+  const calculateNewBillingPercentages = async (
+    nextState: PaymentState,
+    prevState: PaymentState
+  ) => {
+    // Asegurar billing fresco
+    let cb = billing?.find?.((b: any) => b.id === payment.estimateId);
+    if (!cb) {
       await getBilling(payment.estimateId);
-    } catch (error) {
-      console.error("Error updating billing percentages:", error);
+      cb = billing?.find?.((b: any) => b.id === payment.estimateId);
     }
+    if (!cb) {
+      console.warn("No billing found in memory to update percentages");
+      return;
+    }
+
+    const currentPaid = Number(cb.percentagePaid) || 0;
+
+    // Porcentajes previo y nuevo del payment editado
+    const prevPct = Number(payment.percentagePaid) || 0;        // del prop original
+    const nextPct = Number(localPayment.percentagePaid) || 0;   // del estado local
+
+    // Comparar por strings (runtime)
+    let delta = 0;
+    if (prevState !== "PAID" && nextState === "PAID") {
+      // PENDING -> PAID
+      delta = nextPct;
+    } else if (prevState === "PAID" && nextState !== "PAID") {
+      // PAID -> PENDING
+      delta = -prevPct;
+    } else if (prevState === "PAID" && nextState === "PAID") {
+      // PAID -> PAID (ajuste de porcentaje)
+      delta = nextPct - prevPct;
+    } else {
+      // PENDING -> PENDING
+      delta = 0;
+    }
+
+    const newPaid = clamp01(currentPaid + delta);
+    const newRemaining = clamp01(100 - newPaid);
+
+    console.log("[calculateNewBillingPercentages]", {
+      prevState,
+      nextState,
+      prevPct,
+      nextPct,
+      delta,
+      currentPaid,
+      newPaid,
+      newRemaining,
+    });
+
+    await PatchBilling(payment.estimateId, {
+      percentagePaid: newPaid,
+      remainingPercentage: newRemaining,
+    });
+    await getBilling(payment.estimateId); // refrescar UI
   };
 
   const handleUpdatePayment = async () => {
     try {
       setIsUpdating(true);
 
-      // Solo validar porcentaje si ha cambiado respecto al valor original
-      // Esto permite actualizar otros campos (reference, description, amount, etc.) sin restricciones
       const percentageChanged =
-        localPayment.percentagePaid !== payment.percentagePaid;
+        Number(localPayment.percentagePaid) !== Number(payment.percentagePaid);
 
-      if (
-        percentageChanged &&
-        !validatePercentage(localPayment.percentagePaid)
-      ) {
+      if (percentageChanged && !validatePercentage(Number(localPayment.percentagePaid))) {
         const currentTotal = getCurrentTotalPercentage();
         const maxAllowed = 100 - currentTotal;
         toast({
@@ -202,13 +221,10 @@ export function PaymentDetailForm({
         attachments: localPayment.attachments,
       };
 
-      // Intentar actualizar en el servidor primero
       const response = await updatePayment(paymentId, paymentData);
 
       if (response.success && response.data.length > 0) {
         const updatedPayment = response.data[0];
-
-        // Actualizar estado local y notificar al padre
         setLocalPayment(updatedPayment);
         onUpdate?.(updatedPayment);
 
@@ -217,21 +233,17 @@ export function PaymentDetailForm({
           description: `The payment "${paymentData.reference}" has been updated.`,
         });
 
-        // Actualizar los porcentajes del billing
-        await updateBillingPercentages();
+        // Transición explícita para delta
+        const prevState: PaymentState = (payment.state as any) || "PENDING";
+        const nextState: PaymentState = (localPayment.state as any) || "PENDING";
+        await calculateNewBillingPercentages(nextState, prevState);
 
-        // PONER AQUI LA FUNCION QUE SACA LOS NUEVOS PORCENTAJES DE BILLING Y ACTUALIZA EL BILLING
-
-        // Redirigir a la tabla de billing details después de actualizar
-        if (onRedirectToBillingDetails) {
-          onRedirectToBillingDetails();
-        }
+        onRedirectToBillingDetails?.();
       } else {
         throw new Error("Failed to update payment");
       }
     } catch (error) {
       console.error("Error updating payment:", error);
-      // En caso de error, revertimos los cambios locales
       setLocalPayment(payment);
       toast({
         title: "Failed to update payment",
@@ -242,22 +254,6 @@ export function PaymentDetailForm({
       });
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const calculateNewBillingPercentages = async () => {
-    const billing = await getBilling(payment.estimateId);
-    if (billing) {
-      const billingPorcentagePaid = Number(billing[0]?.percentagePaid) || 0;
-      const billingRemainingPorcentage = Number(billing[0]?.remainingPercentage) || 0;
-      const paymentPorcentagePaid = Number(payment.percentagePaid) || 0;
-
-      const newBillingPercentagePaid =
-        billingPorcentagePaid + paymentPorcentagePaid;
-      const newBillingRemaininPercentage =
-        billingRemainingPorcentage - paymentPorcentagePaid;
-
-      return { totalPercentagePaid: newBillingPercentagePaid, remainingPercentage: newBillingRemaininPercentage };
     }
   };
 
@@ -281,7 +277,6 @@ export function PaymentDetailForm({
 
   const handleSendEmail = async () => {
     try {
-      //Usar localPayment para obtener los datos necesarios
       const realAmount = localPayment.amount * 100;
       console.log(localPayment, "localPayment");
       const response = await createStripeSession(
@@ -334,7 +329,7 @@ export function PaymentDetailForm({
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
+    return today.toISOString().split("T")[0];
   };
 
   return (
@@ -395,15 +390,14 @@ export function PaymentDetailForm({
               value={
                 localPayment.amount
                   ? new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(localPayment.amount)
+                      style: "currency",
+                      currency: "USD",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    }).format(localPayment.amount)
                   : ""
               }
               onChange={(e) => {
-                // Eliminar todo excepto números y punto decimal
                 const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   handleFieldChange("amount", 0);
@@ -428,7 +422,6 @@ export function PaymentDetailForm({
                   : localPayment.percentagePaid.toString()
               }
               onChange={(e) => {
-                // Eliminar todo excepto números y punto decimal
                 const rawValue = e.target.value.replace(/[^0-9.]/g, "");
                 if (rawValue === "") {
                   handleFieldChange("percentagePaid", 0);
@@ -442,7 +435,6 @@ export function PaymentDetailForm({
                   numericValue <= 100
                 ) {
                   handleFieldChange("percentagePaid", numericValue);
-                  // Calcular automáticamente el amount basado en el porcentaje
                   const calculatedAmount =
                     calculateAmountFromPercentage(numericValue);
                   handleFieldChange(
@@ -462,8 +454,7 @@ export function PaymentDetailForm({
                   <div className="text-blue-600 font-medium">
                     Billing Total: ${billingTotalValue.toLocaleString()} |
                     {localPayment.percentagePaid > 0 &&
-                      ` ${localPayment.percentagePaid
-                      }% = $${calculateAmountFromPercentage(
+                      ` ${localPayment.percentagePaid}% = $${calculateAmountFromPercentage(
                         localPayment.percentagePaid
                       ).toLocaleString()}`}
                   </div>
@@ -474,7 +465,7 @@ export function PaymentDetailForm({
 
             <p>State</p>
             <Select
-              value={localPayment.state}
+              value={localPayment.state as PaymentState}
               onValueChange={(value) =>
                 handleFieldChange("state", value as PaymentState)
               }
@@ -483,7 +474,7 @@ export function PaymentDetailForm({
                 <SelectValue placeholder="Select state" />
               </SelectTrigger>
               <SelectContent>
-                {paymentStates.map((stateOption) => (
+                {PaymentManagementService.getPaymentStates().map((stateOption) => (
                   <SelectItem key={stateOption} value={stateOption}>
                     {stateOption}
                   </SelectItem>
@@ -501,7 +492,7 @@ export function PaymentDetailForm({
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
-                {paymentMethods.map((methodOption) => (
+                {PaymentManagementService.getPaymentMethods().map((methodOption) => (
                   <SelectItem key={methodOption} value={methodOption}>
                     {methodOption}
                   </SelectItem>
