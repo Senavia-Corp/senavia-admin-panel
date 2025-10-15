@@ -167,7 +167,7 @@ export const InvoicePDFDocument = ({
           </View>
 
           {/* Resumen de factura */}
-          <View style={styles.summaryContainer}>
+          <View style={styles.summaryContainer} break>
             <Text style={styles.sectionTitle}>Invoice summary</Text>
             <View style={styles.tableWrapper}>
               <View style={[styles.tableRow, styles.tableHead]}>
