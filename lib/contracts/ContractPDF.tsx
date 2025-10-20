@@ -254,6 +254,12 @@ const pdfStyles = StyleSheet.create({
     color: "#FFFFFF",    // blanco sobre fondo blanco: no se ve
     fontSize: 1,         // 1pt para que sea mínimamente “seleccionable”
   },
+  clauseBlock: {
+    // sin bordes, solo controla salto inteligente
+    minPresenceAhead: 140, // 120–180 suele ir bien; ajusta a tu altura típica
+    marginTop: 12,
+    marginBottom: 8,
+  },
 });
 
 export const ContractPDF = (props: ContractPDFProps) => (
@@ -341,7 +347,11 @@ export const ContractPDF = (props: ContractPDFProps) => (
           {props.contract.clauses && props.contract.clauses.length > 0 && (
             <>
               {props.contract.clauses.map((clauseLink: any) => (
-                <View key={clauseLink.clauseId} style={pdfStyles.clauseSection}>
+                <View
+                  key={clauseLink.clauseId}
+                  style={pdfStyles.clauseBlock}
+                  wrap={false}
+                >
                   <Text style={pdfStyles.clauseTitle}>
                     {clauseLink.clause.title}:
                   </Text>

@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pdf } from "@react-pdf/renderer";
 import { ContractPDF } from "@/lib/contracts/ContractPDF";
 import { sendContractToDocuSign } from "@/lib/contracts/helpers/docusign-helper";
+import { sendContractToDocuSeal } from "@/lib/contracts/helpers/docuseal-helper";
 
 import type {
   Contract,
@@ -108,6 +109,7 @@ export function ContractForm({
 
       // 1) Obtén los valores actuales del formulario
       const vals = formMethods.getValues();
+      const emailForOwner = process.env.NEXT_PUBLIC_OWNER_EMAIL || "sebastian@senaviacorp.com";
 
       // Validaciones mínimas
       if (!vals.title || !vals.companyEmail || !vals.recipientName) {
@@ -141,27 +143,56 @@ export function ContractForm({
       const pdfBlob = await pdfDoc.toBlob();
 
       // 4) Llama al helper de DocuSign (modo email => DocuSign envía correos)
-      const result = await sendContractToDocuSign({
+      const result = await sendContractToDocuSeal({
         pdfBlob,
         recipientEmail: contractForPdf.companyEmail, // cliente
         recipientName: contractForPdf.recipientName,
         contractTitle: contractForPdf.title,
         contractId: contractForPdf.id,
-        mode: "email", // 👈 DocuSign envía emails a los firmantes
-        // Si el owner viene de ENV en el server, no lo mandes aquí.
-        // Si quieres sobreescribir desde el cliente, podrías pasar:
-        // ownerEmail: "owner@senaviacorp.com",
-        // ownerName: contractForPdf.ownerName,
-      });
+        ownerEmail: emailForOwner,  // o desde form/env
+        ownerName: contractForPdf.ownerName || "Senavia Corp",
+      })
 
       if (!result.success) {
-        throw new Error(result.error || "No se pudo crear el envelope");
+        throw new Error(result.error || "No se pudo crear el paquete");
       }
 
-      toast({
-        title: "Contrato enviado ✉️",
-        description: `Envelope ${result.envelopeId} creado. DocuSign enviará correos a los firmantes.`,
-      });
+      const { ownerSigningUrl, clientSigningUrl } = result;
+
+      const clientResponse = await fetch(
+        "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: contractForPdf.recipientName || "Cliente",
+            email: contractForPdf.companyEmail || "client@example.com",
+            paymentsignUrl: clientSigningUrl,
+          }),
+        }
+      );
+
+      const ownerResponse = await fetch(
+        "https://damddev.app.n8n.cloud/webhook/70363524-d32d-43e8-99b5-99035a79daa8",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: contractForPdf.ownerName || "Cliente",
+            email: emailForOwner,
+            paymentsignUrl: ownerSigningUrl,
+          }),
+        }
+      );
+
+      if (!clientResponse.ok || !ownerResponse.ok) {
+        throw new Error("Error sending email via webhook");
+      } else {
+        toast({
+          title: "Links de firma generados ✅",
+          description: `Se enviaron por los enlaces a Owner y Cliente.`,
+        });
+      }
     } catch (err: any) {
       console.error("[ContractForm] Send email error:", err);
       toast({
