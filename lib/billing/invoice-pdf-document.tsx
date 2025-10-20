@@ -128,40 +128,27 @@ export const InvoicePDFDocument = ({
           {/* Información del plan */}
           <View style={styles.summaryContainer}>
             {plans ? (
-              <>
-                <Text style={styles.sectionTitle}>
-                  {plans.name || "No name detected"}
-                </Text>
-                <Text style={[styles.paragraph, { marginBottom: 10 }]}>
+              <View style={styles.contentBlock} wrap={false}>
+                <Text style={styles.sectionTitle}>{plans.name || "No name detected"}</Text>
+                <Text style={[styles.paragraph, { marginBottom: 8 }]}>
                   {formatCurrency(Number(plans.price)) || "No price detected"}
                 </Text>
-                <Text style={[styles.paragraph, { fontSize: 10 }]}>
-                  {plans.description || "No description"}
-                </Text>
-              </>
+                {!!plans.description && (
+                  <Text style={[styles.paragraph, { fontSize: 11 }]}>{plans.description}</Text>
+                )}
+              </View>
             ) : (
               <Text></Text>
             )}
             {(billing.costs || []).map((cost) => (
-              <View key={cost.id}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    { fontSize: 12, marginBottom: 8 },
-                  ]}
-                >
-                  {cost.name}
-                </Text>
-                <Text
-                  style={[styles.paragraph, { fontSize: 10, marginBottom: 4 }]}
-                >
+              <View key={cost.id} style={styles.contentBlock} wrap={false}>
+                <Text style={[styles.sectionTitle, { fontSize: 14 }]}>{cost.name}</Text>
+                <Text style={[styles.paragraph, { marginBottom: 6 }]}>
                   {formatCurrency(cost.value)}
                 </Text>
-                <Text
-                  style={[styles.paragraph, { fontSize: 10, marginBottom: 4 }]}
-                >
-                  {cost.description}
-                </Text>
+                {!!cost.description && (
+                  <Text style={[styles.paragraph, { fontSize: 11 }]}>{cost.description}</Text>
+                )}
               </View>
             ))}
           </View>
@@ -290,10 +277,11 @@ const styles = StyleSheet.create({
 
   /* Texto principal */
   paragraph: {
-    fontSize: 14,
-    marginBottom: 16,
+    fontSize: 12,
+    marginTop: 6,
+    marginBottom: 12,
     color: "black",
-    lineHeight: 1.6,
+    lineHeight: 1.5,
   },
 
   /* Sección de servicios */
@@ -337,20 +325,28 @@ const styles = StyleSheet.create({
 
   /* Contenedor principal del resumen */
   summaryContainer: {
+    borderColor: "transparent",
+    backgroundColor: "transparent",
+    marginTop: 18,
+    marginBottom: 18,
+  },
+
+  contentBlock: {
     borderWidth: 1,
-    borderColor: "#EBEDF2",
-    borderRadius: 8,
-    padding: 20,
+    borderColor: "#E6ECF3",
+    borderRadius: 12,
+    padding: 24,           // <-- más grande
     backgroundColor: "white",
-    marginTop: 24,
-    marginBottom: 24,
+    marginTop: 16,
+    marginBottom: 16,
+    minPresenceAhead: 160, // evita que se corte; ajusta 140–200 a tu gusto
   },
 
   /* Tabla */
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: 12,
     color: "#04081E",
   },
   tableWrapper: {
@@ -454,5 +450,14 @@ const styles = StyleSheet.create({
     right: 60,
     width: 200,
     height: 30,
+  },
+  costBlock: {
+    borderWidth: 1,
+    borderColor: "#EBEDF2",
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 12,
+    // si quedan menos de 140pt en la página, salta a la siguiente
+    minPresenceAhead: 140,
   },
 });

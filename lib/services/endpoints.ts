@@ -151,7 +151,10 @@ export const endpoints = {
   },
   docusign: {
     createEnvelope: `${API}/docusign/create-envelope`,
-  }
+  },
+  docuseal: {
+    createLinks: `${API}/signing/create-links`,
+  },
 };
 
 // Header configurations
