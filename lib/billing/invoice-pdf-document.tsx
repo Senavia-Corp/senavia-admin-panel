@@ -127,7 +127,7 @@ export const InvoicePDFDocument = ({
 
           {/* Información del plan */}
           <View style={styles.summaryContainer}>
-            {plans ? (
+            {plans && (
               <View style={styles.contentBlock} wrap={false}>
                 <Text style={styles.sectionTitle}>{plans.name || "No name detected"}</Text>
                 <Text style={[styles.paragraph, { marginBottom: 8 }]}>
@@ -137,11 +137,18 @@ export const InvoicePDFDocument = ({
                   <Text style={[styles.paragraph, { fontSize: 11 }]}>{plans.description}</Text>
                 )}
               </View>
-            ) : (
-              <Text></Text>
             )}
-            {(billing.costs || []).map((cost) => (
-              <View key={cost.id} style={styles.contentBlock} wrap={false}>
+
+            {(billing.costs || []).map((cost, idx) => (
+              <View
+                key={cost.id}
+                wrap={false}
+                style={[
+                  styles.contentBlock,
+                  // si NO hay plan y es el PRIMER costo, quita margen top y baja el umbral
+                  ...(!plans && idx === 0 ? [styles.contentBlockFirst] : []),
+                ]}
+              >
                 <Text style={[styles.sectionTitle, { fontSize: 14 }]}>{cost.name}</Text>
                 <Text style={[styles.paragraph, { marginBottom: 6 }]}>
                   {formatCurrency(cost.value)}
@@ -340,6 +347,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
     minPresenceAhead: 160, // evita que se corte; ajusta 140–200 a tu gusto
+  },
+
+  contentBlockFirst: {
+    marginTop: 0,
+    minPresenceAhead: 120, // un poco más permisivo
   },
 
   /* Tabla */
