@@ -144,17 +144,14 @@ export const InvoicePDFDocument = ({
                 key={cost.id}
                 wrap={false}
                 style={[
-                  styles.contentBlock,
-                  // si NO hay plan y es el PRIMER costo, quita margen top y baja el umbral
-                  ...(!plans && idx === 0 ? [styles.contentBlockFirst] : []),
+                  styles.contentBlockTight,
+                  ...(!plans && idx === 0 ? [styles.contentBlockTightFirst] : []),
                 ]}
               >
-                <Text style={[styles.sectionTitle, { fontSize: 14 }]}>{cost.name}</Text>
-                <Text style={[styles.paragraph, { marginBottom: 6 }]}>
-                  {formatCurrency(cost.value)}
-                </Text>
+                <Text style={styles.sectionTitleTight}>{cost.name}</Text>
+                <Text style={styles.paragraphTight}>{formatCurrency(cost.value)}</Text>
                 {!!cost.description && (
-                  <Text style={[styles.paragraph, { fontSize: 11 }]}>{cost.description}</Text>
+                  <Text style={styles.paragraphTight}>{cost.description}</Text>
                 )}
               </View>
             ))}
@@ -471,5 +468,36 @@ const styles = StyleSheet.create({
     marginTop: 12,
     // si quedan menos de 140pt en la página, salta a la siguiente
     minPresenceAhead: 140,
+  },
+  contentBlockTight: {
+    borderWidth: 1,
+    borderColor: "#E6ECF3",
+    borderRadius: 10,
+    padding: 16,            // antes 24
+    backgroundColor: "white",
+    marginTop: 12,          // antes 16
+    marginBottom: 12,       // antes 16
+    minPresenceAhead: 120,  // antes 160 (más permisivo)
+  },
+
+  // primer costo sin plan: aún más pegado
+  contentBlockTightFirst: {
+    marginTop: 4,           // prácticamente pegado al bloque anterior
+    minPresenceAhead: 100,  // deja pasar bloques por “poquito”
+  },
+
+  // textos más compactos dentro del bloque
+  sectionTitleTight: {
+    fontSize: 13,           // 14 -> 13
+    fontWeight: "bold",
+    marginBottom: 6,        // 12/8 -> 6
+    color: "#04081E",
+  },
+  paragraphTight: {
+    fontSize: 11,           // 12/11 -> 11
+    lineHeight: 1.4,        // 1.5 -> 1.4
+    marginTop: 4,
+    marginBottom: 6,        // 6 -> 6 (consistente)
+    color: "black",
   },
 });
